@@ -67,6 +67,16 @@ jobs:
       - name: Install exactly what package-lock.json records
         run: npm ci
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Type-check
+        run: npm run check
+
+      - name: Lint
+        run: npm run lint
+        run: npm ci
+
       - name: Type-check
         run: npm run check
 
