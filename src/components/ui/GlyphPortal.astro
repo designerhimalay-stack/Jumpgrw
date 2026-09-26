@@ -1,0 +1,171 @@
+---
+/**
+ * Glyph Portal © 2026 Christian Katzmann. MIT.
+ * Origin: UsefulPortal.astro on https://ktzm.dk → UsefulPortal.tsx → ClarityPortal.tsx.
+ * A scroll-driven camera through live type. Keep this notice with copies.
+ *
+ * Markup only. Nothing moves until mountGlyphPortal() from ./glyph-portal is
+ * called on the rendered section.
+ *
+ * Slots: `background` (decorative, inert, mounted once; fill its parent with an
+ * image, video, or canvas), `front` (optional foreground composition for the
+ * opening frame, above the clipped scene) and the default slot (the revealed
+ * content).
+ */
+import { clamp, DEFAULT_FONT, type GlyphPortalOptions } from "./glyph-portal";
+
+interface Props {
+  word?: string;
+  /** First matching character. Omit to choose the largest safe patch of ink. */
+  focusChar?: string;
+  /** Hover, tap, or use arrow keys to choose a letter before scrolling. */
+  interactive?: boolean;
+  /** Scroll travel in visible container heights, clamped to 1–8. */
+  scrollLength?: number;
+  fontFamily?: string;
+  fontWeight?: number;
+  annotations?: boolean;
+  enterLabel?: string;
+  /** Scopes the component's stylesheet and its clip path, so it must be unique on the page. */
+  id?: string;
+  class?: string;
+  style?: Record<`--gp-${string}`, string>;
+}
+
+const {
+  word = "SUBLIME", focusChar, interactive = true, scrollLength = 2.4,
+  fontFamily = DEFAULT_FONT, fontWeight = 900, annotations = false,
+  enterLabel = "Enter section", id: uid = "gp-portal", class: className, style = {},
+} = Astro.props;
+
+const clipId = `${uid}-clip`;
+const text = word.trim().normalize("NFC") || "SUBLIME";
+// `index` is each character's UTF-16 offset, which matters for surrogate pairs.
+const charList = Array.from(text);
+const characters = charList.map((char, i) => ({
+  char,
+  index: charList.slice(0, i).reduce((n, c) => n + c.length, 0),
+}));
+const length = Number.isFinite(scrollLength) ? clamp(scrollLength, 1, 8) : 2.4;
+const weight = Number.isFinite(fontWeight) ? clamp(fontWeight, 1, 1000) : 900;
+const hasFront = Astro.slots.has("front");
+const q = `:where(#${uid})`;
+
+const options: GlyphPortalOptions = { text, focusChar, interactive, fontFamily, weight, length, hasFront };
+const sectionStyle = Object.entries({ "--gp-length": length, "--gp-characters": charList.length, ...style })
+  .map(([property, value]) => `${property}:${value}`)
+  .join(";");
+
+const css = `
+        ${q}{--gp-paper:#fff;--gp-ink:#0c1212;--gp-field:#0b3b2a;--gp-foreground:#fbfbfa;position:relative;isolation:isolate;background:var(--gp-paper);color:var(--gp-ink);font-family:Arial,sans-serif;}
+        ${q}>[data-gp-viewport]{position:absolute;inset:0 auto auto 0;height:100vh;height:100svh;width:0;pointer-events:none;visibility:hidden;}
+        ${q} [data-gp-pin]{position:relative;height:var(--gp-height,100svh);overflow:clip;isolation:isolate;container-type:size;}
+        ${q} [data-gp-field]{position:absolute;inset:0;background:var(--gp-field);opacity:0;pointer-events:none;}
+        ${q}[data-gp-ready] [data-gp-field]{opacity:1;}
+        ${q} [data-gp-art]{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+        ${q} [data-gp-marks]{fill:none;stroke:var(--gp-ink);opacity:.6;}
+        ${q} [data-gp-choices]{position:absolute;inset:0;visibility:hidden;pointer-events:none;}
+        ${q}[data-gp-choosing=true] [data-gp-choices]{visibility:visible;}
+        ${q} [data-gp-letter]{box-sizing:border-box;position:absolute;border:0;padding:0;margin:0;background:transparent;cursor:pointer;pointer-events:auto;touch-action:pan-y;}
+        ${q} [data-gp-letter]:disabled{pointer-events:none;}
+        ${q} [data-gp-letter]:focus-visible{outline:2px solid var(--gp-field);outline-offset:5px;}
+        ${q} [data-gp-touch-picker]{display:none;position:absolute;top:calc(var(--gp-word-bottom,50%) + 42px);left:50%;transform:translateX(-50%);font:12px/1.4 Arial,sans-serif;align-items:center;gap:12px;visibility:hidden;}
+        ${q}[data-gp-choosing=true] [data-gp-touch-picker]{visibility:visible;}
+        ${q} [data-gp-select]{min-height:44px;min-width:90px;border:1px solid #d8deda;border-radius:4px;background:var(--gp-paper);color:var(--gp-ink);padding:0 10px;font:inherit;}
+        ${q} [data-gp-select]:focus-visible{outline:2px solid var(--gp-field);outline-offset:4px;}
+        @media(any-pointer:coarse){${q} [data-gp-touch-picker]{display:flex;}}
+        ${q} [data-gp-fallback]{position:absolute;inset:0;display:none;place-items:center;font-size:min(calc(100cqw / var(--gp-characters)),38cqh);line-height:1;color:var(--gp-field);}
+        ${q}[data-gp-ready] [data-gp-fallback]{visibility:hidden;}
+        ${q} [data-gp-caption]{position:absolute;inset:auto 8% 9%;display:flex;align-items:center;justify-content:space-between;gap:1rem;font:12px/1.4 Arial,sans-serif;opacity:var(--gp-caption,1);pointer-events:var(--gp-caption-hit,auto);}
+        ${q} [data-gp-caption]{font-family:inherit;}
+        ${q} [data-gp-front]{position:absolute;inset:0;opacity:var(--gp-caption,1);pointer-events:none;}
+        ${q} [data-gp-front] a,${q} [data-gp-front] button{pointer-events:var(--gp-caption-hit,auto);}
+        ${q} [data-gp-front]:focus-within{opacity:1;}
+        ${q} [data-gp-hint]{max-width:30ch;color:var(--gp-ink);}
+        ${q} [data-gp-enter]{display:inline-flex;align-items:center;gap:16px;min-height:44px;color:inherit;font:inherit;text-decoration:none;letter-spacing:inherit;}
+        ${q} [data-gp-enter]:focus-visible{outline:2px solid currentColor;outline-offset:5px;}
+        ${q} [data-gp-caption]:focus-within{opacity:1;pointer-events:auto;}
+        ${q} [data-gp-enter]:focus-visible{background:var(--gp-paper);color:var(--gp-ink);padding:0 12px;margin:0 -12px;}
+        ${q} [data-gp-content]{box-sizing:border-box;position:relative;min-height:var(--gp-height,100svh);padding:clamp(32px,7%,100px);display:grid;align-content:center;color:var(--gp-foreground);background:var(--gp-field);overflow-wrap:anywhere;}
+        ${q}[data-gp-motion=on] [data-gp-pin]{position:sticky;top:0;}
+        ${q}[data-gp-motion=off] [data-gp-hint]{display:none;}
+        ${q}[data-gp-motion=on] [data-gp-content]{margin-top:calc((var(--gp-length) - 1) * var(--gp-height));background:transparent;opacity:var(--gp-reveal,0);pointer-events:none;}
+        ${q}[data-gp-motion=on][data-gp-entered=true] [data-gp-content]{pointer-events:auto;}
+        ${q}[data-gp-motion=on]:has([data-gp-content]:focus-within) [data-gp-field]{clip-path:none!important;}
+        ${q}[data-gp-motion=on] [data-gp-content]:focus-within{opacity:1;pointer-events:auto;}
+        ${q}:has([data-gp-content]:focus-within) [data-gp-caption],${q}:has([data-gp-content]:focus-within) [data-gp-marks]{opacity:0;}
+        ${q} [data-gp-default-title]{color:inherit;font:400 clamp(32px,5vw,72px)/1.05 Georgia,serif;letter-spacing:-.035em;max-width:13ch;margin:0 0 24px;text-wrap:balance;}
+        ${q} [data-gp-default-copy]{color:inherit;font:16px/1.6 Arial,sans-serif;max-width:36ch;margin:0;}
+        @media(prefers-reduced-motion:reduce){${q} [data-gp-pin]{position:relative!important;} ${q} [data-gp-content]{margin-top:0!important;opacity:1!important;background:var(--gp-field)!important;min-height:0;padding-block:64px;} ${q} [data-gp-caption]{opacity:1!important;}}
+        @media(prefers-reduced-motion:reduce){${q} [data-gp-hint]{display:none;}}
+      `;
+---
+
+<section
+  id={uid}
+  class={className}
+  aria-label={text}
+  style={sectionStyle}
+  data-gp-options={JSON.stringify(options)}
+>
+  <style is:inline set:html={css} />
+  {/* JS reveals only measured geometry. The unmeasured poster is reserved for no-JS. */}
+  <noscript><style is:inline set:html={`${q} [data-gp-fallback]{display:grid}${q} [data-gp-hint]{display:none}`} /></noscript>
+  <div data-gp-viewport aria-hidden="true" />
+  <div data-gp-pin>
+    <div data-gp-field aria-hidden="true" inert>
+      <slot name="background">
+        <div
+          data-gp-default-field
+          style="position:absolute;inset:0;transform:scale(var(--gp-field-scale,1));background:radial-gradient(circle at 18% 8%, rgba(68,125,98,.72), transparent 34%), radial-gradient(circle at 82% 20%, rgba(251,251,250,.12), transparent 28%), radial-gradient(circle at 48% 78%, rgba(9,48,35,.5), transparent 44%), linear-gradient(135deg,#0b3b2a 0%,#14573f 48%,#082d22 100%)"
+        />
+      </slot>
+    </div>
+    <svg data-gp-art aria-hidden="true" focusable="false">
+      <defs>
+        <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
+          <text
+            data-gp-glyph
+            x="0"
+            y="0"
+            style={`font-family:${fontFamily};font-weight:${weight};font-size:100px;font-kerning:none;font-variant-ligatures:none;letter-spacing:0`}
+          >{text}</text>
+        </clipPath>
+      </defs>
+      <g data-gp-marks style={`visibility:${annotations ? "visible" : "hidden"}`}><path /></g>
+    </svg>
+    <div data-gp-choices role="radiogroup" aria-label="Choose the letter to enter through" inert>
+      {characters.map(({ char, index }, i) => (
+        <button
+          type="button"
+          role="radio"
+          aria-checked="false"
+          tabindex="-1"
+          data-gp-letter={index}
+          aria-label={`${char}, letter ${i + 1} of ${characters.length}`}
+        />
+      ))}
+    </div>
+    <label data-gp-touch-picker>
+      <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Entry letter</span>
+      <select data-gp-select>
+        <option value="" disabled selected>Choose a letter</option>
+        {characters.map(({ char, index }, i) => <option value={index}>{i + 1} · {char}</option>)}
+      </select>
+    </label>
+    {hasFront && <div data-gp-front><slot name="front" /></div>}
+    <span data-gp-fallback aria-hidden="true" style={`font-family:${fontFamily};font-weight:${weight}`}>{text}</span>
+    <div data-gp-caption>
+      <span data-gp-hint aria-hidden="true">{interactive ? "Scroll to enter." : annotations ? "A passage through type" : ""}</span>
+      <a data-gp-enter href={`#${uid}-content`}>{enterLabel}<span aria-hidden="true">↘</span></a>
+    </div>
+  </div>
+  <div data-gp-content id={`${uid}-content`} tabindex="-1">
+    <slot>
+      <div>
+        <h2 data-gp-default-title>A letter becomes a place.</h2>
+        <p data-gp-default-copy>The shape opens onto whatever comes next.</p>
+      </div>
+    </slot>
+  </div>
+</section>

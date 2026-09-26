@@ -1,0 +1,48 @@
+---
+import Arrow from "@/components/icons/Arrow.astro";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import { withBase } from "@/lib/paths";
+
+/* The closing call to action, on the accent. Behind it, a drafting mark:
+   concentric circles on a crosshair with one dashed ring turning slowly, the
+   compass the team plans with. Copy is the brief's. See
+   docs/components/cta-footer.md. */
+
+const COPY = {
+  eyebrow: "Ready when you are",
+  headline: ["Let’s assemble the team", "behind your next release."],
+  body: "Tell us what you are building, where the roadmap is blocked, and which capabilities you need. We will map a practical team and delivery model.",
+  cta: "Plan my team",
+};
+---
+
+<section data-ac-sec="accent" data-ac-cta-section id="contact">
+  <GridRules />
+
+  <svg data-ac-cta-compass viewBox="0 0 600 600" aria-hidden="true">
+    <circle cx="300" cy="300" r="290" />
+    <circle cx="300" cy="300" r="200" />
+    <circle data-ac-cta-ring cx="300" cy="300" r="245" />
+    <circle cx="300" cy="300" r="70" data-ac-cta-core />
+    <path d="M300 0v600M0 300h600" />
+  </svg>
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={COPY.eyebrow} headline={COPY.headline} accent={1}>
+      <div data-ac-cta-side data-ac-sec-rise>
+        <p data-ac-cta-body>{COPY.body}</p>
+        <a data-ac-cta-button class="mono-label" href={withBase("/contact")}>
+          {COPY.cta}
+          <Arrow direction="diagonal" />
+        </a>
+      </div>
+    </SectionHead>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  toggleInView(document.querySelector<HTMLElement>("[data-ac-cta-section]")!);
+</script>

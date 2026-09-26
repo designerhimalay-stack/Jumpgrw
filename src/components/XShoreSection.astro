@@ -1,0 +1,167 @@
+---
+import { Image } from "astro:assets";
+import RevealText from "@/components/RevealText.astro";
+import Joints from "@/components/process/Joints.astro";
+import { REFERENCE_TZ, clock, isWorking, type Zone } from "@/lib/timezones";
+import timeZones from "@/assets/xshore/time-zones.jpg";
+
+/* Three delivery regions, and one working day across time zones. The clocks
+   are live: the script below redraws them from the visitor's clock. What
+   renders here is the same at build time, so the page is complete without
+   it. See docs/components/xshore.md. */
+
+const COPY = {
+  eyebrow: "X-Shore delivery",
+  headline: ["One team.", "Three talent regions."],
+  lede: "Choose one region or combine all three. We design the team around collaboration, capability, continuity, and the work—not a one-size-fits-all location rule.",
+  caption: "One operating rhythm · Multiple time zones",
+  photoAlt:
+    "Four developers at work at the same moment in San Francisco by day, London in the evening, Bengaluru in the morning and Tokyo at night, linked by threads of light.",
+};
+
+const ZONES: Zone[] = [
+  { id: "dallas", city: "Dallas", region: "onshore", tz: REFERENCE_TZ },
+  { id: "toronto", city: "Toronto", region: "nearshore", tz: "America/Toronto" },
+  { id: "mexico-city", city: "Mexico City", region: "nearshore", tz: "America/Mexico_City" },
+  { id: "bengaluru", city: "Bengaluru", region: "offshore", tz: "Asia/Kolkata" },
+];
+
+const REGIONS = [
+  {
+    key: "onshore",
+    number: "01",
+    label: "Onshore",
+    title: "United States",
+    body: "Local product and technical leadership for close stakeholder alignment, workshops, and high-context collaboration.",
+  },
+  {
+    key: "nearshore",
+    number: "02",
+    label: "Nearshore",
+    title: "Mexico + Canada",
+    body: "Experienced teammates with strong working-hour overlap for planning, pairing, review, and daily delivery.",
+  },
+  {
+    key: "offshore",
+    number: "03",
+    label: "Offshore",
+    title: "India",
+    body: "Deep engineering capacity, specialist access, and extended delivery coverage for sustained product execution.",
+  },
+];
+
+const now = new Date();
+const refClock = clock(REFERENCE_TZ, now);
+---
+
+<section data-ac-xshore id="x-shore">
+  <div data-ac-grid-rules aria-hidden="true">
+    <span />
+    <span />
+    <span />
+    <span />
+    <span />
+  </div>
+
+  <div data-ac-xshore-container>
+    <div data-ac-xshore-head>
+      <p data-ac-xshore-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {COPY.eyebrow}
+      </p>
+      <h2 data-ac-xshore-headline aria-label={`${COPY.headline[0]} ${COPY.headline[1]}`}>
+        <RevealText text={COPY.headline[0]} />
+        <br aria-hidden="true" />
+        <span data-ac-xshore-accent>
+          <RevealText text={COPY.headline[1]} offset={Array.from(COPY.headline[0]).length + 1} />
+        </span>
+      </h2>
+      <p data-ac-xshore-lede>{COPY.lede}</p>
+    </div>
+
+    <div data-ac-xshore-frame>
+      <div data-ac-frame-head data-ac-xshore-caption>
+        <Joints />
+        {/* Split at the dot so phones can set each phrase on its own line. */}
+        <p class="mono-label">
+          {COPY.caption.split(" · ").map((phrase, i) => (
+            <Fragment>{i > 0 && <span data-ac-xshore-sep> · </span>}<span data-ac-xshore-phrase>{phrase}</span></Fragment>
+          ))}
+        </p>
+        <p class="mono-label" data-ac-xshore-now>
+          <span aria-hidden="true" data-ac-xshore-pulse />
+          Dallas <time data-ac-clock={REFERENCE_TZ}>{refClock.time}</time> <span data-ac-clock-zone={REFERENCE_TZ}>{refClock.zone}</span>
+        </p>
+      </div>
+
+      <div data-ac-xshore-cell="photo">
+        <Joints />
+        <div data-ac-xshore-photo>
+          <Image
+            src={timeZones}
+            alt={COPY.photoAlt}
+            widths={[640, 960, 1280, 1442]}
+            sizes="(max-width: 1199px) 100vw, 50vw"
+            quality={80}
+          />
+        </div>
+      </div>
+
+      {REGIONS.map((region) => (
+        <article data-ac-xshore-cell="region" data-region={region.key}>
+          <Joints />
+          <div data-ac-xshore-region>
+            <div data-ac-xshore-region-top>
+              <p data-ac-xshore-label class="mono-label">
+                <span data-ac-frame-number>{region.number}</span>
+                {region.label}
+              </p>
+              <ul data-ac-xshore-clocks>
+                {ZONES.filter((zone) => zone.region === region.key).map((zone) => (
+                  <li>
+                    <span data-ac-xshore-dot data-ac-zone-tz={zone.tz} data-working={isWorking(zone.tz, now) || undefined} aria-hidden="true" />
+                    {zone.city}
+                    <time data-ac-clock={zone.tz}>{clock(zone.tz, now).time}</time>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <h3 data-ac-xshore-title>{region.title}</h3>
+            <p data-ac-xshore-body>{region.body}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { clock, isWorking } from "@/lib/timezones";
+
+  const section = document.querySelector<HTMLElement>("[data-ac-xshore]")!;
+
+  /* Redraws the clocks and the working dots. Cheap, so it simply runs on a
+     timer. */
+  const draw = () => {
+    const now = new Date();
+    for (const el of section.querySelectorAll<HTMLElement>("[data-ac-clock]")) {
+      el.textContent = clock(el.dataset.acClock!, now).time;
+    }
+    for (const el of section.querySelectorAll<HTMLElement>("[data-ac-clock-zone]")) {
+      el.textContent = clock(el.dataset.acClockZone!, now).zone;
+    }
+    for (const dot of section.querySelectorAll<HTMLElement>("[data-ac-xshore-dot]")) {
+      dot.toggleAttribute("data-working", isWorking(dot.dataset.acZoneTz!, now));
+    }
+  };
+
+  draw();
+  window.setInterval(draw, 30_000);
+
+  /* Reversible entrance, as in the other sections: the header fills in on
+     approach and resets on the way out. */
+  new IntersectionObserver(
+    ([entry]) => section.toggleAttribute("data-ac-in", entry.isIntersecting),
+    { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+  ).observe(section);
+</script>

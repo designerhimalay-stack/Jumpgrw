@@ -1,0 +1,157 @@
+---
+import { Image } from "astro:assets";
+
+import RevealText from "@/components/RevealText.astro";
+import Joints from "@/components/process/Joints.astro";
+import AiToolsOrbit from "@/components/showcase/AiToolsOrbit.astro";
+import DeveloperSkills from "@/components/showcase/DeveloperSkills.astro";
+import portrait from "@/assets/showcase/portrait.jpg";
+import extension from "@/assets/teams/extension.jpg";
+import production from "@/assets/teams/production.jpg";
+import specialist from "@/assets/teams/specialist.jpg";
+
+/* A header in the stats/process style over the four team models on the page
+   grid, in the process section's drafting frame. See
+   docs/components/showcase.md. */
+
+const COPY = {
+  eyebrow: "AI-assisted delivery",
+  headline: ["AI adds speed.", "People own the outcome."],
+  frameTitle: "MVP Team",
+};
+
+const TEAMS = [
+  {
+    number: "02",
+    title: "Production Teams",
+    image: production,
+    skills: ["Full-stack engineering", "QA automation", "Release & DevOps"],
+  },
+  {
+    number: "03",
+    title: "Specialist Developers",
+    image: specialist,
+    skills: ["AI & machine learning", "Data engineering", "Cloud architecture"],
+  },
+  {
+    number: "04",
+    title: "Team Extension",
+    image: extension,
+    skills: ["Senior engineers", "US time-zone overlap", "Your tools & rituals"],
+  },
+];
+---
+
+<section data-ac-showcase id="teams">
+  {/* The column rules from the stats and process sections, continued: same
+      markup, same gutter, so the verticals run on unbroken from above. */}
+  <div data-ac-grid-rules aria-hidden="true">
+    <span />
+    <span />
+    <span />
+    <span />
+    <span />
+  </div>
+
+  <div data-ac-showcase-container>
+    <div data-ac-showcase-head>
+      <p data-ac-showcase-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {COPY.eyebrow}
+      </p>
+      {/* One sentence per line, the second counting on from the first so the
+          fill runs straight through. */}
+      <h2 data-ac-showcase-headline aria-label={`${COPY.headline[0]} ${COPY.headline[1]}`}>
+        <RevealText text={COPY.headline[0]} />
+        <br aria-hidden="true" />
+        <span data-ac-headline-accent>
+          <RevealText text={COPY.headline[1]} offset={Array.from(COPY.headline[0]).length + 1} />
+        </span>
+      </h2>
+    </div>
+
+    <div data-ac-showcase-row>
+      {/* Framed in the process section's drafting grammar: a square frame,
+          hairline cell rules, and crosshair joints in each cell's padding. */}
+      <div data-ac-showcase-visual>
+        <div data-ac-frame-head>
+          <Joints />
+          <span data-ac-frame-number>01</span>
+          <h3 data-ac-frame-title>{COPY.frameTitle}</h3>
+        </div>
+
+        <div data-ac-showcase-cell="ai">
+          <Joints />
+          <div data-ac-showcase-card="ai">
+            <AiToolsOrbit />
+          </div>
+        </div>
+
+        <div data-ac-showcase-cell="developer">
+          <Joints />
+          <div data-ac-showcase-card="developer">
+            <DeveloperSkills />
+          </div>
+        </div>
+
+        <div data-ac-showcase-cell="photo">
+          <Joints />
+          <div data-ac-showcase-photo>
+            <Image
+              src={portrait}
+              alt=""
+              widths={[600, 900, 1200, 1600]}
+              sizes="(max-width: 1199px) 600px, 380px"
+              quality={80}
+            />
+          </div>
+        </div>
+
+      </div>
+
+      {/* The other three team models, each a header row over a photo and its
+          skills, stacked in columns 1–2 in the same frame grammar. */}
+      <div data-ac-teams>
+        {TEAMS.map((team) => (
+          <article data-ac-team>
+            <header data-ac-frame-head>
+              <Joints />
+              <span data-ac-frame-number>{team.number}</span>
+              <h3 data-ac-frame-title>{team.title}</h3>
+            </header>
+            <div data-ac-team-cell="photo">
+              <Joints />
+              <div data-ac-team-photo>
+                <Image src={team.image} alt="" widths={[360, 720, 1080, 1440]} sizes="(max-width: 809px) 100vw, 330px" quality={80} />
+              </div>
+            </div>
+            <div data-ac-team-cell="skills">
+              <Joints />
+              <ul data-ac-team-skills aria-label={`${team.title} skills`}>
+                {team.skills.map((skill) => (
+                  <li data-ac-team-skill>
+                    <span>{skill}</span>
+                    <span data-ac-team-check aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  /* Reversible entrance, matching the stats and process sections: the header
+     fills in on approach and resets on the way out, so scrolling back
+     replays it. */
+  const section = document.querySelector<HTMLElement>("[data-ac-showcase]")!;
+  new IntersectionObserver(
+    ([entry]) => section.toggleAttribute("data-ac-in", entry.isIntersecting),
+    { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+  ).observe(section);
+</script>

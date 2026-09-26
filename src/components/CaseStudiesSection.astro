@@ -1,0 +1,188 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@/components/icons/Arrow.astro";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import gunlox from "@/assets/cases/gunlox.jpg";
+import loanMantra from "@/assets/cases/loan-mantra.jpg";
+import vowtimer from "@/assets/cases/vowtimer.jpg";
+import greenaider from "@/assets/cases/greenaider.jpg";
+import { withBase } from "@/lib/paths";
+
+/* "Proof is in the product." The page's dark section. The project list opens
+   one project at a time and advances on its own, a ring timing each; the open
+   project's image sits on the right. See docs/components/case-studies.md.
+
+   GunLox's copy is the brief's. The other three projects' summaries, tags and
+   stacks are placeholders to replace, and every image is an Unsplash
+   stand-in. */
+
+const CASES = [
+  {
+    slug: "gunlox",
+    name: "GunLox",
+    tag: "Connected security",
+    summary:
+      "An easy-to-use companion app for managing authorized users, monitoring access attempts, and receiving timely notifications.",
+    stack: ["Node.js", "React Native", "Nginx", "MongoDB"],
+    image: gunlox,
+  },
+  {
+    slug: "loan-mantra",
+    name: "Loan Mantra",
+    tag: "Fintech",
+    summary:
+      "A lending platform that takes borrowers from application to approval, with document checks and status updates in one place.",
+    stack: ["Ruby on Rails", "React", "PostgreSQL", "AWS"],
+    image: loanMantra,
+  },
+  {
+    slug: "vowtimer",
+    name: "VowTimer",
+    tag: "Weddings",
+    summary:
+      "A planning companion that counts down to the big day and keeps every vendor, guest and task on one shared timeline.",
+    stack: ["Flutter", "Firebase", "Node.js"],
+    image: vowtimer,
+  },
+  {
+    slug: "greenaider",
+    name: "Greenaider",
+    tag: "Sustainability",
+    summary:
+      "A platform for planning green initiatives and reporting their impact across teams, sites and suppliers.",
+    stack: ["React", "Python", "PostgreSQL", "Google Cloud"],
+    image: greenaider,
+  },
+];
+
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="dark" data-ac-cases id="case-studies">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={`Selected case studies / ${pad(CASES.length)}`} headline={["Proof is in", "the product."]} accent={1} />
+
+    <div data-ac-sec-frame data-ac-cases-frame>
+      <div data-ac-cases-cell="list">
+        <Joints />
+        <ol data-ac-cases-list>
+          {CASES.map((item, i) => (
+            <li data-ac-case data-active={i === 0 || undefined}>
+              <h3 data-ac-case-head>
+                <button
+                  type="button"
+                  data-ac-case-trigger
+                  id={`case-${item.slug}-trigger`}
+                  aria-expanded={i === 0 ? "true" : "false"}
+                  aria-controls={`case-${item.slug}`}
+                >
+                  <span data-ac-case-number>{pad(i + 1)}</span>
+                  <span data-ac-case-name>{item.name}</span>
+                  <span data-ac-case-mark aria-hidden="true">
+                    <svg data-ac-case-arrow width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <svg data-ac-case-ring width="26" height="26" viewBox="0 0 26 26">
+                      <circle cx="13" cy="13" r="11" />
+                      <circle data-ac-case-progress cx="13" cy="13" r="11" pathLength="100" />
+                    </svg>
+                  </span>
+                </button>
+              </h3>
+              <div
+                data-ac-case-details
+                id={`case-${item.slug}`}
+                role="region"
+                aria-labelledby={`case-${item.slug}-trigger`}
+                inert={i !== 0}
+              >
+                <div data-ac-case-details-inner>
+                  <p data-ac-case-summary>{item.summary}</p>
+                  <p data-ac-case-stack class="mono-label">{item.stack.join(" · ")}</p>
+                  <a data-ac-case-link class="mono-label" href={withBase("/case-studies")}>
+                    View case study
+                    <Arrow direction="diagonal" />
+                  </a>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div data-ac-cases-cell="media">
+        <Joints />
+        <div data-ac-cases-media aria-hidden="true">
+          {CASES.map((item, i) => (
+            <figure data-ac-case-media data-active={i === 0 || undefined}>
+              <Image src={item.image} alt="" widths={[640, 960, 1280, 1600]} sizes="(max-width: 1199px) 100vw, 50vw" quality={78} />
+              <span data-ac-case-chip class="mono-label">{item.tag}</span>
+            </figure>
+          ))}
+          <p data-ac-cases-count class="mono-label">
+            <span data-ac-cases-current>01</span> / {pad(CASES.length)}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+  import { holdOnKeyboardFocus } from "@/lib/rotation";
+
+  const section = document.querySelector<HTMLElement>("[data-ac-cases]")!;
+  const frame = section.querySelector<HTMLElement>("[data-ac-cases-frame]")!;
+  const list = section.querySelector<HTMLElement>("[data-ac-cases-list]")!;
+  const items = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-case]"));
+  const media = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-case-media]"));
+  const current = section.querySelector<HTMLElement>("[data-ac-cases-current]")!;
+  let active = 0;
+
+  const show = (index: number) => {
+    active = (index + items.length) % items.length;
+    items.forEach((item, i) => {
+      const open = i === active;
+      item.toggleAttribute("data-active", open);
+      item.querySelector("[data-ac-case-trigger]")!.setAttribute("aria-expanded", String(open));
+      item.querySelector<HTMLElement>("[data-ac-case-details]")!.inert = !open;
+    });
+    media.forEach((figure, i) => figure.toggleAttribute("data-active", i === active));
+    current.textContent = String(active + 1).padStart(2, "0");
+  };
+
+  /* Every project's details open to the height of the tallest, so the list
+     keeps one height as it advances and nothing below it moves. */
+  const measure = () => {
+    const tallest = Math.max(
+      ...items.map((item) => item.querySelector<HTMLElement>("[data-ac-case-details-inner]")!.scrollHeight),
+    );
+    list.style.setProperty("--ac-case-details-h", `${tallest}px`);
+  };
+  measure();
+  new ResizeObserver(measure).observe(frame);
+  document.fonts?.ready.then(measure);
+
+  /* The open project's ring is the timer: when its CSS animation ends, the
+     next project opens. Choosing a project moves the ring to it, so the timer
+     starts over from there. It pauses while the section is off screen and
+     under keyboard focus. No rotation at all under reduced motion. */
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    section.setAttribute("data-ac-auto", "");
+  }
+  section.addEventListener("animationend", (event) => {
+    if (event.animationName === "ac-case-progress") show(active + 1);
+  });
+
+  items.forEach((item, i) => {
+    item.querySelector("[data-ac-case-trigger]")!.addEventListener("click", () => show(i));
+  });
+
+  holdOnKeyboardFocus(section, frame);
+  toggleInView(section);
+</script>

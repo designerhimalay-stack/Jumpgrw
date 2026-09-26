@@ -1,0 +1,233 @@
+---
+import { Image } from "astro:assets";
+
+import Arrow from "@/components/icons/Arrow.astro";
+import RevealText from "@/components/RevealText.astro";
+import GlyphPortal from "@/components/ui/GlyphPortal.astro";
+import teamPhoto from "@/assets/team-photo.webp";
+import type { HeroContent } from "@/types/hero";
+
+const HERO: HeroContent = {
+  headline: "AI-assisted product teams",
+  headlineAccent: "ready to build",
+  body: "Senior engineers across four countries, assembled in weeks rather than quarters.",
+  primaryCta: { label: "Build your team", href: "#contact", arrow: "diagonal" },
+  secondaryCta: { label: "Explore X-shore", href: "#x-shore", arrow: "right" },
+  image: teamPhoto,
+  imageAlt: "A JumpGrowth product team collaborating around a laptop",
+};
+
+const DISCIPLINES = ["Product", "Design", "Engineering", "QA", "DevOps"];
+
+/* A near-black navy rising into a pale tint of our accent (#507af7), with a few
+   degrees of hue drift so the ramp breathes instead of reading flat. It lives in
+   globals.css as --ac-field-gradient because the opening curtain is built from
+   the same ramp, and two copies would drift. */
+const FIELD_GRADIENT = "var(--ac-field-gradient)";
+
+/* Kept in step with PORTAL_FACE in the script below and the @font-face in
+   globals.css. */
+const PORTAL_FACE = '"AgentCraft Display", Arial, sans-serif';
+
+const { primaryCta, secondaryCta } = HERO;
+---
+
+{/* The portal is held in a template and mounted only once its face is
+    resolved: it freezes whichever font is available at mount, and a late swap
+    would shift the ink under the camera. Until then the slot holds the page's
+    first screen open at its final height. */}
+<div data-ac-hero-slot aria-hidden="true" style="height:100svh" />
+<template data-ac-hero-template>
+  <GlyphPortal
+    id="gp-hero"
+    word="BUILD"
+    fontFamily={PORTAL_FACE}
+    fontWeight={700}
+    scrollLength={1.9}
+    class="ac-portal"
+    style={{
+      "--gp-paper": "#ffffff",
+      "--gp-ink": "#0e121a",
+      "--gp-field": "#000715",
+      "--gp-foreground": "#ffffff",
+    }}
+  >
+    <div
+      slot="background"
+      style={`position:absolute;inset:0;transform:scale(var(--gp-field-scale,1));transform-origin:50% 60%;background:${FIELD_GRADIENT}`}
+    />
+    <div data-ac-reveal>
+      <div data-ac-copy>
+        {/* aria-label wins over the element's contents, so this reads as one
+            sentence rather than as a stream of single characters. */}
+        <h1 data-ac-headline aria-label={`${HERO.headline} ${HERO.headlineAccent}`}>
+          <RevealText text={HERO.headline} />
+          <br aria-hidden="true" />
+          <span>
+            <RevealText
+              text={HERO.headlineAccent}
+              offset={Array.from(HERO.headline).length + 1}
+            />
+          </span>
+        </h1>
+
+        <p data-ac-body>{HERO.body}</p>
+
+        <div data-ac-actions>
+          <a href={primaryCta.href} data-ac-cta="primary" class="mono-label">
+            {primaryCta.label}
+            <Arrow direction={primaryCta.arrow} />
+          </a>
+          <a href={secondaryCta.href} data-ac-cta="ghost" class="mono-label">
+            {secondaryCta.label}
+            <Arrow direction={secondaryCta.arrow} />
+          </a>
+        </div>
+
+        <div data-ac-disciplines>
+          <span data-ac-disciplines-label class="mono-label">
+            One team across
+          </span>
+          {/* The rail drifts left forever. Three identical copies, each
+              carrying its own trailing gap, so one copy's width is exactly a
+              third of the rail and the loop point is invisible. Two copies
+              would be enough to fill the track at most widths, but only just,
+              and a third costs nothing. */}
+          <div data-ac-disciplines-track>
+            <div data-ac-disciplines-rail>
+              {[0, 1, 2].map((copy) => (
+                <ul aria-hidden={copy > 0 ? "true" : undefined}>
+                  {DISCIPLINES.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div data-ac-photo>
+        <Image
+          src={HERO.image}
+          alt={HERO.imageAlt}
+          width={1545}
+          height={984}
+          widths={[384, 640, 750, 828, 1080, 1200, 1545]}
+          sizes="(max-width: 991px) 90vw, 46vw"
+          quality={75}
+          priority
+          decoding="async"
+        />
+      </div>
+    </div>
+  </GlyphPortal>
+</template>
+
+<script>
+  import { mountGlyphPortal } from "@/components/ui/glyph-portal";
+
+  const PORTAL_FACE = '"AgentCraft Display", Arial, sans-serif';
+  const NAV_HEIGHT = 104;
+
+  const slot = document.querySelector<HTMLElement>("[data-ac-hero-slot]")!;
+  const template = document.querySelector<HTMLTemplateElement>("[data-ac-hero-template]")!;
+  const root = document.documentElement;
+
+  /* Two attributes on <html>, both reversible:
+
+       data-portal-phase  paper | field
+         The navbar is fixed, so its tone has to follow whatever is under it.
+         Driving this off portal progress alone left the bar dark over the white
+         stats section, because progress stays pinned at 1 once you scroll past.
+
+       data-portal-state  before | in | after
+         Drives the hero's entrance and exit. Reversible on purpose: the content
+         lifts away as you leave for the next section and comes back when you
+         scroll up, rather than latching after one play. */
+  function track(section: HTMLElement, panel: HTMLElement) {
+    let phase = "";
+    let state = "";
+    let frame = 0;
+
+    const apply = () => {
+      frame = 0;
+      const sectionBottom = section.getBoundingClientRect().bottom;
+      const panelBottom = panel.getBoundingClientRect().bottom;
+      const entered = progress > 0.62;
+
+      const nextPhase = entered && sectionBottom > NAV_HEIGHT ? "field" : "paper";
+      if (nextPhase !== phase) {
+        phase = nextPhase;
+        root.dataset.portalPhase = phase;
+      }
+
+      // Exit once the panel's bottom edge has climbed past the middle of the
+      // viewport. Earlier than it sounds: the next section is already rising
+      // underneath by then, so the handoff reads as quick rather than a wait.
+      const nextState = !entered
+        ? "before"
+        : panelBottom < window.innerHeight * 0.62
+          ? "after"
+          : "in";
+      if (nextState !== state) {
+        state = nextState;
+        root.dataset.portalState = state;
+      }
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(apply);
+    };
+
+    scheduleCheck = schedule;
+    apply();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+  }
+
+  /* Runs every rendered scroll frame. Records progress, then asks for a
+     re-evaluation: the scroll listener alone was not enough, because the portal
+     updates progress after the listener has already run for that frame, and
+     nothing re-checks once scrolling stops. */
+  let progress = 0;
+  let scheduleCheck = () => {};
+  const handleProgress = (p: number) => {
+    progress = p;
+    scheduleCheck();
+  };
+
+  const mount = (face: string) => {
+    const content = document.importNode(template.content, true);
+    const section = content.querySelector<HTMLElement>(".ac-portal")!;
+    slot.replaceWith(content);
+    mountGlyphPortal(section, { fontFamily: face, onProgress: handleProgress });
+    track(section, section.querySelector<HTMLElement>("[data-gp-content]")!);
+  };
+
+  /* Mounted only once the page can be seen. A background tab, or a window
+     covered by another one (the dev server reloads it there on every save),
+     gets no animation frames, and the portal reads a first frame arriving
+     more than 2.5s after mount as a hung font: it stays a static word for the
+     rest of the visit, the pin stops sticking, and the copy never shows. */
+  const mountWhenVisible = (face: string) => {
+    if (document.visibilityState === "visible") return mount(face);
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      document.removeEventListener("visibilitychange", onVisible);
+      mount(face);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+  };
+
+  let settled = false;
+  const finish = (face: string) => {
+    if (!settled) {
+      settled = true;
+      mountWhenVisible(face);
+    }
+  };
+  window.setTimeout(() => finish("Arial, sans-serif"), 1800);
+  document.fonts
+    .load('700 100px "AgentCraft Display"')
+    .then(() => finish(PORTAL_FACE), () => finish("Arial, sans-serif"));
+</script>

@@ -1,0 +1,103 @@
+---
+/* The three stage panels, one per step. Sized in cqw against the stage's inline
+   size, so the whole mockup keeps its proportions from 583px down to a phone
+   without a transform scale. */
+interface Props {
+  step: number;
+}
+
+const { step } = Astro.props;
+
+const SHORTLIST = [
+  { role: "Staff engineer", stack: "Go / Postgres", match: "96%" },
+  { role: "Senior backend", stack: "Go / Kafka", match: "94%" },
+  { role: "Senior backend", stack: "Node / AWS", match: "91%" },
+  { role: "QA engineer", stack: "Playwright", match: "89%" },
+  { role: "Platform engineer", stack: "Terraform / K8s", match: "87%" },
+];
+
+const TICKETS = [
+  { id: "BIL-142", title: "Payment retries", state: "merged", done: true },
+  { id: "BIL-147", title: "Invoice PDF", state: "merged", done: true },
+  { id: "BIL-151", title: "Webhook replay", state: "in review", done: false },
+  { id: "BIL-158", title: "Dunning emails", state: "in progress", done: false },
+  { id: "BIL-163", title: "Refund ledger", state: "queued", done: false },
+];
+---
+
+{step === 0 && (
+  <div data-ac-mock="brief">
+    <header>
+      <span data-ac-mock-title>New brief</span>
+      <span data-ac-mock-tag>Draft</span>
+    </header>
+    <p data-ac-mock-quote>
+      We are rebuilding billing and need it live by the end of Q2. Retries,
+      invoicing and dunning all need owners.
+    </p>
+    <div data-ac-mock-group>
+      <span data-ac-mock-label>Roles</span>
+      <ul data-ac-mock-chips>
+        <li>Staff engineer &times;1</li>
+        <li>Senior backend &times;2</li>
+        <li>QA &times;1</li>
+        <li data-ac-mock-add>+ Add role</li>
+      </ul>
+    </div>
+    <div data-ac-mock-group>
+      <span data-ac-mock-label>Timeline</span>
+      <ul data-ac-mock-chips>
+        <li>Start in 2 weeks</li>
+        <li>6 month engagement</li>
+        <li>Overlap with US hours</li>
+      </ul>
+    </div>
+    <footer>
+      <span data-ac-mock-send>Send brief</span>
+    </footer>
+  </div>
+)}
+
+{step === 1 && (
+  <div data-ac-mock="shortlist">
+    <header>
+      <span data-ac-mock-title>Shortlist</span>
+      <span data-ac-mock-tag>5 matches</span>
+    </header>
+    <ul data-ac-mock-rows>
+      {SHORTLIST.map((person, i) => (
+        <li>
+          <span data-ac-mock-avatar data-ac-tone={i % 3} aria-hidden="true" />
+          <span data-ac-mock-role>{person.role}</span>
+          <span data-ac-mock-stack>{person.stack}</span>
+          <span data-ac-mock-match>{person.match}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
+{step === 2 && (
+  <div data-ac-mock="delivery">
+    <header>
+      <span data-ac-mock-title>Sprint 1</span>
+      <span data-ac-mock-tag>Week 2</span>
+    </header>
+    <ul data-ac-mock-rows>
+      {TICKETS.map((ticket) => (
+        <li>
+          <span data-ac-mock-check data-ac-done={ticket.done || undefined} aria-hidden="true" />
+          <span data-ac-mock-id>{ticket.id}</span>
+          <span data-ac-mock-role>{ticket.title}</span>
+          <span data-ac-mock-state>{ticket.state}</span>
+        </li>
+      ))}
+    </ul>
+    <footer data-ac-mock-progress>
+      <span data-ac-mock-bar aria-hidden="true">
+        <span />
+      </span>
+      <span data-ac-mock-pct>62%</span>
+    </footer>
+  </div>
+)}

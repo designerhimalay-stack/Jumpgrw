@@ -1,0 +1,36 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CaseStudiesSection from "@/components/CaseStudiesSection.astro";
+import ClientStoriesSection from "@/components/ClientStoriesSection.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import Hero from "@/components/Hero.astro";
+import Navbar from "@/components/Navbar.astro";
+import ProcessSection from "@/components/ProcessSection.astro";
+import ShowcaseSection from "@/components/ShowcaseSection.astro";
+import SkillsSection from "@/components/SkillsSection.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import StatsSection from "@/components/StatsSection.astro";
+import WhySection from "@/components/WhySection.astro";
+import XShoreSection from "@/components/XShoreSection.astro";
+---
+
+<Layout>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <Hero />
+    <StatsSection />
+    <ProcessSection />
+    <ShowcaseSection />
+    <XShoreSection />
+    <CaseStudiesSection />
+    <ClientStoriesSection />
+    <SkillsSection />
+    <WhySection />
+    <FaqSection />
+    <CtaSection />
+  </main>
+  <Footer />
+</Layout>

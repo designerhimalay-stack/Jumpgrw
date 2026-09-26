@@ -1,0 +1,146 @@
+---
+import RevealText from "@/components/RevealText.astro";
+import type { Stat } from "@/types/hero";
+
+const STATS: Stat[] = [
+  { value: 4, label: "countries" },
+  { value: 200, suffix: "+", label: "product builders", featured: true },
+  { value: 2, suffix: " wks", label: "to first commit" },
+];
+
+const COPY = {
+  eyebrow: "Stats",
+  /* Set in ink, then in the accent: the closing phrase carries the colour, as
+     in every section headline. */
+  headline: ["Building product teams", "that ship."],
+  body: "JumpGrowth is the partner teams trust to add senior engineers and stand up complete squads.",
+};
+---
+
+<section data-ac-stats-section>
+  {/* Column rules run the full height, behind everything. */}
+  <div data-ac-grid-rules aria-hidden="true">
+    <span />
+    <span />
+    <span />
+    <span />
+    <span />
+  </div>
+
+  <div data-ac-stats-inner>
+    <p data-ac-stats-eyebrow class="mono-label">
+      <span aria-hidden="true">+</span>
+      {COPY.eyebrow}
+    </p>
+
+    <h2 data-ac-stats-headline aria-label={COPY.headline.join(" ")}>
+      <RevealText text={COPY.headline[0]} />{" "}
+      <span data-ac-headline-accent>
+        <RevealText text={COPY.headline[1]} offset={Array.from(COPY.headline[0]).length + 1} />
+      </span>
+    </h2>
+
+    <p data-ac-stats-body>{COPY.body}</p>
+
+    <dl data-ac-stat-cards>
+      {STATS.map((stat, i) => (
+        <div
+          data-ac-stat-card
+          data-ac-featured={stat.featured || undefined}
+          style={`--ac-in-delay:${i * 110}ms`}
+        >
+          <dd data-ac-stat-number>
+            {/* Zero is the resting state; the script counts it up. */}
+            <span data-ac-count={stat.value} data-ac-count-suffix={stat.suffix} data-ac-count-delay={i * 110}>
+              0{stat.suffix}
+            </span>
+          </dd>
+          <dt data-ac-stat-caption>({stat.label})</dt>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<script>
+  const DURATION_MS = 1500;
+  const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+  /**
+   * Counts from zero to the stat's value the first time it scrolls into view,
+   * then holds. Zero is the resting state until the row is reached. The
+   * stagger delay makes a row resolve left to right.
+   */
+  function countUp(el: HTMLElement) {
+    const value = Number(el.dataset.acCount);
+    const suffix = el.dataset.acCountSuffix ?? "";
+    const delay = Number(el.dataset.acCountDelay);
+    const show = (n: number) => {
+      el.textContent = `${n}${suffix}`;
+    };
+
+    let frame = 0;
+    let timer = 0;
+    let cancelled = false;
+
+    show(0);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          show(value);
+          return;
+        }
+
+        timer = window.setTimeout(() => {
+          const start = performance.now();
+          const step = (now: number) => {
+            if (cancelled) return;
+            const t = Math.min(1, (now - start) / DURATION_MS);
+            show(Math.round(easeOutCubic(t) * value));
+            if (t < 1) frame = requestAnimationFrame(step);
+          };
+          frame = requestAnimationFrame(step);
+        }, delay);
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(el);
+
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
+  }
+
+  const section = document.querySelector<HTMLElement>("[data-ac-stats-section]")!;
+  const counters = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-count]"));
+
+  /* The whole row resets together whenever the section enters or leaves, not
+     per card. Resetting per card meant a stat you had already watched count
+     would be back at zero by the time you scrolled to the next one on a narrow
+     screen, where the cards stack taller than the viewport. */
+  let stops: Array<() => void> = [];
+  const rearm = () => {
+    for (const stop of stops) stop();
+    stops = counters.map(countUp);
+  };
+  rearm();
+
+  /* Reversible, like the hero: the section animates in on approach and resets
+     when it leaves, so scrolling back up replays it. */
+  let inView = false;
+  new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting === inView) return;
+      inView = entry.isIntersecting;
+      section.toggleAttribute("data-ac-in", inView);
+      rearm();
+    },
+    { threshold: 0, rootMargin: "-12% 0px -12% 0px" },
+  ).observe(section);
+</script>

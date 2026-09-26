@@ -1,0 +1,210 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@/components/icons/Arrow.astro";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import ethnomet from "@/assets/clients/ethnomet.jpg";
+import sindyxr from "@/assets/clients/sindyxr.jpg";
+import gunlox from "@/assets/clients/gunlox.jpg";
+import steadfast from "@/assets/clients/steadfast.jpg";
+import shipitpro from "@/assets/clients/shipitpro.jpg";
+import wakesmart from "@/assets/clients/wakesmart.jpg";
+import dnavibe from "@/assets/clients/dnavibe.jpg";
+
+/* "Teams that bring products to life." One client at a time: a portrait, the
+   quote, who said it, and a strip of all seven clients whose bars time the
+   rotation. See docs/components/client-stories.md.
+
+   Ethnomet's quote and attribution are the brief's. The other six quotes and
+   roles are placeholders to replace with approved testimonials, and every
+   portrait is an Unsplash stand-in (Ethnomet's for the video still). */
+
+type Story = { client: string; quote: string; name?: string; role: string; image: ImageMetadata };
+
+const STORIES: Story[] = [
+  {
+    client: "Ethnomet",
+    quote:
+      "Ethnomet’s blend of telemedicine and digital health-as-a-service calls for product thinking that understands both technology and healthcare. JumpGrowth helped bring those worlds together.",
+    name: "Mike Amanyi",
+    role: "Chief Product Officer",
+    image: ethnomet,
+  },
+  {
+    client: "SindyXR",
+    quote: "They treated our XR roadmap like their own. Every sprint ended with something we could put in front of users.",
+    role: "Founder",
+    image: sindyxr,
+  },
+  {
+    client: "GunLox",
+    quote: "Security products leave no room for guesswork. The team shipped a companion app our customers trust from the first unlock.",
+    role: "Head of Product",
+    image: gunlox,
+  },
+  {
+    client: "Steadfast",
+    quote: "A steady, senior team that raised the quality bar early and kept it there, release after release.",
+    role: "Engineering Director",
+    image: steadfast,
+  },
+  {
+    client: "ShipITPro",
+    quote: "We went from idea to production faster than we planned, without cutting corners on the parts that matter.",
+    role: "CTO",
+    image: shipitpro,
+  },
+  {
+    client: "WakeSmart",
+    quote: "Clear communication, honest estimates, and engineers who care about the product as much as we do.",
+    role: "Product Manager",
+    image: wakesmart,
+  },
+  {
+    client: "DNAVibe",
+    quote: "They understood the science and the software. That combination is rare, and it shows in the product.",
+    role: "Co-founder",
+    image: dnavibe,
+  },
+];
+
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-stories id="client-stories">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={`Client stories / ${pad(STORIES.length)}`} headline={["Teams that bring", "products to life."]} accent={1}>
+      <div data-ac-stories-controls data-ac-sec-rise>
+        <button type="button" data-ac-stories-step="-1" aria-label="Previous story">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M13 8H3M3 8L7 4M3 8L7 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <p data-ac-stories-count class="mono-label">
+          <span><span data-ac-stories-current>01</span> / {pad(STORIES.length)}</span>
+        </p>
+        <button type="button" data-ac-stories-step="1" aria-label="Next story">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+    </SectionHead>
+
+    <div data-ac-sec-frame data-ac-stories-frame role="region" aria-roledescription="carousel" aria-label="Client stories">
+      <div data-ac-stories-cell="photo">
+        <Joints />
+        <div data-ac-stories-photo aria-hidden="true">
+          {STORIES.map((story, i) => (
+            <figure data-ac-story-photo data-active={i === 0 || undefined}>
+              <Image src={story.image} alt="" widths={[400, 800, 1000]} sizes="(max-width: 809px) 100vw, 25vw" quality={78} />
+            </figure>
+          ))}
+        </div>
+      </div>
+
+      <div data-ac-stories-cell="quote">
+        <Joints />
+        <svg data-ac-stories-mark width="32" height="24" viewBox="0 0 32 24" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M0 24V14.4C0 6.4 4.2 1.6 12.6 0l1.2 3.4C9.4 4.8 7.2 7.6 7 11.4h6.4V24H0Zm18.2 0V14.4C18.2 6.4 22.4 1.6 30.8 0L32 3.4c-4.4 1.4-6.6 4.2-6.8 8h6.4V24H18.2Z"
+          />
+        </svg>
+        <div data-ac-stories-deck aria-live="off">
+          {STORIES.map((story, i) => (
+            <div
+              data-ac-story
+              data-active={i === 0 || undefined}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${i + 1} of ${STORIES.length}: ${story.client}`}
+            >
+              <blockquote data-ac-story-quote>
+                <p>{story.quote}</p>
+              </blockquote>
+              <div data-ac-story-by>
+                <span>
+                  <span data-ac-story-name>{story.name ?? story.client}</span>
+                  <span data-ac-story-role>{story.name ? `${story.role} · ${story.client}` : story.role}</span>
+                </span>
+                <a data-ac-story-link class="mono-label" href="#case-studies">
+                  Read case study
+                  <Arrow direction="diagonal" />
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <ol data-ac-stories-index>
+        {STORIES.map((story, i) => (
+          <li>
+            <button type="button" data-ac-story-tab aria-current={i === 0 ? "true" : undefined}>
+              <span data-ac-story-tab-number>{pad(i + 1)}</span>
+              {story.client}
+            </button>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+  import { holdOnKeyboardFocus } from "@/lib/rotation";
+
+  const section = document.querySelector<HTMLElement>("[data-ac-stories]")!;
+  const frame = section.querySelector<HTMLElement>("[data-ac-stories-frame]")!;
+  const deck = section.querySelector<HTMLElement>("[data-ac-stories-deck]")!;
+  const strip = section.querySelector<HTMLElement>("[data-ac-stories-index]")!;
+  const slides = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-story]"));
+  const photos = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-story-photo]"));
+  const tabs = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-story-tab]"));
+  const current = section.querySelector<HTMLElement>("[data-ac-stories-current]")!;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let active = 0;
+
+  const show = (index: number) => {
+    active = (index + slides.length) % slides.length;
+    slides.forEach((slide, i) => slide.toggleAttribute("data-active", i === active));
+    photos.forEach((photo, i) => photo.toggleAttribute("data-active", i === active));
+    tabs.forEach((tab, i) => (i === active ? tab.setAttribute("aria-current", "true") : tab.removeAttribute("aria-current")));
+    current.textContent = String(active + 1).padStart(2, "0");
+
+    /* On narrow screens the strip scrolls sideways; keep the open client in
+       view without moving the page. */
+    if (strip.scrollWidth > strip.clientWidth) {
+      const item = tabs[active].parentElement!;
+      strip.scrollTo({
+        left: item.offsetLeft - (strip.clientWidth - item.offsetWidth) / 2,
+        behavior: reduce ? "auto" : "smooth",
+      });
+    }
+  };
+
+  /* The open tab's bar is the timer: when its CSS animation ends, the next
+     story opens. Choosing a story moves the bar to its tab, so the timer
+     starts over from there. It pauses while the section is off screen and
+     under keyboard focus, when changes are announced instead. No rotation
+     under reduced motion. */
+  if (!reduce) section.setAttribute("data-ac-auto", "");
+  section.addEventListener("animationend", (event) => {
+    if (event.animationName === "ac-story-progress") show(active + 1);
+  });
+
+  for (const button of section.querySelectorAll<HTMLElement>("[data-ac-stories-step]")) {
+    button.addEventListener("click", () => show(active + Number(button.dataset.acStoriesStep)));
+  }
+  tabs.forEach((tab, i) => tab.addEventListener("click", () => show(i)));
+
+  holdOnKeyboardFocus(section, frame, (on) => deck.setAttribute("aria-live", on || reduce ? "polite" : "off"));
+  if (reduce) deck.setAttribute("aria-live", "polite");
+
+  toggleInView(section);
+</script>

@@ -1,0 +1,304 @@
+---
+import AvatarStack from "@/components/AvatarStack.astro";
+import RevealText from "@/components/RevealText.astro";
+import avatar1 from "@/assets/avatars/avatar-1.jpg";
+import avatar2 from "@/assets/avatars/avatar-2.jpg";
+import avatar3 from "@/assets/avatars/avatar-3.jpg";
+import Joints from "@/components/process/Joints.astro";
+import StagePanel from "@/components/process/StagePanel.astro";
+import type { ProcessStep } from "@/types/hero";
+
+/* Layout, geometry and the scroll mechanic are documented in
+   docs/components/process.md. */
+
+const STEPS: ProcessStep[] = [
+  {
+    badge: "Step 1",
+    title: "Tell us the gap",
+    body: "Share the roadmap and the roles it needs. A rough outline is enough to start.",
+    caption: "The clearer the roadmap, the faster the match",
+  },
+  {
+    badge: "Step 2",
+    title: "Meet the shortlist",
+    body: "We put forward senior engineers who have shipped this before, usually inside a week.",
+    caption: "Every engineer is vetted before you see them",
+  },
+  {
+    badge: "Step 3",
+    title: "Start building",
+    body: "Your squad joins standups, picks up tickets and commits inside the first two weeks.",
+    caption: "First commit lands inside two weeks",
+  },
+];
+
+const COPY = {
+  eyebrow: "How we work",
+  /* Ink, then the accent on the closing phrase, as every section headline. */
+  headline: ["The people to move", "your roadmap forward."],
+  lede: "No long procurement cycles and no guesswork. Tell us the gap, meet the engineers, then start shipping.",
+  rating: "Rated 4.8/5",
+  ratingMore: "+2K",
+};
+---
+
+<section data-ac-process id="process">
+  {/* The stats section's column rules, continued. Same token, same four
+      columns, same gutter, so the verticals run unbroken between the two.
+      Drawn in two bands, above and below the panel, so they stop at the
+      diagram's edge and pick up again underneath it rather than running
+      through the cards. Both extents are written by the scroll handler. */}
+  {(["head", "tail"] as const).map((band) => (
+    <div data-ac-grid-rules data-ac-band={band} aria-hidden="true">
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+    </div>
+  ))}
+
+  <div data-ac-process-head>
+    <p data-ac-process-eyebrow class="mono-label">
+      <span aria-hidden="true">+</span>
+      {COPY.eyebrow}
+    </p>
+    <h2 data-ac-process-headline aria-label={COPY.headline.join(" ")}>
+      <RevealText text={COPY.headline[0]} />{" "}
+      <span data-ac-headline-accent>
+        <RevealText text={COPY.headline[1]} offset={Array.from(COPY.headline[0]).length + 1} />
+      </span>
+    </h2>
+    <div data-ac-process-rating data-ac-rating>
+      <AvatarStack images={[avatar1, avatar2, avatar3]} more={COPY.ratingMore} />
+      <span data-ac-rating-rule aria-hidden="true" />
+      <p data-ac-rating-text>{COPY.rating}</p>
+    </div>
+    <p data-ac-process-lede>{COPY.lede}</p>
+  </div>
+
+  <div data-ac-process-track>
+    <div data-ac-process-panel>
+      <Joints />
+
+      <div data-ac-process-cards>
+        {STEPS.map((step, i) => (
+          <div data-ac-process-cell data-ac-active={i === 0 || undefined}>
+            <Joints />
+            <article data-ac-process-card>
+              <span data-ac-process-badge class="mono-label">
+                {step.badge}
+              </span>
+              <div data-ac-process-copy>
+                <h3 data-ac-process-title>{step.title}</h3>
+                <p data-ac-process-body>{step.body}</p>
+              </div>
+            </article>
+          </div>
+        ))}
+      </div>
+
+      <div data-ac-process-visual>
+        <div data-ac-process-caption>
+          <p>{STEPS[0].caption}</p>
+          <Joints />
+        </div>
+
+        <div data-ac-process-lattice>
+          <div data-ac-process-column data-ac-side>
+            <span data-ac-process-ghost style="--ac-ghost-row:16%">
+              <Joints />
+            </span>
+            <span data-ac-process-ghost style="--ac-ghost-row:45%">
+              <Joints />
+            </span>
+            <span data-ac-process-ghost style="--ac-ghost-row:39%">
+              <Joints />
+            </span>
+          </div>
+
+          <div data-ac-process-column data-ac-stage>
+            <span data-ac-process-ghost style="--ac-ghost-row:20%">
+              <Joints />
+            </span>
+            <div data-ac-process-frame>
+              <div data-ac-process-stage-inner>
+                <StagePanel step={0} />
+              </div>
+              <Joints />
+            </div>
+            <span data-ac-process-ghost style="--ac-ghost-row:20%">
+              <Joints />
+            </span>
+          </div>
+
+          <div data-ac-process-column data-ac-side>
+            <span data-ac-process-ghost style="--ac-ghost-row:16%">
+              <Joints />
+            </span>
+            <span data-ac-process-ghost style="--ac-ghost-row:45%">
+              <Joints />
+            </span>
+            <span data-ac-process-ghost style="--ac-ghost-row:39%">
+              <Joints />
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-ac-process-run aria-hidden="true" />
+  </div>
+</section>
+
+{/* Every step's caption and stage panel, ready to swap in. */}
+{STEPS.map((step, i) => (
+  <template data-ac-process-step={i} data-ac-caption={step.caption}>
+    <StagePanel step={i} />
+  </template>
+))}
+
+<script>
+  /* Below this width the panel un-sticks and every step is listed at once. */
+  const STACK_QUERY = "(max-width: 809px)";
+
+  const section = document.querySelector<HTMLElement>("[data-ac-process]")!;
+  const track = section.querySelector<HTMLElement>("[data-ac-process-track]")!;
+  const panel = section.querySelector<HTMLElement>("[data-ac-process-panel]")!;
+  const cells = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-process-cell]"));
+  const steps = Array.from(document.querySelectorAll<HTMLTemplateElement>("[data-ac-process-step]"));
+
+  /* Reversible entrance, matching the stats section: the header lifts in on
+     approach and resets on the way out so scrolling back replays it. */
+  new IntersectionObserver(
+    ([entry]) => section.toggleAttribute("data-ac-in", entry.isIntersecting),
+    { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+  ).observe(section);
+
+  /* One measurement per rendered frame, feeding two things.
+
+     The step index: the panel is sticky inside a taller track, the run is
+     whatever the track has over and above the panel, and how much of it has
+     been consumed splits three ways. Measuring the panel rather than reading
+     the CSS variable keeps this correct at every breakpoint.
+
+     The column rules: they are drawn in two bands so they stop at the panel's
+     top edge and resume at its bottom, instead of running through the cards.
+     Both edges move with the pin, so the extents are written as custom
+     properties here rather than expressed in CSS. */
+  const read = () => {
+    const sectionTop = section.getBoundingClientRect().top;
+    const panelBox = panel.getBoundingClientRect();
+    section.style.setProperty("--ac-rules-head", `${panelBox.top - sectionTop}px`);
+    section.style.setProperty("--ac-rules-tail", `${panelBox.bottom - sectionTop}px`);
+
+    /* Stacked, nothing pins, so the step whose card has crossed the middle of
+       the screen is the open one and the highlight walks down the list with
+       the scroll. Otherwise steps 2 and 3 never open and read as disabled. */
+    if (window.matchMedia(STACK_QUERY).matches) {
+      const line = window.innerHeight * 0.55;
+      return cells.reduce((open, cell, i) => (cell.getBoundingClientRect().top < line ? i : open), 0);
+    }
+
+    const run = track.offsetHeight - panel.offsetHeight;
+    if (run <= 0) return 0;
+
+    const pinTop = parseFloat(getComputedStyle(panel).top) || 0;
+    const progress = (pinTop - track.getBoundingClientRect().top) / run;
+    return Math.min(steps.length - 1, Math.max(0, Math.floor(progress * steps.length)));
+  };
+
+  /* A step change swaps in fresh caption and stage nodes rather than editing
+     the old ones, so their entrance animations replay. */
+  let active = 0;
+  const show = (next: number) => {
+    if (next === active) return;
+    cells[active].removeAttribute("data-ac-active");
+    cells[next].setAttribute("data-ac-active", "");
+
+    const caption = document.createElement("p");
+    caption.textContent = steps[next].dataset.acCaption ?? "";
+    section.querySelector("[data-ac-process-caption] > p")!.replaceWith(caption);
+
+    const stage = document.createElement("div");
+    stage.setAttribute("data-ac-process-stage-inner", "");
+    stage.append(document.importNode(steps[next].content, true));
+    section.querySelector("[data-ac-process-stage-inner]")!.replaceWith(stage);
+
+    active = next;
+  };
+
+  /* Stacked, the stage sizes to its own content, and the three panels are not
+     the same height. Swapping one for the next as the reader scrolls would move
+     everything below this section (and land in-page links short), so the stage
+     is held at the tallest panel's height: each is rendered off-screen at the
+     stage's current width and measured. Side by side the panel has a fixed
+     height and this is cleared. */
+  const stack = window.matchMedia(STACK_QUERY);
+  let measured = -1;
+  let captionMeasured = -1;
+  const holdStage = () => {
+    /* The caption bar likewise: one caption can wrap to two lines on a narrow
+       screen where the others fit on one. Held at the tallest at every width. */
+    const bar = section.querySelector<HTMLElement>("[data-ac-process-caption]")!;
+    const barWidth = bar.clientWidth;
+    if (barWidth !== captionMeasured) {
+      captionMeasured = barWidth;
+      const room = barWidth - parseFloat(getComputedStyle(bar).paddingLeft) - parseFloat(getComputedStyle(bar).paddingRight);
+      const heights = steps.map((step) => {
+        // A <p> in the bar picks up the caption's own type from the stylesheet.
+        const probe = document.createElement("p");
+        probe.textContent = step.dataset.acCaption ?? "";
+        probe.setAttribute("aria-hidden", "true");
+        probe.style.cssText = `position:absolute;top:0;left:0;max-width:${room}px;visibility:hidden;animation:none`;
+        bar.append(probe);
+        const height = probe.offsetHeight;
+        probe.remove();
+        return height;
+      });
+      section.style.setProperty("--ac-caption-h", `${Math.max(...heights)}px`);
+    }
+
+    const current = section.querySelector<HTMLElement>("[data-ac-process-stage-inner]")!;
+    const width = current.getBoundingClientRect().width;
+    if (!stack.matches) {
+      section.style.removeProperty("--ac-stage-h");
+      measured = -1;
+      return;
+    }
+    if (width === measured) return;
+    measured = width;
+    const probes = steps.map((step) => {
+      const probe = document.createElement("div");
+      probe.setAttribute("data-ac-process-stage-inner", "");
+      probe.setAttribute("aria-hidden", "true");
+      probe.style.cssText = `position:absolute;top:0;left:0;width:${width}px;visibility:hidden;animation:none;pointer-events:none`;
+      probe.append(document.importNode(step.content, true));
+      current.parentElement!.append(probe);
+      return probe;
+    });
+    const tallest = Math.max(...probes.map((probe) => probe.offsetHeight));
+    probes.forEach((probe) => probe.remove());
+    section.style.setProperty("--ac-stage-h", `${Math.ceil(tallest)}px`);
+  };
+
+  let frame = 0;
+  const apply = () => {
+    frame = 0;
+    holdStage();
+    show(read());
+  };
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(apply);
+  };
+
+  apply();
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", schedule);
+  // Webfonts change the panels' line breaks, so measure again once they land.
+  document.fonts?.ready.then(() => {
+    measured = -1;
+    captionMeasured = -1;
+    schedule();
+  });
+</script>

@@ -1,0 +1,27 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+/* Overlapping 32px portraits with a count chip, for social-proof rows. Built
+   for three portraits: each is masked to leave a crescent where the next one
+   overlaps, and those masks are set per position in globals.css. */
+interface Props {
+  images: [ImageMetadata, ImageMetadata, ImageMetadata];
+  more: string;
+}
+
+const { images, more } = Astro.props;
+---
+
+<div data-ac-avatars aria-hidden="true">
+  {images.map((image, i) => (
+    <span data-ac-avatar={i + 1}>
+      <span>
+        <Image src={image} alt="" width={32} height={32} densities={[1, 2]} />
+      </span>
+    </span>
+  ))}
+  <span data-ac-avatar="more">
+    <span data-ac-avatars-more>{more}</span>
+  </span>
+</div>

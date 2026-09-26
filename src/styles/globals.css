@@ -1,0 +1,5619 @@
+@import "tailwindcss";
+
+/* Max-width breakpoints, so component code can express its overrides as
+   "at this width and below" rather than inverting every rule. */
+@custom-variant mdown (@media (max-width: 991px));
+@custom-variant sdown (@media (max-width: 767px));
+@custom-variant xsdown (@media (max-width: 479px));
+
+:root {
+  /* Page ground behind the sections. */
+  --color-grey: #f6f6f6;
+  /* Accent — JumpGrowth blue (#507af7). Named by role rather than hue so a
+     future re-brand only touches these three. */
+  --color-accent: #507af7;
+  --color-accent-dark: #3a65eb;
+  --color-accent-border: #4571f2;
+
+  /* Body copy size; steps down on small phones. */
+  --paragraph-normal: 16px;
+
+  /* Spacing */
+  /* One page gutter. Every section's left edge resolves from this, so the
+     navbar, the hero copy and the stats grid all start on the same line.
+     Audited 2026-09-22: the navbar was on 40px while both sections were on
+     72px, and the stats eyebrow carried an extra 27px indent of its own. */
+  --gutter: clamp(20px, 5vw, 72px);
+  /* Space where two sections' content meets. Deliberately far larger than any
+     gap inside a section — the biggest of those is 54px at 1440 — because the
+     column rules now run unbroken from one section into the next, so this is
+     the only cue that a new section has started. Audited 2026-09-22: the break
+     was 81px, close enough to the 54px internal rhythm that the stats cards and
+     the process eyebrow read as one block. Raised again after that: 144px still
+     read as tight against a stat card band 342px deep. */
+  --section-gap: clamp(104px, 24vh, 260px);
+  /* Space on each side of a change of tone (light into the dark case studies,
+     the blue call to action, the footer). Smaller than the gap because the
+     edge itself marks the break. */
+  --band-pad: clamp(96px, 16vh, 180px);
+  /* The hero field's ramp, near-black navy into a pale tint of our accent, and
+     what fills the BUILD type. Defined once here and consumed by both the hero
+     field and the opening curtain, so the two can never drift apart. */
+  --ac-field-gradient: linear-gradient(
+    180deg,
+    #000715 0%, #030a19 8%, #071127 16%, #09142e 20%, #0b1837 26%,
+    #0d1c41 32%, #132658 38%, #1a3170 44%, #223b89 50%, #2945a1 56%,
+    #304eb9 62%, #3f5ccb 68%, #5870d4 74%, #7084dd 80%, #8898e6 86%,
+    #a1adef 92%, #b1bbf5 100%
+  );
+
+  /* Two stacks: Outfit for brand voice, Inter for everything that gets read. */
+  --font-display-stack: var(--font-display), "Outfit", -apple-system, system-ui, sans-serif;
+  --font-stack: var(--font-body), "Inter", -apple-system, system-ui, "Helvetica Neue", Arial, sans-serif;
+
+  /* Type scale. Display is large, set at regular weight rather than bold,
+     with light negative tracking. That light-but-large setting is most of why
+     it reads calm instead of shouty. */
+  --display-weight: 400;
+  --display-lh: 1.06;
+  --display-ls: -0.02em;
+  --display-word-spacing: normal;
+  /* Section headings share one step so the hero and the stats section match. */
+  --display-size: clamp(36px, 6.2vw, 88px);
+
+  --numeric-weight: 500;
+  --numeric-lh: 1;
+  --numeric-ls: -0.02em;
+  --numeric-word-spacing: normal;
+
+  --text-lede: 18px;
+  --text-body: 16px;
+  --text-caption: 14px;
+  --text-lh: 1.55;
+  --text-ls: -0.005em;
+  --text-word-spacing: normal;
+}
+
+@media (max-width: 991px) {
+  :root {
+    /* The gap is driven by viewport height, so a phone in portrait would
+       otherwise take nearly the desktop value on a much shorter column. */
+    --section-gap: clamp(80px, 15vh, 140px);
+  }
+}
+
+@media (max-width: 479px) {
+  :root {
+    --paragraph-normal: 14px;
+  }
+}
+
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --color-brand-accent: var(--color-accent);
+  --color-brand-accent-dark: var(--color-accent-dark);
+  --color-brand-accent-border: var(--color-accent-border);
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar chrome hidden. Scrolling itself is untouched —
+   wheel, trackpad, keyboard and touch all still work. */
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+body {
+  background-color: var(--color-grey);
+  color: #333333;
+  font-family: var(--font-stack);
+  word-spacing: var(--text-word-spacing);
+  /* Mono benefits visibly from real kerning and ligature control. */
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  font-size: var(--paragraph-normal);
+  line-height: 150%;
+  font-weight: 400;
+  /* Every control here has its own pressed and hover state; the browser's
+     grey tap flash on top of them reads as a glitch on phones. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   Micro-label — the mono treatment used for eyebrows, stat captions and header
+   metadata. 10px uppercase, tracked out, Reddit Mono.
+   --------------------------------------------------------------------------- */
+/* Micro-label. Class name kept so existing markup does not need a sweep; the
+   treatment is now Inter at a small size, tracked out and uppercase, rather
+   than a monospace. */
+.mono-label {
+  font-family: var(--font-stack);
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.mono-label-sm {
+  font-family: var(--font-stack);
+  font-size: 10px;
+  line-height: 15px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* The portal measures its own type with document.fonts.check(). The font
+   loader's auto-generated fallback face never passes that check, which trips the
+   component's stalled guard and disables motion — so the portal gets its own
+   explicitly-named face pointing at the same files.
+
+   A relative path on purpose: the build hashes the file and prefixes the
+   site's base path, so it resolves on a GitHub Pages sub-path too. A
+   root-relative "/fonts/..." would 404 there and silently stop the hero. */
+@font-face {
+  font-family: "AgentCraft Display";
+  src: url("../assets/fonts/Outfit-variable.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: block;
+}
+
+/* ---------------------------------------------------------------------------
+   Glyph portal — opening frame and the hero revealed behind the type.
+   Positioning hooks (--gp-word-top / --gp-word-bottom / --gp-caption) are set
+   by the component on every scroll frame.
+   --------------------------------------------------------------------------- */
+
+.ac-portal {
+  font-family: var(--font-stack);
+}
+
+/* The opening frame plays once per load. Once the camera has run through, the
+   hero retires: the runway it needed is pulled out of the flow with a negative
+   margin, so the revealed panel lands at the top of the page and scrolling back
+   up stops there rather than rewinding the intro. A refresh brings it back.
+
+   A negative margin rather than hiding the pin, because the field gradient is
+   painted by the pin. Pulled up by exactly the runway's height, the pin is
+   still sticky across the section and still paints, and the portal's own
+   progress maths reads the section as fully run, which is where it should be.
+
+   The length comes from the portal's own variables rather than a number copied
+   from Hero.astro, so a resize keeps it aligned. */
+html[data-ac-hero="done"] .ac-portal {
+  margin-top: calc(-1 * var(--gp-length, 1) * var(--gp-height, 100svh));
+}
+
+/* -- opening frame ---------------------------------------------------------- */
+
+/* The opening frame is the word and nothing else. The portal's own call to
+   action stays in the accessibility tree and comes back on focus, so a keyboard
+   user still has a way into the section without scroll-driving it. */
+.ac-portal [data-gp-caption] {
+  inset: auto 24px 7%;
+  justify-content: center;
+  font-family: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ac-portal [data-gp-caption]:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ac-portal [data-gp-enter] {
+  gap: 14px;
+  padding: 0 22px;
+  min-height: 44px;
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-stack);
+  font-size: 10px;
+  line-height: 15px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: background 0.2s;
+}
+
+.ac-portal [data-gp-enter]:hover {
+  background: var(--color-accent-dark);
+}
+
+/* -- revealed hero ---------------------------------------------------------- */
+
+.ac-portal [data-gp-content] {
+  padding: clamp(28px, 5vw, 76px) var(--gutter);
+  overflow: hidden;
+}
+
+/* Copy sits in flow and stays vertically centred. No positioning context here
+   on purpose: the cut-out anchors to [data-gp-content], whose padding box is
+   the full viewport panel, so it always bleeds off the bottom edge rather than
+   floating with a cropped table line showing. */
+/* min-width: 0 on both. [data-gp-content] is a grid, so these would otherwise
+   take min-width: auto and refuse to shrink below their content's min-content
+   width, which the max-content capability rail inside them makes very wide. */
+.ac-portal [data-ac-reveal] {
+  width: min(100%, 1400px);
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.ac-portal [data-ac-copy] {
+  max-width: min(94%, 1240px);
+  min-width: 0;
+}
+
+/* Everything below the headline keeps a readable measure. */
+.ac-portal [data-ac-actions],
+.ac-portal [data-ac-disciplines] {
+  max-width: min(52%, 640px);
+}
+
+.ac-portal [data-ac-headline] {
+  font-family: var(--font-display-stack);
+  margin: 0;
+  font-size: var(--display-size);
+  font-weight: var(--display-weight);
+  line-height: var(--display-lh);
+  letter-spacing: var(--display-ls);
+  word-spacing: var(--display-word-spacing);
+  color: #fff;
+  text-wrap: balance;
+}
+
+.ac-portal [data-ac-headline] span {
+  font-weight: 500;
+  color: #b1bbf5;
+}
+
+.ac-portal [data-ac-body] {
+  margin: 22px 0 0;
+  max-width: 44ch;
+  font-size: clamp(15px, 1.2vw, var(--text-lede));
+  line-height: var(--text-lh);
+  letter-spacing: var(--text-ls);
+  color: rgb(255 255 255 / 0.62);
+}
+
+.ac-portal [data-ac-actions] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.ac-portal [data-ac-cta] {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 22px;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.ac-portal [data-ac-cta="primary"] {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.ac-portal [data-ac-cta="primary"]:hover {
+  background: var(--color-accent-dark);
+}
+
+.ac-portal [data-ac-cta="ghost"] {
+  border: 1px solid rgb(255 255 255 / 0.22);
+  color: rgb(255 255 255 / 0.82);
+}
+
+.ac-portal [data-ac-cta="ghost"]:hover {
+  border-color: rgb(255 255 255 / 0.45);
+  background: rgb(255 255 255 / 0.06);
+  color: #fff;
+}
+
+/* Capability strip, in the slot the stats used to occupy. */
+.ac-portal [data-ac-disciplines] {
+  --ac-disc-gap: clamp(20px, 2.2vw, 34px);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 14px clamp(28px, 3.4vw, 54px);
+  margin-top: clamp(30px, 4.5vh, 46px);
+  padding-top: clamp(20px, 3vh, 28px);
+  border-top: 1px solid rgb(255 255 255 / 0.14);
+}
+
+.ac-portal [data-ac-disciplines-label] {
+  color: rgb(255 255 255 / 0.45);
+  white-space: nowrap;
+}
+
+/* The window the rail drifts through. Masked at both ends so a word arrives
+   and leaves rather than popping at a hard edge. */
+.ac-portal [data-ac-disciplines-track] {
+  flex: 1 1 200px;
+  min-width: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 18px,
+    #000 calc(100% - 34px),
+    transparent 100%
+  );
+}
+
+/* Slow on purpose. At 44s a word crosses the strip over several seconds, which
+   reads as drift rather than as a ticker demanding to be watched. */
+.ac-portal [data-ac-disciplines-rail] {
+  display: flex;
+  width: max-content;
+  animation: ac-disciplines-drift 44s linear infinite;
+}
+
+.ac-portal [data-ac-disciplines]:hover [data-ac-disciplines-rail],
+.ac-portal [data-ac-disciplines]:focus-within [data-ac-disciplines-rail] {
+  animation-play-state: paused;
+}
+
+@keyframes ac-disciplines-drift {
+  to {
+    transform: translateX(calc(-100% / 3));
+  }
+}
+
+.ac-portal [data-ac-disciplines] ul {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  gap: var(--ac-disc-gap);
+  margin: 0;
+  /* The trailing gap belongs to the copy, not to the rail, so each copy is
+     exactly a third of the rail's width and the loop lands on itself. */
+  padding: 0 var(--ac-disc-gap) 0 0;
+  list-style: none;
+}
+
+.ac-portal [data-ac-disciplines] li {
+  font-size: var(--text-body);
+  font-weight: 500;
+  line-height: var(--text-lh);
+  letter-spacing: var(--text-ls);
+  color: #fff;
+}
+
+.ac-portal [data-ac-photo] {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: min(46%, 760px);
+  pointer-events: none;
+}
+
+.ac-portal [data-ac-photo] img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 991px) {
+  .ac-portal [data-ac-copy] {
+    max-width: 100%;
+  }
+
+  /* The 52% cap exists to keep the copy clear of the cut-out on the right.
+     The cut-out is gone here, so the buttons and the capability rail get the
+     full measure back instead of running in a needlessly narrow column. */
+  .ac-portal [data-ac-actions],
+  .ac-portal [data-ac-disciplines] {
+    max-width: none;
+  }
+
+  .ac-portal [data-ac-photo] {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Navbar over the portal field.
+
+   Hero sets data-portal-phase on <html> from the portal's own progress, so the
+   bar inverts once the blue field has filled the viewport instead of sitting
+   there as an opaque light strip over it.
+   --------------------------------------------------------------------------- */
+
+html[data-portal-phase="field"] .ac-nav-bar {
+  background: rgb(8 14 34 / 0.55);
+  border-color: rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html[data-portal-phase="field"] .ac-nav-logo,
+html[data-portal-phase="field"] .ac-nav-link {
+  color: #fff;
+}
+
+html[data-portal-phase="field"] .ac-nav-link:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent-border);
+  color: #fff;
+}
+
+html[data-portal-phase="field"] .ac-nav-burger span {
+  background: #fff;
+}
+
+.ac-nav-bar,
+.ac-nav-logo,
+.ac-nav-link {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* ---------------------------------------------------------------------------
+   Navbar over dark sections (Case Studies, CTA, etc.)
+
+   When the scroll position puts the bar on top of a dark-background section,
+   the script adds data-ac-nav-dark to the header. The light logo hides and the
+   white logo shows; links and the burger also turn white.
+   --------------------------------------------------------------------------- */
+
+.ac-nav-logo-dark {
+  display: none;
+}
+
+[data-ac-nav-dark] .ac-nav-logo-light {
+  display: none;
+}
+
+[data-ac-nav-dark] .ac-nav-logo-dark {
+  display: block;
+}
+
+[data-ac-nav-dark] .ac-nav-bar {
+  background: rgb(8 14 34 / 0.55) !important;
+  border-color: rgb(255 255 255 / 0.1) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+[data-ac-nav-dark] .ac-nav-link {
+  color: #fff;
+}
+
+[data-ac-nav-dark] .ac-nav-link:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent-border);
+  color: #fff;
+}
+
+[data-ac-nav-dark] .ac-nav-burger span {
+  background: #fff;
+}
+
+/* ---------------------------------------------------------------------------
+   Revealed panel alignment.
+   --------------------------------------------------------------------------- */
+
+/* The panel was clearing the navbar with padding AND centring what was left,
+   which stacked: 287px of empty gradient scrolled past before the headline
+   appeared, a third of the panel. Anchor the copy near the top instead, so it
+   arrives as soon as the panel does. The cut-out fills the space below it. */
+.ac-portal [data-gp-content] {
+  align-content: start;
+  padding-top: calc(104px + clamp(18px, 3vh, 40px));
+}
+
+/* Faint blend into the white section below, so the field's pale tail does not
+   butt straight up against it. Change --ac-next-bg if that section is not
+   white. */
+.ac-portal {
+  --ac-next-bg: #ffffff;
+}
+
+.ac-portal [data-gp-content]::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  /* The ramp stays clear through its top half so the capability strip and the
+     cut-out read sharp, then falls away quickly and reaches full opacity before
+     the last pixel. The cut-out is dark and bleeds to this exact edge, so a ramp
+     that only hits white at 100% leaves a visible seam. */
+  height: clamp(160px, 22vh, 290px);
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0) 0%,
+    rgb(255 255 255 / 0) 42%,
+    color-mix(in srgb, var(--ac-next-bg) 22%, transparent) 60%,
+    color-mix(in srgb, var(--ac-next-bg) 72%, transparent) 80%,
+    var(--ac-next-bg) 93%,
+    var(--ac-next-bg) 100%
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+@media (max-width: 767px) {
+  .ac-portal [data-gp-content] {
+    padding-top: calc(clamp(28px, 5vw, 76px) + 64px);
+  }
+}
+
+/* On a phone the copy fills the top half of the panel and left the rest as
+   empty field. The team cut-out comes back here, in flow rather than pinned
+   to the corner: it takes whatever height the copy leaves, contained and
+   sitting on the bottom edge, so it can never ride up over the buttons on a
+   short screen (on an SE it is simply smaller). The negative margins bleed it
+   through the panel's padding to the edges, into the white fade. */
+@media (max-width: 809px) {
+  .ac-portal [data-gp-content] {
+    grid-template-rows: minmax(0, 1fr);
+    align-content: stretch;
+  }
+
+  .ac-portal [data-ac-reveal] {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .ac-portal [data-ac-photo] {
+    display: block;
+    position: relative;
+    right: auto;
+    bottom: auto;
+    flex: 1 1 0;
+    width: auto;
+    min-height: 0;
+    margin: 16px calc(-1 * var(--gutter)) calc(-1 * clamp(28px, 5vw, 76px));
+  }
+
+  .ac-portal [data-ac-photo] img {
+    height: 100%;
+    object-fit: contain;
+    object-position: 50% 100%;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Cinematic entrance.
+
+   The portal's own reveal is a single cross-fade of the whole panel, driven by
+   --gp-reveal between 78% and 90% of the scroll. We take that over: the panel
+   stays fully opaque and each piece animates itself in, staggered, the moment
+   the field fills the viewport — the same instant the navbar flips off white.
+
+   Reversible, driven by data-portal-state on <html>: before / in / after. The
+   copy rises in from below as the field takes over and lifts away upward as the
+   next section takes over, so scrolling back up plays it in reverse.
+   --------------------------------------------------------------------------- */
+
+.ac-portal[data-gp-motion="on"] [data-gp-content] {
+  opacity: 1;
+}
+
+.ac-portal [data-ac-headline],
+.ac-portal [data-ac-body],
+.ac-portal [data-ac-actions],
+.ac-portal [data-ac-disciplines],
+.ac-portal [data-ac-photo] {
+  opacity: 0;
+  filter: blur(9px);
+  transition:
+    opacity 0.85s cubic-bezier(0.22, 0.68, 0.24, 1),
+    transform 1.15s cubic-bezier(0.22, 0.68, 0.24, 1),
+    filter 0.85s cubic-bezier(0.22, 0.68, 0.24, 1);
+  transition-delay: var(--ac-in-delay, 0ms);
+}
+
+.ac-portal [data-ac-headline],
+.ac-portal [data-ac-body],
+.ac-portal [data-ac-actions],
+.ac-portal [data-ac-disciplines] {
+  transform: translateY(34px);
+}
+
+/* The cut-out drifts in from the right and settles back from a slight push-in,
+   so it reads as a camera move rather than a fade. */
+.ac-portal [data-ac-photo] {
+  transform: translate3d(70px, 26px, 0) scale(1.06);
+  transform-origin: 100% 100%;
+}
+
+.ac-portal [data-ac-photo] { --ac-in-delay: 0ms; }
+.ac-portal [data-ac-headline] { --ac-in-delay: 140ms; }
+.ac-portal [data-ac-body] { --ac-in-delay: 300ms; }
+.ac-portal [data-ac-actions] { --ac-in-delay: 420ms; }
+.ac-portal [data-ac-disciplines] { --ac-in-delay: 540ms; }
+
+/* In view: everything resolves. */
+html[data-portal-state="in"] .ac-portal [data-ac-headline],
+html[data-portal-state="in"] .ac-portal [data-ac-body],
+html[data-portal-state="in"] .ac-portal [data-ac-actions],
+html[data-portal-state="in"] .ac-portal [data-ac-disciplines],
+html[data-portal-state="in"] .ac-portal [data-ac-photo] {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+
+/* Leaving for the next section: the copy lifts away upward and the cut-out
+   settles back, mirroring how they arrived. Reversible, so scrolling up plays
+   it backwards. The stagger inverts here: the stats strip leads on the way out
+   and the headline is last to go. */
+html[data-portal-state="after"] .ac-portal [data-ac-headline],
+html[data-portal-state="after"] .ac-portal [data-ac-body],
+html[data-portal-state="after"] .ac-portal [data-ac-actions],
+html[data-portal-state="after"] .ac-portal [data-ac-disciplines] {
+  opacity: 0;
+  transform: translateY(-42px);
+  filter: blur(9px);
+}
+
+html[data-portal-state="after"] .ac-portal [data-ac-photo] {
+  opacity: 0;
+  transform: translate3d(34px, -26px, 0) scale(0.97);
+  filter: blur(9px);
+}
+
+html[data-portal-state="after"] .ac-portal [data-ac-disciplines] { --ac-in-delay: 0ms; }
+html[data-portal-state="after"] .ac-portal [data-ac-actions] { --ac-in-delay: 60ms; }
+html[data-portal-state="after"] .ac-portal [data-ac-body] { --ac-in-delay: 110ms; }
+html[data-portal-state="after"] .ac-portal [data-ac-photo] { --ac-in-delay: 150ms; }
+html[data-portal-state="after"] .ac-portal [data-ac-headline] { --ac-in-delay: 180ms; }
+
+/* If the portal fell back to its static mode, onProgress never fires and the
+   latch never sets — so show everything outright. */
+.ac-portal[data-gp-motion="off"] [data-ac-headline],
+.ac-portal[data-gp-motion="off"] [data-ac-body],
+.ac-portal[data-gp-motion="off"] [data-ac-actions],
+.ac-portal[data-gp-motion="off"] [data-ac-disciplines],
+.ac-portal[data-gp-motion="off"] [data-ac-photo] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ac-portal [data-ac-headline],
+  .ac-portal [data-ac-body],
+  .ac-portal [data-ac-actions],
+  .ac-portal [data-ac-disciplines],
+  .ac-portal [data-ac-photo] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+
+  /* The rail parks at its start, which is a full set of the disciplines. */
+  .ac-portal [data-ac-disciplines-rail] {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Stats section.
+
+   A four-column grid with hairline column rules, an indented lede, and a card
+   row of [narrow][wide featured][narrow]. White, which is what the hero's
+   gradient fades into.
+   --------------------------------------------------------------------------- */
+
+[data-ac-stats-section] {
+  --ac-rule: rgb(10 16 34 / 0.1);
+  position: relative;
+  isolation: isolate;
+  background: #ffffff;
+  color: #0a1022;
+  padding: clamp(64px, 9vh, 104px) 0 0;
+  overflow: hidden;
+}
+
+/* Column rules, full-bleed behind the content. */
+[data-ac-grid-rules] {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-inline: var(--gutter);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-ac-grid-rules] span {
+  border-left: 1px solid var(--ac-rule);
+}
+
+[data-ac-grid-rules] span:last-child {
+  position: absolute;
+  inset: 0 0 0 auto;
+  border-left: 1px solid var(--ac-rule);
+}
+
+[data-ac-stats-inner] {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-inline: var(--gutter);
+}
+
+[data-ac-stats-eyebrow] {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 clamp(18px, 3vh, 30px);
+  color: #0a1022;
+}
+
+[data-ac-stats-headline] {
+  font-family: var(--font-display-stack);
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: var(--display-size);
+  font-weight: var(--display-weight);
+  line-height: var(--display-lh);
+  letter-spacing: var(--display-ls);
+  word-spacing: var(--display-word-spacing);
+  text-wrap: balance;
+}
+
+/* The lede starts at the second column. */
+[data-ac-stats-body] {
+  grid-column: 2 / 4;
+  max-width: 500px;
+  margin: clamp(30px, 5vh, 48px) 0 clamp(40px, 6vh, 64px);
+  font-size: clamp(16px, 1.4vw, 20px);
+  line-height: 1.35;
+  letter-spacing: var(--text-ls);
+  color: rgb(10 16 34 / 0.72);
+}
+
+[data-ac-stat-cards] {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  margin: 0;
+}
+
+[data-ac-stat-card] {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: clamp(260px, 38vh, 384px);
+  padding: clamp(22px, 2.4vw, 35px);
+  border-left: 1px solid var(--ac-rule);
+  background: #f4f5f8;
+}
+
+[data-ac-stat-card]:last-child {
+  border-right: 1px solid var(--ac-rule);
+}
+
+[data-ac-stat-card][data-ac-featured] {
+  background: var(--color-accent);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+[data-ac-stat-number] {
+  font-family: var(--font-display-stack);
+  margin: 0;
+  font-size: clamp(44px, 5.6vw, 80px);
+  font-weight: var(--numeric-weight);
+  line-height: var(--numeric-lh);
+  letter-spacing: var(--numeric-ls);
+  word-spacing: var(--numeric-word-spacing);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-ac-stat-caption] {
+  font-size: var(--text-caption);
+  line-height: var(--text-lh);
+  letter-spacing: var(--text-ls);
+  color: rgb(10 16 34 / 0.6);
+}
+
+[data-ac-stat-card][data-ac-featured] [data-ac-stat-caption] {
+  color: rgb(255 255 255 / 0.82);
+}
+
+@media (max-width: 991px) {
+  [data-ac-stats-body] {
+    grid-column: 1 / -1;
+  }
+
+  [data-ac-stat-cards] {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  [data-ac-stat-card][data-ac-featured] {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+}
+
+@media (max-width: 599px) {
+  /* Outer rules only. Text runs the full width on a phone, so a centre rule
+     would cut through every headline and lede on the page. */
+  [data-ac-grid-rules] {
+    grid-template-columns: 1fr;
+  }
+
+  /* The featured card across the top and the other two side by side under
+     it, each only as tall as its number and caption need: stacked at full
+     height they were three screen-high blocks of mostly empty colour. */
+  [data-ac-stat-card] {
+    gap: 40px;
+    min-height: 0;
+    padding: 20px;
+    border-bottom: 1px solid var(--ac-rule);
+  }
+
+  [data-ac-stat-card][data-ac-featured] {
+    gap: 64px;
+  }
+
+  [data-ac-stat-card]:not([data-ac-featured]) [data-ac-stat-number] {
+    font-size: 40px;
+  }
+}
+
+/* On touch screens the vendored portal shows a "Choose a letter" select under
+   the word, to pick which letter the camera flies into. We drop it: the camera
+   already has a default letter and the picker is purely optional, so the
+   opening frame is just the word. !important because the portal's own scoped
+   style (any-pointer: coarse → display: flex) lands after this sheet at equal
+   specificity. */
+.ac-portal [data-gp-touch-picker] {
+  display: none !important;
+}
+
+/* The portal puts a "Scroll to enter." hint beside its call to action. We drop
+   it: the field already reads as scrollable, and with the hint gone the caption
+   row holds one item, so the button sits on the centre line instead of being
+   nudged off it by the text beside it. */
+.ac-portal [data-gp-hint] {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Stats section entrance.
+
+   Same grammar as the hero: rise, de-blur, staggered, and reversible so
+   scrolling back up replays it. The cards carry their own --ac-in-delay from
+   the component, matched to each counter's start.
+   --------------------------------------------------------------------------- */
+
+[data-ac-stats-eyebrow],
+[data-ac-stats-headline],
+[data-ac-stats-body],
+[data-ac-stat-card] {
+  opacity: 0;
+  transform: translateY(30px);
+  filter: blur(8px);
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+    transform 1s cubic-bezier(0.22, 0.68, 0.24, 1),
+    filter 0.75s cubic-bezier(0.22, 0.68, 0.24, 1);
+  transition-delay: var(--ac-in-delay, 0ms);
+}
+
+[data-ac-stats-eyebrow] { --ac-in-delay: 0ms; }
+[data-ac-stats-headline] { --ac-in-delay: 90ms; }
+[data-ac-stats-body] { --ac-in-delay: 220ms; }
+
+[data-ac-stats-section][data-ac-in] [data-ac-stats-eyebrow],
+[data-ac-stats-section][data-ac-in] [data-ac-stats-headline],
+[data-ac-stats-section][data-ac-in] [data-ac-stats-body],
+[data-ac-stats-section][data-ac-in] [data-ac-stat-card] {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+
+/* The column rules draw themselves down as the section arrives. */
+[data-ac-grid-rules] span {
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+  transition: transform 1.1s cubic-bezier(0.22, 0.68, 0.24, 1);
+}
+
+[data-ac-stats-section][data-ac-in] [data-ac-grid-rules] span,
+[data-ac-process][data-ac-in] [data-ac-grid-rules] span {
+  transform: scaleY(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-stats-eyebrow],
+  [data-ac-stats-headline],
+  [data-ac-stats-body],
+  [data-ac-stat-card],
+  [data-ac-grid-rules] span {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Process section — "The people to move your roadmap forward."
+   Layout, geometry and the scroll mechanic come from the step panel on the
+   documented in docs/components/process.md: a sticky
+   two-column panel, a lattice of ghost cards on the right, and an active step
+   that advances as a scroll track is consumed. Type, colour and the stage
+   panels are ours.
+   --------------------------------------------------------------------------- */
+
+[data-ac-process] {
+  /* Same rule colour and ink as the stats section: the two sections read as one
+     white field with one set of column rules running through both. */
+  --ac-rule: rgb(10 16 34 / 0.1);
+  --ac-line: var(--ac-rule);
+  --ac-ink: #0a1022;
+  /* Cell height drives the panel: 210px at 1440, shrinking with
+     the viewport's shorter axis so a laptop window never clips the pinned panel. */
+  --ac-cell-h: clamp(150px, min(14.6vw, 23.4vh), 210px);
+  /* Scroll consumed while the panel is pinned, split three ways. */
+  --ac-run: clamp(900px, 165vh, 1600px);
+  /* Meta strip (34px) plus the main bar, then a little clearance. */
+  --ac-pin-top: 124px;
+
+  position: relative;
+  isolation: isolate;
+  background: #ffffff;
+  color: var(--ac-ink);
+  padding: var(--section-gap) 0;
+  /* No overflow clipping here: an ancestor with a clipped overflow becomes the
+     scrollport for position:sticky, which would stop the panel pinning. The
+     wash below is inset:0, so there is nothing to clip anyway. */
+}
+
+/* The lattice sits on a wash of the brand accent, anchored to the section rather than the viewport, so it
+   deepens as you scroll past the first step and lifts again on the way out.
+   Faded to white at both ends so the seam with the stats section disappears. */
+[data-ac-process]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, #ffffff 4%, transparent 34%, transparent 66%, #ffffff 98%),
+    radial-gradient(
+      118% 62% at 50% 58%,
+      color-mix(in srgb, var(--color-accent) 22%, transparent) 0%,
+      color-mix(in srgb, var(--color-accent) 7%, transparent) 46%,
+      transparent 72%
+    );
+}
+
+/* The rules run in two bands rather than one full-height block, so they stop at
+   the panel's top edge and pick up again at its bottom instead of crossing the
+   cards. Both edges move with the pin, so ProcessSection writes them. Until it
+   has measured, both bands are empty rather than drawn in the wrong place.
+
+   The tail is cut with clip-path rather than moved: its top edge changes on
+   every scroll frame, and moving a box's top counts as a layout shift in the
+   browser's Core Web Vitals, where clipping it does not. Same lines either way. */
+[data-ac-process] [data-ac-grid-rules] {
+  margin-inline: var(--gutter);
+}
+
+[data-ac-process] [data-ac-grid-rules][data-ac-band="head"] {
+  inset: 0 0 auto 0;
+  height: var(--ac-rules-head, 0px);
+}
+
+[data-ac-process] [data-ac-grid-rules][data-ac-band="tail"] {
+  inset: 0;
+  clip-path: inset(var(--ac-rules-tail, 100%) -1px 0 -1px);
+}
+
+/* -- header ----------------------------------------------------------------- */
+
+/* Header block, set exactly as the stats section's: four columns on the page
+   gutter, eyebrow and headline full width, lede indented to the second column. */
+[data-ac-process-head] {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-inline: var(--gutter);
+}
+
+[data-ac-process-eyebrow] {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 clamp(18px, 3vh, 30px);
+  color: var(--ac-ink);
+}
+
+[data-ac-process-headline] {
+  font-family: var(--font-display-stack);
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: var(--display-size);
+  font-weight: var(--display-weight);
+  line-height: var(--display-lh);
+  letter-spacing: var(--display-ls);
+  word-spacing: var(--display-word-spacing);
+  text-wrap: balance;
+}
+
+[data-ac-process-lede] {
+  grid-column: 2 / 4;
+  max-width: 500px;
+  margin: clamp(30px, 5vh, 48px) 0 clamp(40px, 6vh, 64px);
+  font-size: clamp(16px, 1.4vw, 20px);
+  line-height: 1.35;
+  letter-spacing: var(--text-ls);
+  color: rgb(10 16 34 / 0.72);
+}
+
+/* -- sticky track ----------------------------------------------------------- */
+
+[data-ac-process-track] {
+  position: relative;
+  z-index: 1;
+  margin-inline: var(--gutter);
+}
+
+/* The run the panel stays pinned for. It has to be a real sibling box, not
+   padding on the track: a sticky element is clamped to its containing block,
+   which for an in-flow child is the parent's content box, and padding sits
+   outside that. */
+[data-ac-process-run] {
+  height: var(--ac-run);
+}
+
+[data-ac-process-panel] {
+  position: sticky;
+  top: var(--ac-pin-top);
+  display: grid;
+  grid-template-columns: 36% 1fr;
+  align-items: stretch;
+}
+
+/* -- step cards ------------------------------------------------------------- */
+
+[data-ac-process-cards] {
+  display: grid;
+  grid-template-rows: repeat(3, minmax(var(--ac-cell-h), auto));
+  border: 1.5px solid var(--ac-line);
+}
+
+[data-ac-process-cell] {
+  position: relative;
+  padding: 10px;
+  border-bottom: 1px solid var(--ac-line);
+}
+
+[data-ac-process-cell]:last-child {
+  border-bottom: 0;
+}
+
+[data-ac-process-card] {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 32px;
+  height: 100%;
+  padding: 24px;
+  /* Dotted while it is one of the waiting steps, solid once it is the live
+     one, so the active card reads as a surface and the rest as placeholders. */
+  border: 1px dotted var(--ac-line);
+  border-radius: 12px;
+  background: transparent;
+  transition:
+    background-color 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-ac-process-cell][data-ac-active] [data-ac-process-card] {
+  background: #ffffff;
+  border-style: solid;
+  border-color: var(--ac-line);
+  box-shadow:
+    0 0 0 1px rgb(10 16 34 / 0.03),
+    0 16px 24px -12px rgb(10 16 34 / 0.05),
+    0 32px 32px -20px rgb(10 16 34 / 0.05),
+    0 40px 48px -20px rgb(10 16 34 / 0.04);
+}
+
+[data-ac-process-badge] {
+  align-self: flex-start;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: rgb(10 16 34 / 0.05);
+  color: rgb(10 16 34 / 0.45);
+  transition:
+    background-color 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* The live step's badge takes the brand fill, so the one accent on the page
+   marks which step you are on. The waiting steps stay neutral. */
+[data-ac-process-cell][data-ac-active] [data-ac-process-badge] {
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+[data-ac-process-copy] {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+[data-ac-process-title] {
+  font-family: var(--font-display-stack);
+  margin: 0;
+  font-size: clamp(19px, 1.7vw, 24px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+[data-ac-process-body] {
+  margin: 0;
+  font-size: clamp(14px, 1.1vw, 15px);
+  line-height: 1.4;
+  letter-spacing: var(--text-ls);
+  color: rgb(10 16 34 / 0.72);
+}
+
+/* -- right column: caption bar over a lattice of ghost cards ---------------- */
+
+[data-ac-process-visual] {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border: 1.5px solid var(--ac-line);
+  border-left: 0;
+  min-width: 0;
+}
+
+[data-ac-process-caption] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The tallest caption plus the padding and rule, measured by ProcessSection,
+     so a caption that wraps never resizes the bar. */
+  min-height: calc(var(--ac-caption-h, 0px) + 25.5px);
+  padding: 12px;
+  border-bottom: 1.5px solid var(--ac-line);
+}
+
+[data-ac-process-caption] p {
+  margin: 0;
+  text-align: center;
+  text-wrap: balance;
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-style: italic;
+  color: rgb(10 16 34 / 0.55);
+  animation: ac-process-fade 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+[data-ac-process-lattice] {
+  display: grid;
+  grid-template-columns: 15% 70% 15%;
+  min-width: 0;
+}
+
+[data-ac-process-column] {
+  display: grid;
+  border-right: 1px solid var(--ac-line);
+  min-width: 0;
+}
+
+[data-ac-process-column]:last-child {
+  border-right: 0;
+}
+
+[data-ac-process-column][data-ac-side] {
+  grid-template-rows: 16% 45% 39%;
+}
+
+[data-ac-process-column][data-ac-stage] {
+  grid-template-rows: 20% 1fr 20%;
+}
+
+/* Empty lattice cells: a 10px inset around a rounded ghost panel, the same
+   frame as the one cell that carries content. */
+[data-ac-process-ghost] {
+  position: relative;
+  display: block;
+  padding: 10px;
+  border-bottom: 1px solid var(--ac-line);
+}
+
+/* Dotted for the empty ghost cards, solid for the cell rules and the panel
+   frame. The two weights are what keep the lattice from reading as a table. */
+[data-ac-process-ghost]::after {
+  content: "";
+  display: block;
+  height: 100%;
+  border: 1px dotted var(--ac-line);
+  border-radius: 12px;
+}
+
+[data-ac-process-column] > :last-child {
+  border-bottom: 0;
+}
+
+[data-ac-process-frame] {
+  position: relative;
+  padding: 10px;
+  border-bottom: 1px solid var(--ac-line);
+  background: rgb(255 255 255 / 0.22);
+  min-width: 0;
+}
+
+[data-ac-process-stage-inner] {
+  container-type: inline-size;
+  height: 100%;
+  overflow: hidden;
+  animation: ac-process-fade 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes ac-process-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* -- corner joints ---------------------------------------------------------- */
+/* A crosshair in the cell's padding gutter, between the cell rule and the
+   dotted ghost card. Two hairlines, no artwork. */
+
+[data-ac-joints] {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+[data-ac-joints] i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+}
+
+[data-ac-joints] i::before,
+[data-ac-joints] i::after {
+  content: "";
+  position: absolute;
+  background: var(--ac-line);
+}
+
+[data-ac-joints] i::before {
+  inset: 50% 0 auto;
+  height: 1px;
+}
+
+[data-ac-joints] i::after {
+  inset: 0 auto 0 50%;
+  width: 1px;
+}
+
+[data-ac-joints] i[data-ac-corner="tl"] { top: 2px; left: 2px; }
+[data-ac-joints] i[data-ac-corner="tr"] { top: 2px; right: 2px; }
+[data-ac-joints] i[data-ac-corner="bl"] { bottom: 2px; left: 2px; }
+[data-ac-joints] i[data-ac-corner="br"] { bottom: 2px; right: 2px; }
+
+/* A cell only marks its bottom corners when nothing sits directly under it.
+   Otherwise the mark and its neighbour's top mark land a few pixels apart on
+   the same rule and read as a smudge. */
+[data-ac-joints] i[data-ac-corner="bl"],
+[data-ac-joints] i[data-ac-corner="br"] {
+  display: none;
+}
+
+[data-ac-process-panel] > [data-ac-joints] i,
+[data-ac-process-cell]:last-child > [data-ac-joints] i,
+[data-ac-process-column] > :last-child > [data-ac-joints] i {
+  display: block;
+}
+
+/* -- stage panels ----------------------------------------------------------- */
+/* Sized against the stage's own inline size so the mockups keep their
+   proportions as the column narrows, with a floor so the text stays legible. */
+
+[data-ac-mock] {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: max(14px, 4.1cqw);
+  gap: max(10px, 2.4cqw);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 1px rgb(10 16 34 / 0.05),
+    0 18px 30px -22px rgb(10 16 34 / 0.28);
+  font-size: max(11px, 2.23cqw);
+  line-height: 1.35;
+  color: var(--ac-ink);
+}
+
+[data-ac-mock] header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: max(9px, 2.1cqw);
+  border-bottom: 1px solid rgb(10 16 34 / 0.08);
+}
+
+[data-ac-mock-title] {
+  font-family: var(--font-display-stack);
+  font-size: max(13px, 2.57cqw);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+[data-ac-mock-tag] {
+  padding: 2px max(7px, 1.4cqw);
+  border-radius: 999px;
+  background: rgb(10 16 34 / 0.05);
+  font-size: max(10px, 1.89cqw);
+  letter-spacing: 0.02em;
+  color: rgb(10 16 34 / 0.55);
+}
+
+[data-ac-mock-quote] {
+  margin: 0;
+  font-size: max(12px, 2.74cqw);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: rgb(10 16 34 / 0.85);
+}
+
+[data-ac-mock-group] {
+  display: flex;
+  flex-direction: column;
+  gap: max(6px, 1.4cqw);
+}
+
+[data-ac-mock-label] {
+  font-size: max(9px, 1.72cqw);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(10 16 34 / 0.4);
+}
+
+[data-ac-mock-chips] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: max(6px, 1.4cqw);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-ac-mock-chips] li {
+  padding: max(4px, 1cqw) max(8px, 1.9cqw);
+  border: 1px solid rgb(10 16 34 / 0.1);
+  border-radius: 6px;
+  background: rgb(10 16 34 / 0.02);
+  color: rgb(10 16 34 / 0.78);
+}
+
+[data-ac-mock-chips] li[data-ac-mock-add] {
+  border-style: dashed;
+  background: transparent;
+  color: rgb(10 16 34 / 0.42);
+}
+
+/* The floors above were set for the mock in a narrow desktop column. On a
+   phone it is the only thing on screen, so its type comes up a step and the
+   9px labels stop being the smallest text on the page. */
+@media (max-width: 599px) {
+  [data-ac-mock] {
+    font-size: 12.5px;
+  }
+
+  [data-ac-mock-title] {
+    font-size: 15px;
+  }
+
+  [data-ac-mock-tag] {
+    font-size: 11px;
+  }
+
+  [data-ac-mock-quote] {
+    font-size: 14px;
+  }
+
+  [data-ac-mock-label] {
+    font-size: 10.5px;
+  }
+}
+
+[data-ac-mock] footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+[data-ac-mock-send] {
+  padding: max(6px, 1.5cqw) max(12px, 2.6cqw);
+  border-radius: 6px;
+  background: var(--color-accent);
+  color: #ffffff;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+[data-ac-mock-rows] {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-ac-mock-rows] li {
+  display: grid;
+  align-items: center;
+  gap: max(8px, 2cqw);
+  padding: max(8px, 2.1cqw) 0;
+  border-bottom: 1px solid rgb(10 16 34 / 0.06);
+}
+
+[data-ac-mock="shortlist"] [data-ac-mock-rows] li {
+  grid-template-columns: max(18px, 4.3cqw) minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+[data-ac-mock="delivery"] [data-ac-mock-rows] li {
+  grid-template-columns: max(12px, 2.4cqw) auto minmax(0, 1fr) auto;
+}
+
+[data-ac-mock-rows] li:last-child {
+  border-bottom: 0;
+}
+
+[data-ac-mock-avatar] {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-accent) 22%, #ffffff);
+}
+
+[data-ac-mock-avatar][data-ac-tone="1"] {
+  background: color-mix(in srgb, var(--color-accent) 45%, #ffffff);
+}
+
+[data-ac-mock-avatar][data-ac-tone="2"] {
+  background: color-mix(in srgb, var(--color-accent) 68%, #ffffff);
+}
+
+[data-ac-mock-role] {
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-ac-mock-stack],
+[data-ac-mock-state],
+[data-ac-mock-id] {
+  color: rgb(10 16 34 / 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-ac-mock-state] {
+  justify-self: end;
+}
+
+[data-ac-mock-match] {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--color-accent);
+}
+
+[data-ac-mock-check] {
+  aspect-ratio: 1;
+  border-radius: 999px;
+  border: 1.5px solid rgb(10 16 34 / 0.18);
+}
+
+[data-ac-mock-check][data-ac-done] {
+  border-color: transparent;
+  background: var(--color-accent);
+}
+
+[data-ac-mock-progress] {
+  display: flex;
+  align-items: center;
+  gap: max(8px, 2cqw);
+  margin-top: auto;
+}
+
+[data-ac-mock-bar] {
+  flex: 1;
+  height: max(4px, 0.9cqw);
+  border-radius: 999px;
+  background: rgb(10 16 34 / 0.08);
+  overflow: hidden;
+}
+
+[data-ac-mock-bar] span {
+  display: block;
+  width: 62%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+}
+
+[data-ac-mock-pct] {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: rgb(10 16 34 / 0.6);
+}
+
+/* -- entrance --------------------------------------------------------------- */
+
+/* Same entrance grammar as the stats section: rise, de-blur, staggered,
+   reversible. The panel carries it itself and never the track, because a
+   transform on an ancestor of a sticky element makes that ancestor the
+   containing block and the pin stops working. */
+[data-ac-process-eyebrow],
+[data-ac-process-headline],
+[data-ac-process-rating],
+[data-ac-process-lede],
+[data-ac-process-panel] {
+  opacity: 0;
+  transform: translateY(30px);
+  filter: blur(8px);
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+    transform 1s cubic-bezier(0.22, 0.68, 0.24, 1),
+    filter 0.75s cubic-bezier(0.22, 0.68, 0.24, 1);
+  transition-delay: var(--ac-in-delay, 0ms);
+}
+
+[data-ac-process-eyebrow] { --ac-in-delay: 0ms; }
+[data-ac-process-headline] { --ac-in-delay: 90ms; }
+[data-ac-process-rating] { --ac-in-delay: 160ms; }
+[data-ac-process-lede] { --ac-in-delay: 220ms; }
+[data-ac-process-panel] { --ac-in-delay: 300ms; }
+
+[data-ac-process][data-ac-in] [data-ac-process-eyebrow],
+[data-ac-process][data-ac-in] [data-ac-process-headline],
+[data-ac-process][data-ac-in] [data-ac-process-rating],
+[data-ac-process][data-ac-in] [data-ac-process-lede],
+[data-ac-process][data-ac-in] [data-ac-process-panel] {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+
+/* -- rating, beside the headline -------------------------------------------- */
+
+/* The headline is held to the first three columns and the rating takes the
+   fourth, on the column rule, so the two can never collide. Its bottom edge
+   sits on the headline's baseline: the offset below is the baseline's
+   measured distance from the bottom of the headline box, which tracks
+   --display-size to within a third of a pixel at every width. */
+[data-ac-process-headline] {
+  grid-column: 1 / 4;
+}
+
+[data-ac-process-rating] {
+  grid-column: 4;
+  grid-row: 2;
+  align-self: end;
+  margin-bottom: calc(var(--display-size) * 0.122 + 3.5px);
+}
+
+/* -- responsive ------------------------------------------------------------- */
+
+@media (max-width: 991px) {
+  [data-ac-process-headline],
+  [data-ac-process-lede] {
+    grid-column: 1 / -1;
+  }
+
+  /* Under the headline once the header is one column. */
+  [data-ac-process-rating] {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    margin: clamp(20px, 3vh, 28px) 0 0;
+  }
+}
+
+/* The two-column panel drops here: the visual moves above a plain list of
+   steps and nothing pins. */
+@media (max-width: 809px) {
+  [data-ac-process] {
+    padding: var(--section-gap) 0 clamp(40px, 6vh, 64px);
+  }
+
+  /* max-width stays at the stats section's 500px so both ledes set to the
+     same measure; only the space below the block tightens. */
+  [data-ac-process-lede] {
+    margin-bottom: clamp(32px, 5vh, 44px);
+    text-wrap: pretty;
+  }
+
+  [data-ac-process-run] {
+    display: none;
+  }
+
+  [data-ac-process-panel] {
+    position: static;
+    grid-template-columns: 1fr;
+  }
+
+  [data-ac-process-cards] {
+    grid-template-rows: none;
+    grid-auto-rows: minmax(0, auto);
+    order: 2;
+    border-top: 0;
+  }
+
+  [data-ac-process-visual] {
+    order: 1;
+    border-left: 1.5px solid var(--ac-line);
+    border-bottom: 0;
+  }
+
+  [data-ac-process-lattice] {
+    grid-template-columns: 1fr;
+  }
+
+  [data-ac-process-column][data-ac-side] {
+    display: none;
+  }
+
+  [data-ac-process-column][data-ac-stage] {
+    grid-template-rows: 1fr;
+    border-right: 0;
+  }
+
+  [data-ac-process-column][data-ac-stage] > [data-ac-process-ghost] {
+    display: none;
+  }
+
+  /* Stacked, the stage is no longer sharing a fixed panel height with the
+     cards, so it sizes to its own content rather than a ratio that would crop. */
+  [data-ac-process-frame] {
+    border-bottom: 0;
+  }
+
+  /* Held at the tallest panel's height (measured by ProcessSection), so a
+     step change never moves the page below. */
+  [data-ac-process-stage-inner] {
+    height: auto;
+    min-height: var(--ac-stage-h, 0px);
+    overflow: visible;
+  }
+
+  [data-ac-process-card] {
+    gap: 24px;
+    padding: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-process-eyebrow],
+  [data-ac-process-headline],
+  [data-ac-process-rating],
+  [data-ac-process-lede],
+  [data-ac-process-panel],
+  [data-ac-process-card],
+  [data-ac-process-badge] {
+    transition: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  [data-ac-process-caption] p,
+  [data-ac-process-stage-inner] {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Heading reveal.
+
+   Headings split to characters and fade each one's opacity in turn with no
+   movement, --ac-char-step apart. The soft per-character fade suits a display
+   face at 88px.
+
+   Reversible on purpose. The gate is whatever the section already uses to say
+   it is in view, so the heading fills in on arrival and empties again on the
+   way out, and scrolling back replays it.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --ac-char-step: 18ms;
+  --ac-char-fade: 300ms;
+}
+
+[data-ac-reveal-word] {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+[data-ac-reveal-char] {
+  display: inline-block;
+  opacity: 0;
+  transition: opacity var(--ac-char-fade) cubic-bezier(0.22, 0.68, 0.24, 1);
+  transition-delay: calc(var(--ac-char-i, 0) * var(--ac-char-step));
+  /* Otherwise a descender or an accent gets clipped by the inline box. */
+  padding-bottom: 0.04em;
+  margin-bottom: -0.04em;
+}
+
+[data-ac-stats-section][data-ac-in] [data-ac-reveal-char],
+[data-ac-process][data-ac-in] [data-ac-reveal-char],
+[data-ac-showcase][data-ac-in] [data-ac-reveal-char],
+html[data-portal-state="in"] .ac-portal [data-ac-reveal-char],
+html[data-portal-state="after"] .ac-portal [data-ac-reveal-char] {
+  opacity: 1;
+}
+
+/* The hero headline keeps its rise and de-blur, but hands opacity over to the
+   characters — otherwise the block fades in as one thing and the per-character
+   fill has nothing left to do. */
+.ac-portal [data-ac-headline] {
+  opacity: 1;
+}
+
+/* The two section headings drop the block-level rise entirely: the characters
+   are the entrance, and running both reads as two separate effects. */
+[data-ac-stats-headline],
+[data-ac-process-headline] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-reveal-char] {
+    opacity: 1;
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Arrival.
+
+   The navbar and the hero's opening frame animate themselves in on load,
+   staggered. `data-ac-intro="start"` is written onto <html> by the inline
+   script in Layout.astro, before first paint, so the page is never shown settled
+   for a frame before the entrance runs. SmoothScroll clears it on the next
+   frame, which is the change the transitions below play from.
+   --------------------------------------------------------------------------- */
+
+.ac-nav {
+  transition: transform 820ms cubic-bezier(0.22, 1, 0.36, 1) 150ms;
+}
+
+.ac-nav-logo,
+.ac-nav-link,
+[data-ac-nav-cta],
+.ac-portal [data-gp-enter] {
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1) var(--ac-in-delay, 0ms),
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1) var(--ac-in-delay, 0ms);
+}
+
+/* The type resolves out of a blur rather than scaling: the portal measures the
+   art element to drive its camera, and a transform on it would be read back as
+   a different geometry mid-intro. Opacity and filter change neither. */
+.ac-portal [data-gp-art] {
+  transition:
+    opacity 1100ms cubic-bezier(0.22, 1, 0.36, 1) 260ms,
+    filter 1400ms cubic-bezier(0.22, 1, 0.36, 1) 260ms;
+}
+
+.ac-nav-logo { --ac-in-delay: 620ms; }
+/* Counted on the primary nav's children: its links and menu triggers. */
+nav[aria-label="Primary"] > :nth-child(1) { --ac-in-delay: 700ms; }
+nav[aria-label="Primary"] > :nth-child(2) { --ac-in-delay: 755ms; }
+nav[aria-label="Primary"] > :nth-child(3) { --ac-in-delay: 810ms; }
+nav[aria-label="Primary"] > :nth-child(4) { --ac-in-delay: 865ms; }
+nav[aria-label="Primary"] > :nth-child(5) { --ac-in-delay: 920ms; }
+nav[aria-label="Primary"] > :nth-child(6) { --ac-in-delay: 975ms; }
+[data-ac-nav-cta] { --ac-in-delay: 1040ms; }
+.ac-portal [data-gp-enter] { --ac-in-delay: 1080ms; }
+
+html[data-ac-intro="start"] .ac-nav {
+  transform: translateY(-101%);
+}
+
+html[data-ac-intro="start"] .ac-nav-logo,
+html[data-ac-intro="start"] .ac-nav-link,
+html[data-ac-intro="start"] [data-ac-nav-cta],
+html[data-ac-intro="start"] .ac-portal [data-gp-enter] {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+html[data-ac-intro="start"] .ac-portal [data-gp-art] {
+  opacity: 0;
+  filter: blur(22px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ac-nav,
+  .ac-nav-logo,
+  .ac-nav-link,
+  [data-ac-nav-cta],
+  .ac-portal [data-gp-enter],
+  .ac-portal [data-gp-art] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Showcase section — the four team models on the page grid, in the process
+   section's drafting frame. See docs/components/showcase.md.
+   --------------------------------------------------------------------------- */
+
+[data-ac-showcase] {
+  /* Same rule and line colours as the stats and process sections. */
+  --ac-rule: rgb(10 16 34 / 0.1);
+  --ac-line: var(--ac-rule);
+
+  position: relative;
+  isolation: isolate;
+  background: #ffffff;
+  padding-bottom: var(--section-gap);
+}
+
+/* Drawn from the start rather than on arrival: this section has no entrance,
+   and the process section's rules above are already down by the time it
+   scrolls in, so a draw here would read as a break in the line. */
+[data-ac-showcase] [data-ac-grid-rules] span {
+  transform: none;
+  transition: none;
+}
+
+/* The same gutter and four columns as [data-ac-grid-rules], so both frames'
+   edges sit on the column rules. No top padding: the process
+   section's own bottom padding is already the section gap. */
+[data-ac-showcase-container] {
+  position: relative;
+  z-index: 1;
+  margin-inline: var(--gutter);
+}
+
+/* -- header ------------------------------------------------------------------
+   Set exactly as the stats and process headers: four columns, eyebrow and
+   headline full width, the same rise-and-de-blur on the eyebrow and the same
+   per-character fill on the headline, both reversible on data-ac-in. */
+
+[data-ac-showcase-head] {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: clamp(48px, 8vh, 88px);
+  color: #0a1022;
+}
+
+[data-ac-showcase-eyebrow] {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 clamp(18px, 3vh, 30px);
+  opacity: 0;
+  transform: translateY(30px);
+  filter: blur(8px);
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+    transform 1s cubic-bezier(0.22, 0.68, 0.24, 1),
+    filter 0.75s cubic-bezier(0.22, 0.68, 0.24, 1);
+}
+
+[data-ac-showcase][data-ac-in] [data-ac-showcase-eyebrow] {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+
+[data-ac-showcase-headline] {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-family: var(--font-display-stack);
+  font-size: var(--display-size);
+  font-weight: var(--display-weight);
+  line-height: var(--display-lh);
+  letter-spacing: var(--display-ls);
+  word-spacing: var(--display-word-spacing);
+  text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-showcase-eyebrow] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}
+
+[data-ac-showcase-row] {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: stretch;
+}
+
+/* -- avatar stack and rating row, used by the process header ---------------- */
+
+[data-ac-avatars] {
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: 32px;
+  padding: 0 4px 0 3px;
+}
+
+/* 32px discs in 26px slots, so each overlaps the next by 6px. */
+[data-ac-avatar] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 32px;
+}
+
+[data-ac-avatar] > * {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+/* Each disc is cut where the next one sits, leaving a crescent of page
+   between them rather than a drawn ring. */
+[data-ac-avatar="1"] > * {
+  mask-image: radial-gradient(58% 58% at 130.7% 50%, transparent 99.99%, #000 100%);
+}
+
+[data-ac-avatar="2"] > * {
+  mask-image: radial-gradient(58% 58% at 131.3% 50%, transparent 99.99%, #000 100%);
+}
+
+[data-ac-avatar="3"] > * {
+  mask-image: radial-gradient(61% 61% at 131.1% 50%, transparent 99.99%, #000 100%);
+}
+
+[data-ac-avatar] img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+[data-ac-avatars-more] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: #f4f6f6;
+  font-family: var(--font-stack);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #0f1115;
+}
+
+/* Stack, a short rule, then the rating. */
+[data-ac-rating] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+[data-ac-rating-rule] {
+  flex: none;
+  width: 12px;
+  height: 1px;
+  background: #868d9c;
+}
+
+[data-ac-rating-text] {
+  margin: 0;
+  font-family: var(--font-stack);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: -0.02em;
+  color: #50576b;
+  white-space: nowrap;
+}
+
+/* -- visual: a drafting frame -----------------------------------------------
+   These tiles take the process section's frame, so the page keeps one
+   geometric language:
+   a square 1.5px frame, 1px cell rules, crosshair joints in each cell's
+   padding, 12px tile corners. The fill is white so the page's column rules
+   stop at the frame's edge rather than running through it, the same effect
+   the process section gets from drawing its rules in two bands. */
+
+[data-ac-showcase-visual] {
+  grid-column: 1 / 3;
+  grid-row: 1;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(50px, 1fr));
+  grid-template-rows: auto repeat(2, minmax(0, 1fr));
+  border: 1.5px solid var(--ac-line);
+  background: #ffffff;
+}
+
+/* A header row across the top of each frame, closed off by the same 1px cell
+   rule as the rest, like the caption bar over the process lattice: a number
+   in the accent, then a title at the process step titles' level, well below
+   the section headline. Shared by MVP Team and the three team cards. */
+[data-ac-frame-head] {
+  position: relative;
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: clamp(14px, 1.4vw, 20px) 20px;
+  border-bottom: 1px solid var(--ac-line);
+}
+
+[data-ac-frame-number] {
+  font-family: var(--font-stack);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+}
+
+[data-ac-frame-title] {
+  margin: 0;
+  font-family: var(--font-display-stack);
+  font-size: clamp(19px, 1.7vw, 24px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #0a1022;
+}
+
+/* -- team cards, columns 3–4 -------------------------------------------------
+   Three frames stacked flush, each a header row over a photo cell and a skills
+   cell that meet on the fourth column rule. Together they run the height of
+   the MVP Team frame, whose right edge they share. */
+
+/* After the MVP frame in the markup, so it reads 01 to 04 when the two stack;
+   pinned to the first row beside it on desktop. */
+[data-ac-teams] {
+  grid-column: 3 / 5;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid var(--ac-line);
+  border-left: 0;
+  background: #ffffff;
+}
+
+[data-ac-team] {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+[data-ac-team] + [data-ac-team] {
+  border-top: 1px solid var(--ac-line);
+}
+
+[data-ac-team-cell] {
+  position: relative;
+  display: flex;
+  padding: 10px;
+}
+
+[data-ac-team-cell="photo"] {
+  border-right: 1px solid var(--ac-line);
+}
+
+/* Bottom joints only on the last card, where nothing sits underneath. */
+[data-ac-team]:last-child [data-ac-team-cell] > [data-ac-joints] i {
+  display: block;
+}
+
+[data-ac-team-photo] {
+  position: relative;
+  flex: 1;
+  min-height: 150px;
+  border: 1px solid var(--ac-line);
+  border-radius: 12px;
+  overflow: clip;
+}
+
+[data-ac-team-photo] img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+  filter: contrast(0.8);
+}
+
+/* The process live-card surface, holding rows in the Developer card's style. */
+[data-ac-team-skills] {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 16px;
+  list-style: none;
+  border: 1px solid var(--ac-line);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 1px rgb(10 16 34 / 0.03),
+    0 16px 24px -12px rgb(10 16 34 / 0.05),
+    0 32px 32px -20px rgb(10 16 34 / 0.05),
+    0 40px 48px -20px rgb(10 16 34 / 0.04);
+}
+
+[data-ac-team-skill] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 10px 0 14px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 1px rgb(10 16 34 / 0.1),
+    0 1px 2px rgb(10 16 34 / 0.08);
+  font-family: var(--font-stack);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #0f1115;
+}
+
+[data-ac-team-check] {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #ededfc;
+  color: #613de3;
+}
+
+[data-ac-team-check] svg {
+  width: 11px;
+  height: 11px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-ac-showcase-cell] {
+  position: relative;
+  display: flex;
+  padding: 10px;
+}
+
+/* Photo down the left column, the two cards stacked on the right. Placed
+   explicitly so the markup can keep the cards first, which is the order they
+   stack in on a phone, where the photo is dropped. */
+[data-ac-showcase-cell="photo"] {
+  grid-column: 1;
+  grid-row: 2 / span 2;
+  border-right: 1px solid var(--ac-line);
+}
+
+[data-ac-showcase-cell="ai"] {
+  grid-column: 2;
+  grid-row: 2;
+  border-bottom: 1px solid var(--ac-line);
+}
+
+[data-ac-showcase-cell="developer"] {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+/* Bottom joints only where nothing sits underneath, as in the process lattice:
+   otherwise two marks land a few pixels apart on one rule. */
+[data-ac-showcase-cell="photo"] > [data-ac-joints] i,
+[data-ac-showcase-cell="developer"] > [data-ac-joints] i {
+  display: block;
+}
+
+/* The process section's live-card surface. */
+[data-ac-showcase-card] {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  flex: 1;
+  padding: 24px;
+  border: 1px solid var(--ac-line);
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: clip;
+  box-shadow:
+    0 0 0 1px rgb(10 16 34 / 0.03),
+    0 16px 24px -12px rgb(10 16 34 / 0.05),
+    0 32px 32px -20px rgb(10 16 34 / 0.05),
+    0 40px 48px -20px rgb(10 16 34 / 0.04);
+}
+
+/* Both drawings carry their own margins, so the cards give up their padding
+   rather than doubling them and shrinking the type. */
+[data-ac-showcase-card="developer"],
+[data-ac-showcase-card="ai"] {
+  padding: 0;
+}
+
+/* -- developer card: a role with its skills branching off it ----------------
+   A 476 × 410 canvas. Positions come from DeveloperSkills.astro as
+   percentages; sizes here are multiples of --u, one canvas unit. */
+
+[data-ac-dev] {
+  --u: calc(100cqw / 476);
+  --dev-ink: #0f1115;
+  --dev-accent: #613de3;
+  --dev-tint: #ededfc;
+
+  position: relative;
+  width: 100%;
+  aspect-ratio: 476 / 410;
+  container-type: inline-size;
+}
+
+[data-ac-dev-lines] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+[data-ac-dev-lines] path {
+  fill: none;
+  stroke: #dcdfe9;
+  stroke-width: 1;
+  stroke-dasharray: 2.6 2.6;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-ac-dev-skills] {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-ac-dev-head],
+[data-ac-dev-skill] {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  border-radius: calc(11 * var(--u));
+  background: #ffffff;
+  box-shadow:
+    0 0 0 1px rgb(10 16 34 / 0.1),
+    0 calc(1.5 * var(--u)) calc(3 * var(--u)) rgb(10 16 34 / 0.08);
+}
+
+[data-ac-dev-head] {
+  gap: calc(12.9 * var(--u));
+  padding-left: calc(13.4 * var(--u));
+}
+
+[data-ac-dev-skill] {
+  gap: calc(12 * var(--u));
+  padding: 0 calc(13.4 * var(--u)) 0 calc(14.7 * var(--u));
+}
+
+[data-ac-dev-tile] {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: calc(30.7 * var(--u));
+  height: calc(30.7 * var(--u));
+  border-radius: calc(8 * var(--u));
+  background: var(--dev-tint);
+  box-shadow: inset 0 0 0 calc(1.3 * var(--u)) #f3f4fc;
+  color: var(--dev-accent);
+}
+
+[data-ac-dev-tile] svg {
+  width: calc(15 * var(--u));
+  height: calc(15 * var(--u));
+}
+
+[data-ac-dev] svg:not([data-ac-dev-lines]) {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-ac-dev-icon] {
+  flex: none;
+  width: calc(18 * var(--u));
+  height: calc(18 * var(--u));
+  color: var(--dev-ink);
+}
+
+[data-ac-dev-label] {
+  font-family: var(--font-stack);
+  font-size: calc(15.3 * var(--u));
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--dev-ink);
+  white-space: nowrap;
+}
+
+[data-ac-dev-check] {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: calc(23 * var(--u));
+  height: calc(23 * var(--u));
+  margin-left: auto;
+  border-radius: 999px;
+  background: var(--dev-tint);
+  color: var(--dev-accent);
+}
+
+[data-ac-dev-check] svg {
+  width: calc(12 * var(--u));
+  height: calc(12 * var(--u));
+  stroke-width: 2.5;
+}
+
+/* -- AI tools card: logos on a ring that turns with the page ----------------
+   Drawn on a 391 × 435 card, sizes in multiples of --u (one card unit).
+   --orbit-angle is written by AiToolsOrbit.astro on scroll; 144deg is where
+   the ring comes to rest, and what shows without scripts. */
+
+[data-ac-orbit] {
+  --u: calc(100cqw / 391);
+  --orbit-angle: 144deg;
+  --orbit-line: #e3e6ed;
+
+  position: relative;
+  width: 100%;
+  aspect-ratio: 391 / 435;
+  container-type: inline-size;
+}
+
+/* The ring sits in the top of the card and fades out downward, so only its
+   upper arc ever reads. */
+[data-ac-orbit-stage] {
+  position: absolute;
+  left: calc(40 * var(--u));
+  top: calc(61 * var(--u));
+  width: calc(311 * var(--u));
+  height: calc(226 * var(--u));
+  mask-image: linear-gradient(#000 36%, transparent 80%);
+}
+
+[data-ac-orbit-ring] {
+  position: absolute;
+  left: calc(13.5 * var(--u));
+  top: calc(-5 * var(--u));
+  width: calc(284 * var(--u));
+  height: calc(284 * var(--u));
+  transform: rotate(var(--orbit-angle));
+}
+
+/* The dashed path the logos travel on, through their centres. */
+[data-ac-orbit-track] {
+  position: absolute;
+  left: calc(31 * var(--u));
+  top: calc(31 * var(--u));
+  width: calc(222 * var(--u));
+  height: calc(222 * var(--u));
+  border: 1px dashed var(--orbit-line);
+  border-radius: 999px;
+}
+
+/* A diameter of the ring with a logo at each end; five of them at 72° steps
+   put ten logos 36° apart. */
+[data-ac-orbit-spoke] {
+  position: absolute;
+  left: calc(117 * var(--u));
+  top: calc(6 * var(--u));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: calc(50 * var(--u));
+  height: calc(272 * var(--u));
+  transform: rotate(var(--spoke));
+}
+
+/* The white halo breaks the dashed track around each logo. */
+[data-ac-orbit-logo] {
+  display: grid;
+  place-items: center;
+  width: calc(50 * var(--u));
+  height: calc(50 * var(--u));
+  border: 1px solid var(--orbit-line);
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 0 calc(2 * var(--u)) #ffffff;
+  color: #0f1115;
+}
+
+[data-ac-orbit-flip] {
+  transform: rotate(180deg);
+}
+
+[data-ac-orbit-logo] svg {
+  width: calc(18 * var(--u));
+  height: calc(18 * var(--u));
+}
+
+[data-ac-orbit-copy] {
+  position: absolute;
+  left: calc(40 * var(--u));
+  top: calc(319 * var(--u));
+  display: flex;
+  flex-direction: column;
+  gap: calc(8 * var(--u));
+  width: calc(311 * var(--u));
+}
+
+[data-ac-orbit-title] {
+  margin: 0;
+  font-family: var(--font-stack);
+  font-size: calc(18 * var(--u));
+  font-weight: 600;
+  line-height: calc(28 * var(--u));
+  letter-spacing: -0.01em;
+  color: #0f1115;
+}
+
+[data-ac-orbit-body] {
+  margin: 0;
+  font-family: var(--font-stack);
+  font-size: calc(14 * var(--u));
+  font-weight: 400;
+  line-height: calc(20 * var(--u));
+  letter-spacing: -0.02em;
+  color: #50576b;
+}
+
+[data-ac-showcase-photo] {
+  position: relative;
+  flex: 1;
+  border: 1px solid var(--ac-line);
+  border-radius: 12px;
+  overflow: clip;
+}
+
+[data-ac-showcase-photo] img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Keeps the person in front centred as the tall tile crops the sides, with
+     her colleague still in frame on the left. */
+  object-position: 65% 50%;
+  filter: contrast(0.8);
+}
+
+/* -- tablet and phone ------------------------------------------------------- */
+
+@media (max-width: 1199px) {
+  [data-ac-showcase-row] {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(32px, 5vh, 48px);
+  }
+
+  /* No neighbour to share an edge with once the two stack. */
+  [data-ac-teams] {
+    border-left: 1.5px solid var(--ac-line);
+  }
+}
+
+@media (max-width: 809px) {
+  /* The process section tightens its bottom padding here, so this section
+     makes up the rest of the section gap itself. */
+  [data-ac-showcase-container] {
+    padding-top: calc(var(--section-gap) - clamp(40px, 6vh, 64px));
+  }
+
+  [data-ac-showcase-visual] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  [data-ac-showcase-cell] {
+    border-right: 0;
+  }
+
+  /* Photo over skills in each team card, both kept short: a 2:1 photo, and
+     the skills as chips that wrap two or three to a line instead of three
+     full-width rows. About 360px a card instead of 490. */
+  [data-ac-team] {
+    grid-template-columns: 1fr;
+  }
+
+  [data-ac-team-cell="photo"] {
+    border-right: 0;
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  [data-ac-team-photo] {
+    align-self: flex-start;
+    min-height: 0;
+    aspect-ratio: 2 / 1;
+  }
+
+  [data-ac-team-skills] {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-content: flex-start;
+    gap: 6px;
+    padding: 10px;
+  }
+
+  [data-ac-team-skill] {
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 7px 0 11px;
+    font-size: 13px;
+  }
+
+  [data-ac-team-check] {
+    width: 18px;
+    height: 18px;
+  }
+
+  [data-ac-showcase-cell="photo"] {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   X-Shore section — three delivery regions across time zones. Same header,
+   rules and frame grammar as the sections above: the photo on the left, the
+   regions stacked on the right with live local clocks. See
+   docs/components/xshore.md.
+   --------------------------------------------------------------------------- */
+
+[data-ac-xshore] {
+  --ac-rule: rgb(10 16 34 / 0.1);
+  --ac-line: var(--ac-rule);
+  --xs-ink: #0a1022;
+  --xs-muted: rgb(10 16 34 / 0.62);
+
+  position: relative;
+  isolation: isolate;
+  background: #ffffff;
+  padding-bottom: var(--section-gap);
+  color: var(--xs-ink);
+}
+
+[data-ac-xshore] [data-ac-grid-rules] span {
+  transform: none;
+  transition: none;
+}
+
+[data-ac-xshore-container] {
+  position: relative;
+  z-index: 1;
+  margin-inline: var(--gutter);
+}
+
+/* -- header: as the stats, process and showcase headers --------------------- */
+
+[data-ac-xshore-head] {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+[data-ac-xshore-eyebrow],
+[data-ac-xshore-lede] {
+  opacity: 0;
+  transform: translateY(30px);
+  filter: blur(8px);
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+    transform 1s cubic-bezier(0.22, 0.68, 0.24, 1),
+    filter 0.75s cubic-bezier(0.22, 0.68, 0.24, 1);
+  transition-delay: var(--ac-in-delay, 0ms);
+}
+
+[data-ac-xshore-lede] {
+  --ac-in-delay: 220ms;
+}
+
+[data-ac-xshore][data-ac-in] [data-ac-xshore-eyebrow],
+[data-ac-xshore][data-ac-in] [data-ac-xshore-lede] {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+
+[data-ac-xshore][data-ac-in] [data-ac-reveal-char] {
+  opacity: 1;
+}
+
+[data-ac-xshore-eyebrow] {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 clamp(18px, 3vh, 30px);
+}
+
+[data-ac-xshore-headline] {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-family: var(--font-display-stack);
+  font-size: var(--display-size);
+  font-weight: var(--display-weight);
+  line-height: var(--display-lh);
+  letter-spacing: var(--display-ls);
+  word-spacing: var(--display-word-spacing);
+  text-wrap: balance;
+}
+
+/* The second sentence carries the accent, as in the brief. */
+[data-ac-xshore-accent] {
+  color: var(--color-accent);
+}
+
+[data-ac-xshore-lede] {
+  grid-column: 2 / 4;
+  max-width: 500px;
+  margin: clamp(30px, 5vh, 48px) 0 clamp(40px, 6vh, 64px);
+  font-size: clamp(16px, 1.4vw, 20px);
+  line-height: 1.35;
+  letter-spacing: var(--text-ls);
+  color: rgb(10 16 34 / 0.72);
+}
+
+/* -- the frame -------------------------------------------------------------- */
+
+/* Columns 1–4, edge to edge on the outer rules, split on the third: the photo
+   on the left, the three regions stacked on the right. */
+[data-ac-xshore-frame] {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto repeat(3, 1fr);
+  border: 1.5px solid var(--ac-line);
+  background: #ffffff;
+}
+
+[data-ac-xshore-caption] {
+  justify-content: space-between;
+  align-items: center;
+}
+
+[data-ac-xshore-caption] p {
+  margin: 0;
+  color: var(--xs-muted);
+}
+
+[data-ac-xshore-now] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-ac-xshore-now] time {
+  color: var(--xs-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A slow ping on the live clock; still under reduced motion. */
+[data-ac-xshore-pulse] {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-accent);
+}
+
+[data-ac-xshore-pulse]::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 1px solid var(--color-accent);
+  animation: ac-xshore-ping 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes ac-xshore-ping {
+  from {
+    opacity: 0.8;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+[data-ac-xshore-cell] {
+  position: relative;
+  display: flex;
+  padding: 10px;
+}
+
+/* The photo keeps its square (the source is 1442 × 1440) and sets the height
+   the regions share. Where they need a little more, it crops from the centre,
+   which the captions in its four corners survive. */
+[data-ac-xshore-cell="photo"] {
+  grid-column: 1 / 3;
+  grid-row: 2 / span 3;
+  border-right: 1px solid var(--ac-line);
+}
+
+[data-ac-xshore-photo] {
+  position: relative;
+  flex: 1;
+  border: 1px solid var(--ac-line);
+  border-radius: 12px;
+  overflow: clip;
+  background: #0a1022;
+}
+
+[data-ac-xshore-photo]::before {
+  content: "";
+  display: block;
+  padding-top: 100%;
+}
+
+[data-ac-xshore-photo] img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+[data-ac-xshore-cell="region"] {
+  grid-column: 3 / 5;
+  padding: clamp(22px, 2.2vw, 32px) clamp(20px, 2.4vw, 36px);
+  border-bottom: 1px solid var(--ac-line);
+  transition: background-color 300ms ease;
+}
+
+[data-ac-xshore-cell="region"]:last-child {
+  border-bottom: 0;
+}
+
+[data-ac-xshore-cell="region"]:hover {
+  background: color-mix(in srgb, var(--color-accent) 4%, #ffffff);
+}
+
+[data-ac-xshore-cell="photo"] > [data-ac-joints] i,
+[data-ac-xshore-cell="region"]:last-child > [data-ac-joints] i {
+  display: block;
+}
+
+/* -- a region --------------------------------------------------------------- */
+
+[data-ac-xshore-region] {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-ac-xshore-region-top] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 16px;
+}
+
+[data-ac-xshore-label] {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  color: var(--xs-muted);
+}
+
+/* Title and body settle on the cell's floor when the photo makes the row
+   taller than they need. */
+[data-ac-xshore-title] {
+  margin: auto 0 0;
+  font-family: var(--font-display-stack);
+  font-size: clamp(28px, 2.6vw, 40px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+[data-ac-xshore-body] {
+  max-width: 60ch;
+  margin: 12px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: var(--text-ls);
+  color: rgb(10 16 34 / 0.72);
+}
+
+[data-ac-xshore-clocks] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-ac-xshore-clocks] li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border: 1px solid var(--ac-line);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+[data-ac-xshore-clocks] time {
+  margin-left: 2px;
+  font-variant-numeric: tabular-nums;
+  color: var(--xs-muted);
+}
+
+/* Filled while that city is inside its working day, hollow outside it. */
+[data-ac-xshore-dot] {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  border: 1.5px solid rgb(10 16 34 / 0.25);
+}
+
+[data-ac-xshore-dot][data-working] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+/* -- responsive ------------------------------------------------------------- */
+
+@media (max-width: 1199px) {
+  [data-ac-xshore-frame] {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
+  [data-ac-xshore-cell="photo"],
+  [data-ac-xshore-cell="region"] {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  [data-ac-xshore-cell="photo"] {
+    border-right: 0;
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  [data-ac-xshore-cell="photo"] > [data-ac-joints] i[data-ac-corner="bl"],
+  [data-ac-xshore-cell="photo"] > [data-ac-joints] i[data-ac-corner="br"] {
+    display: none;
+  }
+}
+
+@media (max-width: 991px) {
+  [data-ac-xshore-lede] {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 809px) {
+  [data-ac-xshore-caption] {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  /* One phrase a line, without the dot, rather than "zones" left on its own. */
+  [data-ac-xshore-sep] {
+    display: none;
+  }
+
+  [data-ac-xshore-phrase] {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-xshore-eyebrow],
+  [data-ac-xshore-lede] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+
+  [data-ac-xshore-pulse]::after {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Shared section grammar, used by every section from Case Studies down: tone,
+   rules, the header (SectionHead.astro) and its entrance, and the frame. Each
+   section sets data-ac-sec to its tone: light, dark or accent. Tokens, not
+   colours, change between tones, so the pieces below work on all three.
+   --------------------------------------------------------------------------- */
+
+[data-ac-sec] {
+  --ac-rule: rgb(10 16 34 / 0.1);
+  --ac-line: var(--ac-rule);
+  --sec-ink: #0a1022;
+  --sec-muted: rgb(10 16 34 / 0.6);
+  --sec-soft: rgb(10 16 34 / 0.72);
+  --sec-bg: #ffffff;
+  --sec-pad-x: clamp(20px, 2.4vw, 36px);
+  --sec-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  position: relative;
+  isolation: isolate;
+  background: var(--sec-bg);
+  color: var(--sec-ink);
+  padding-bottom: var(--section-gap);
+}
+
+[data-ac-sec="dark"] {
+  --ac-rule: rgb(255 255 255 / 0.07);
+  --ac-line: rgb(255 255 255 / 0.13);
+  --sec-ink: #ffffff;
+  --sec-muted: rgb(255 255 255 / 0.56);
+  --sec-soft: rgb(255 255 255 / 0.72);
+  --sec-bg: #0a1022;
+}
+
+[data-ac-sec="accent"] {
+  --ac-rule: rgb(255 255 255 / 0.16);
+  --ac-line: rgb(255 255 255 / 0.28);
+  --sec-ink: #ffffff;
+  --sec-muted: rgb(255 255 255 / 0.74);
+  --sec-soft: rgb(255 255 255 / 0.88);
+  --sec-bg: var(--color-accent);
+}
+
+/* A change of tone is a hard edge, so both sides of it carry the same space,
+   --band-pad, and the edge sits halfway between the two sections' content.
+   Light sections that follow light ones keep the page's usual rhythm: no top
+   padding, the previous section's bottom gap does the work.
+
+   Every component renders its <script> right after its section, so the
+   neighbour selectors allow one element in between; without that they never
+   match and the light section's eyebrow sits on the dark edge. */
+[data-ac-sec="dark"],
+[data-ac-sec="accent"] {
+  padding-block: var(--band-pad);
+}
+
+:is([data-ac-sec="dark"], [data-ac-sec="accent"]) + [data-ac-sec="light"],
+:is([data-ac-sec="dark"], [data-ac-sec="accent"]) + script + [data-ac-sec="light"] {
+  padding-top: var(--band-pad);
+}
+
+:is([data-ac-sec="light"], [data-ac-xshore]):has(+ :is([data-ac-sec="dark"], [data-ac-sec="accent"])),
+:is([data-ac-sec="light"], [data-ac-xshore]):has(+ script + :is([data-ac-sec="dark"], [data-ac-sec="accent"])) {
+  padding-bottom: var(--band-pad);
+}
+
+[data-ac-sec] [data-ac-grid-rules] span {
+  transform: none;
+  transition: none;
+}
+
+[data-ac-sec-container] {
+  position: relative;
+  z-index: 1;
+  margin-inline: var(--gutter);
+}
+
+/* -- header ----------------------------------------------------------------- */
+
+[data-ac-sec-head] {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: clamp(40px, 6vh, 64px);
+}
+
+[data-ac-sec-eyebrow] {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 clamp(18px, 3vh, 30px);
+  color: var(--sec-muted);
+}
+
+[data-ac-sec="dark"] [data-ac-sec-eyebrow] > span:first-child {
+  color: var(--color-accent);
+}
+
+[data-ac-sec-headline] {
+  grid-column: 1 / 4;
+  margin: 0;
+  font-family: var(--font-display-stack);
+  font-size: var(--display-size);
+  font-weight: var(--display-weight);
+  line-height: var(--display-lh);
+  letter-spacing: var(--display-ls);
+  word-spacing: var(--display-word-spacing);
+  color: var(--sec-ink);
+}
+
+/* Two-tone headlines. Every section headline sets its closing phrase in the
+   accent (X-Shore set the pattern); on the accent band itself the phrase takes
+   the page's ink instead, which reads as the same move turned over. The
+   Stats, Process and Showcase headers use [data-ac-headline-accent], the
+   Why AgentCraft titles [data-ac-why-accent]. */
+[data-ac-sec-line][data-accent],
+[data-ac-headline-accent],
+[data-ac-why-accent] {
+  color: var(--color-accent);
+}
+
+[data-ac-sec="accent"] [data-ac-sec-line][data-accent] {
+  color: #0a1022;
+}
+
+/* The lede sits in the last column, on the headline's floor. */
+[data-ac-sec-lede] {
+  grid-column: 4;
+  grid-row: 2;
+  align-self: end;
+  max-width: 340px;
+  margin: 0;
+  font-size: clamp(15px, 1.15vw, 17px);
+  line-height: 1.5;
+  letter-spacing: var(--text-ls);
+  color: var(--sec-soft);
+}
+
+/* With no headline, the lede takes the eyebrow's row, on the right. */
+[data-ac-sec-eyebrow] + [data-ac-sec-lede] {
+  grid-column: 3 / 5;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+  max-width: 440px;
+}
+
+[data-ac-sec-head]:has([data-ac-sec-eyebrow] + [data-ac-sec-lede]) [data-ac-sec-eyebrow] {
+  grid-column: 1 / 3;
+}
+
+/* Entrance: eyebrow, lede and anything marked to rise lift and de-blur; the
+   headline fills per character. Reversible, on the section's data-ac-in. */
+[data-ac-sec-eyebrow],
+[data-ac-sec-lede],
+[data-ac-sec-rise] {
+  opacity: 0;
+  transform: translateY(30px);
+  filter: blur(8px);
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+    transform 1s cubic-bezier(0.22, 0.68, 0.24, 1),
+    filter 0.75s cubic-bezier(0.22, 0.68, 0.24, 1);
+  transition-delay: var(--ac-in-delay, 0ms);
+}
+
+[data-ac-sec-lede],
+[data-ac-sec-rise] {
+  --ac-in-delay: 220ms;
+}
+
+[data-ac-in] :is([data-ac-sec-eyebrow], [data-ac-sec-lede], [data-ac-sec-rise]) {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+
+[data-ac-sec][data-ac-in] [data-ac-reveal-char],
+[data-ac-footer][data-ac-in] [data-ac-reveal-char] {
+  opacity: 1;
+}
+
+[data-ac-sec-frame] {
+  position: relative;
+  border: 1.5px solid var(--ac-line);
+  background: var(--sec-bg);
+}
+
+@media (max-width: 991px) {
+  [data-ac-sec-headline] {
+    grid-column: 1 / -1;
+  }
+
+  [data-ac-sec-lede],
+  [data-ac-sec-eyebrow] + [data-ac-sec-lede] {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    justify-self: start;
+    max-width: 520px;
+    margin-top: clamp(24px, 4vh, 36px);
+  }
+
+  [data-ac-sec-eyebrow] + [data-ac-sec-lede] {
+    margin-top: 0;
+  }
+
+  [data-ac-sec-head]:has([data-ac-sec-eyebrow] + [data-ac-sec-lede]) [data-ac-sec-eyebrow] {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Phones set the headline as one balanced paragraph: the desktop line breaks
+   would leave a single word stranded on its own line. */
+@media (max-width: 809px) {
+  [data-ac-sec-headline] {
+    text-wrap: balance;
+  }
+
+  [data-ac-sec-headline] br {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-sec-eyebrow],
+  [data-ac-sec-lede],
+  [data-ac-sec-rise] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Case studies — "Proof is in the product." The page's dark section. The list
+   opens one project at a time and advances on its own, a ring timing each;
+   the open project's image is on the right. See docs/components/case-studies.md.
+   --------------------------------------------------------------------------- */
+
+[data-ac-cases] {
+  --ac-case-duration: 6s;
+  --cs-number: 24px;
+  --cs-gap: 18px;
+}
+
+[data-ac-cases-frame] {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+[data-ac-cases-cell] {
+  position: relative;
+  display: flex;
+}
+
+[data-ac-cases-cell="list"] {
+  grid-column: 1 / 3;
+  border-right: 1px solid var(--ac-line);
+}
+
+[data-ac-cases-cell="media"] {
+  grid-column: 3 / 5;
+  padding: 10px;
+  min-height: clamp(460px, 44vw, 660px);
+}
+
+[data-ac-cases-cell] > [data-ac-joints] i {
+  display: block;
+}
+
+/* -- the list --------------------------------------------------------------- */
+
+[data-ac-cases-list] {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The open project takes whatever height the image leaves over. */
+[data-ac-case] {
+  position: relative;
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--ac-line);
+  transition:
+    flex-grow 700ms var(--sec-ease),
+    background-color 300ms ease;
+}
+
+[data-ac-case]:last-child {
+  border-bottom: 0;
+}
+
+[data-ac-case][data-active] {
+  flex-grow: 1;
+  background: rgb(255 255 255 / 0.025);
+}
+
+/* A rule down the open project's leading edge, drawn from the top. */
+[data-ac-case]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: var(--color-accent);
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+  transition: transform 700ms var(--sec-ease);
+}
+
+[data-ac-case][data-active]::before {
+  transform: none;
+}
+
+[data-ac-case-head] {
+  margin: 0;
+  font: inherit;
+}
+
+[data-ac-case-trigger] {
+  display: flex;
+  align-items: center;
+  gap: var(--cs-gap);
+  width: 100%;
+  padding: clamp(20px, 2vw, 28px) var(--sec-pad-x);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+[data-ac-case-trigger]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+[data-ac-case-number] {
+  flex: none;
+  width: var(--cs-number);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+}
+
+[data-ac-case-name] {
+  flex: 1;
+  font-family: var(--font-display-stack);
+  font-size: clamp(22px, 2vw, 30px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--sec-muted);
+  transition: color 300ms ease;
+}
+
+[data-ac-case-trigger]:hover [data-ac-case-name] {
+  color: rgb(255 255 255 / 0.86);
+}
+
+[data-ac-case][data-active] [data-ac-case-name] {
+  color: #ffffff;
+}
+
+/* Right of the name: an arrow on closed projects, the timer ring on the open
+   one. */
+[data-ac-case-mark] {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: var(--sec-muted);
+}
+
+[data-ac-case-mark] svg {
+  grid-area: 1 / 1;
+}
+
+[data-ac-case-arrow] {
+  transition:
+    transform 300ms ease,
+    color 300ms ease;
+}
+
+[data-ac-case-trigger]:hover [data-ac-case-arrow] {
+  transform: translate(2px, -2px);
+  color: #ffffff;
+}
+
+[data-ac-case-ring] {
+  display: none;
+  transform: rotate(-90deg);
+}
+
+[data-ac-case][data-active] [data-ac-case-ring] {
+  display: block;
+}
+
+[data-ac-case][data-active] [data-ac-case-arrow] {
+  display: none;
+}
+
+[data-ac-case-ring] circle {
+  fill: none;
+  stroke: rgb(255 255 255 / 0.16);
+  stroke-width: 1.5;
+}
+
+[data-ac-case-ring] [data-ac-case-progress] {
+  stroke: var(--color-accent);
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+}
+
+/* The ring is the timer: its animation ending is what opens the next project
+   (see the script), so pausing it pauses the rotation. */
+[data-ac-cases][data-ac-auto] [data-ac-case][data-active] [data-ac-case-progress] {
+  animation: ac-case-progress var(--ac-case-duration) linear both;
+}
+
+[data-ac-cases][data-ac-auto]:not([data-ac-in]) [data-ac-case-progress],
+[data-ac-cases][data-ac-auto][data-ac-hold] [data-ac-case-progress] {
+  animation-play-state: paused;
+}
+
+@keyframes ac-case-progress {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Every project's details open to the tallest one's height (measured by the
+   script), so the list never changes height as it advances. */
+[data-ac-case-details] {
+  height: 0;
+  overflow: hidden;
+  transition: height 700ms var(--sec-ease);
+}
+
+[data-ac-case][data-active] [data-ac-case-details] {
+  height: var(--ac-case-details-h, auto);
+}
+
+[data-ac-case-details-inner] {
+  padding: 0 var(--sec-pad-x) clamp(24px, 2.4vw, 32px)
+    calc(var(--sec-pad-x) + var(--cs-number) + var(--cs-gap));
+  opacity: 0;
+  transform: translateY(12px);
+  filter: blur(6px);
+  transition:
+    opacity 400ms ease,
+    transform 700ms var(--sec-ease),
+    filter 400ms ease;
+}
+
+[data-ac-case][data-active] [data-ac-case-details-inner] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition-delay: 180ms;
+}
+
+[data-ac-case-summary] {
+  max-width: 46ch;
+  margin: 0;
+  font-size: clamp(15px, 1.15vw, 17px);
+  line-height: 1.55;
+  letter-spacing: var(--text-ls);
+  color: var(--sec-soft);
+}
+
+[data-ac-case-stack] {
+  margin: 18px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--ac-line);
+  color: var(--sec-muted);
+}
+
+/* The hero's ghost button, on the same dark. */
+[data-ac-case-link] {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 22px;
+  padding: 12px 18px;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  color: rgb(255 255 255 / 0.86);
+  text-decoration: none;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+
+[data-ac-case-link]:hover {
+  border-color: rgb(255 255 255 / 0.45);
+  background: rgb(255 255 255 / 0.06);
+  color: #ffffff;
+}
+
+[data-ac-case-link]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* 42px drawn; on touch screens an invisible margin brings the target to 44. */
+@media (pointer: coarse) {
+  [data-ac-case-link] {
+    position: relative;
+  }
+
+  [data-ac-case-link]::before {
+    content: "";
+    position: absolute;
+    inset: -2px 0;
+  }
+}
+
+/* -- the image -------------------------------------------------------------- */
+
+[data-ac-cases-media] {
+  position: relative;
+  flex: 1;
+  border: 1px solid var(--ac-line);
+  border-radius: 12px;
+  overflow: clip;
+  background: #060a17;
+}
+
+[data-ac-case-media] {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+
+[data-ac-case-media][data-active] {
+  opacity: 1;
+}
+
+[data-ac-case-media] img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.06);
+  transition: transform 1.6s var(--sec-ease);
+}
+
+[data-ac-case-media][data-active] img {
+  transform: none;
+}
+
+/* A soft floor under the counter. */
+[data-ac-cases-media]::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 36%;
+  background: linear-gradient(to top, rgb(6 10 23 / 0.72), transparent);
+  pointer-events: none;
+}
+
+[data-ac-case-chip] {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 8px 12px;
+  background: #ffffff;
+  color: #0a1022;
+}
+
+[data-ac-cases-count] {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  z-index: 1;
+  margin: 0;
+  color: rgb(255 255 255 / 0.86);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1199px) {
+  [data-ac-cases-frame] {
+    grid-template-columns: 1fr;
+  }
+
+  [data-ac-cases-cell="list"],
+  [data-ac-cases-cell="media"] {
+    grid-column: 1;
+  }
+
+  [data-ac-cases-cell="media"] {
+    grid-row: 1;
+    min-height: 0;
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  [data-ac-cases-cell="list"] {
+    border-right: 0;
+  }
+
+  [data-ac-cases-media] {
+    aspect-ratio: 16 / 10;
+  }
+
+  [data-ac-cases-cell="media"] > [data-ac-joints] i[data-ac-corner="bl"],
+  [data-ac-cases-cell="media"] > [data-ac-joints] i[data-ac-corner="br"] {
+    display: none;
+  }
+}
+
+@media (max-width: 809px) {
+  [data-ac-cases] {
+    --cs-gap: 12px;
+  }
+
+  [data-ac-cases-media] {
+    aspect-ratio: 4 / 3;
+  }
+
+  [data-ac-case-details-inner] {
+    padding-left: var(--sec-pad-x);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-case],
+  [data-ac-case]::before,
+  [data-ac-case-details],
+  [data-ac-case-details-inner],
+  [data-ac-case-media],
+  [data-ac-case-media] img {
+    transition: none;
+  }
+
+  [data-ac-case-media] img {
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Client stories — "Teams that bring products to life." A portrait in the
+   first column, the quote across the other three, and a strip of all seven
+   clients whose bars time the rotation. Controls sit on the frame's top edge.
+   See docs/components/client-stories.md.
+   --------------------------------------------------------------------------- */
+
+[data-ac-stories] {
+  --ac-story-duration: 8s;
+}
+
+/* The controls hang off the header's last column onto the frame below, so
+   the header gives up its bottom margin and the headline keeps the space. */
+[data-ac-stories] [data-ac-sec-head] {
+  margin-bottom: 0;
+}
+
+[data-ac-stories] [data-ac-sec-headline] {
+  margin-bottom: clamp(40px, 6vh, 64px);
+}
+
+[data-ac-stories-controls] {
+  grid-column: 4;
+  grid-row: 2;
+  justify-self: end;
+  align-self: end;
+  display: flex;
+  border: 1.5px solid var(--ac-line);
+  border-bottom: 0;
+  background: #ffffff;
+}
+
+[data-ac-stories-controls] button {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  background: none;
+  color: var(--sec-ink);
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+[data-ac-stories-controls] button:hover {
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+[data-ac-stories-controls] button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+[data-ac-stories-count] {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0 16px;
+  border-inline: 1px solid var(--ac-line);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-ac-stories-frame] {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+[data-ac-stories-cell] {
+  position: relative;
+  display: flex;
+  border-bottom: 1px solid var(--ac-line);
+}
+
+[data-ac-stories-cell="photo"] {
+  grid-column: 1;
+  padding: 10px;
+  border-right: 1px solid var(--ac-line);
+}
+
+[data-ac-stories-cell="quote"] {
+  grid-column: 2 / 5;
+  flex-direction: column;
+  padding: clamp(28px, 3vw, 48px) clamp(24px, 3.4vw, 56px);
+}
+
+/* -- portrait --------------------------------------------------------------- */
+
+[data-ac-stories-photo] {
+  position: relative;
+  flex: 1;
+  border: 1px solid var(--ac-line);
+  border-radius: 12px;
+  overflow: clip;
+  background: #eef1f8;
+}
+
+/* Holds 4:5 at least; stretches with the quote beside it. */
+[data-ac-stories-photo]::before {
+  content: "";
+  display: block;
+  padding-top: 125%;
+}
+
+[data-ac-story-photo] {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+
+[data-ac-story-photo][data-active] {
+  opacity: 1;
+}
+
+[data-ac-story-photo] img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+  transform: scale(1.05);
+  transition: transform 1.4s var(--sec-ease);
+}
+
+[data-ac-story-photo][data-active] img {
+  transform: none;
+}
+
+/* -- quote ------------------------------------------------------------------ */
+
+[data-ac-stories-mark] {
+  flex: none;
+  width: clamp(26px, 2.2vw, 34px);
+  height: auto;
+  margin-bottom: clamp(18px, 2vw, 28px);
+  color: var(--color-accent);
+}
+
+/* Every story stacks in one cell, so the deck is as tall as the longest and
+   nothing moves when it turns. */
+[data-ac-stories-deck] {
+  flex: 1;
+  display: grid;
+}
+
+[data-ac-story] {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 400ms ease,
+    visibility 0s linear 400ms;
+}
+
+[data-ac-story][data-active] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 500ms ease 150ms,
+    visibility 0s;
+}
+
+[data-ac-story-quote] {
+  flex: 1;
+  margin: 0;
+}
+
+[data-ac-story-quote] p {
+  max-width: 34ch;
+  margin: 0;
+  font-family: var(--font-display-stack);
+  font-size: clamp(22px, 2.3vw, 34px);
+  font-weight: 400;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+  transform: translateY(14px);
+  filter: blur(6px);
+  transition:
+    transform 800ms var(--sec-ease),
+    filter 500ms ease;
+}
+
+[data-ac-story][data-active] [data-ac-story-quote] p {
+  transform: none;
+  filter: none;
+  transition-delay: 150ms;
+}
+
+[data-ac-story-by] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-top: clamp(24px, 3vw, 40px);
+  padding-top: clamp(18px, 2vw, 24px);
+  border-top: 1px solid var(--ac-line);
+}
+
+[data-ac-story-name] {
+  display: block;
+  font-family: var(--font-display-stack);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+[data-ac-story-role] {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--sec-muted);
+}
+
+[data-ac-story-link] {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+[data-ac-story-link] svg {
+  transition: transform 300ms ease;
+}
+
+[data-ac-story-link]:hover {
+  color: var(--color-accent-dark);
+}
+
+[data-ac-story-link]:hover svg {
+  transform: translate(2px, -2px);
+}
+
+/* -- client strip ------------------------------------------------------------ */
+
+[data-ac-stories-index] {
+  position: relative;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(148px, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+[data-ac-stories-index]::-webkit-scrollbar {
+  display: none;
+}
+
+[data-ac-stories-index] li + li {
+  border-left: 1px solid var(--ac-line);
+}
+
+[data-ac-story-tab] {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  padding: 20px clamp(14px, 1.4vw, 20px) 22px;
+  border: 0;
+  background: none;
+  color: var(--sec-muted);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 300ms ease,
+    background-color 300ms ease;
+}
+
+[data-ac-story-tab]:hover {
+  color: var(--sec-ink);
+  background: color-mix(in srgb, var(--color-accent) 4%, #ffffff);
+}
+
+[data-ac-story-tab][aria-current="true"] {
+  color: var(--sec-ink);
+}
+
+[data-ac-story-tab]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+[data-ac-story-tab-number] {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+}
+
+/* A bar across the top of each tab: full on the open story, and while the
+   stories run on their own it fills to time the next. Its animation ending
+   is what turns the carousel (see the script). */
+[data-ac-story-tab]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+[data-ac-story-tab][aria-current="true"]::before {
+  transform: none;
+}
+
+[data-ac-stories][data-ac-auto] [data-ac-story-tab][aria-current="true"]::before {
+  animation: ac-story-progress var(--ac-story-duration) linear both;
+}
+
+[data-ac-stories][data-ac-auto]:not([data-ac-in]) [data-ac-story-tab]::before,
+[data-ac-stories][data-ac-auto][data-ac-hold] [data-ac-story-tab]::before {
+  animation-play-state: paused;
+}
+
+@keyframes ac-story-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (max-width: 809px) {
+  [data-ac-stories] [data-ac-sec-head] {
+    grid-template-columns: 1fr;
+  }
+
+  [data-ac-stories-controls] {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  [data-ac-stories-frame] {
+    grid-template-columns: 1fr;
+  }
+
+  [data-ac-stories-cell="photo"],
+  [data-ac-stories-cell="quote"] {
+    grid-column: 1;
+  }
+
+  [data-ac-stories-cell="photo"] {
+    border-right: 0;
+  }
+
+  /* Shorter than square, so the quote starts inside the first screen of the
+     section rather than a full portrait below its header. */
+  [data-ac-stories-photo]::before {
+    padding-top: 72%;
+  }
+
+}
+
+/* A 16px line of caps is too small to hit with a thumb; the padding makes it
+   44px without moving the text. Phones, and any touch screen (tablets). */
+@media (max-width: 809px), (pointer: coarse) {
+  [data-ac-story-link] {
+    padding-block: 14px;
+    margin-block: -14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-story],
+  [data-ac-story-quote] p,
+  [data-ac-story-photo],
+  [data-ac-story-photo] img {
+    transition: none;
+  }
+
+  [data-ac-story-quote] p,
+  [data-ac-story-photo] img {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Skills — the eight roles as a lattice on the page's four columns. Hover or
+   keyboard focus lights the cell from the pointer, fills the icon tile, nudges
+   the arrow and slides the name up over the role's description. Touch screens
+   just show the descriptions. See docs/components/skills.md.
+   --------------------------------------------------------------------------- */
+
+/* Lines are the grid's gaps over an opaque rule colour, so the page's own
+   column rules behind never double them up. */
+[data-ac-skills-grid] {
+  --sk-line: color-mix(in srgb, #0a1022 10%, #ffffff);
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1.5px solid var(--sk-line);
+  background: var(--sk-line);
+}
+
+[data-ac-skill] {
+  position: relative;
+  background: #ffffff;
+}
+
+[data-ac-skill]:nth-last-child(-n + 4) > [data-ac-joints] i {
+  display: block;
+}
+
+[data-ac-skill] > [data-ac-joints] {
+  z-index: 1;
+}
+
+[data-ac-skill] > [data-ac-joints] i::before,
+[data-ac-skill] > [data-ac-joints] i::after {
+  transition: background-color 300ms ease;
+}
+
+[data-ac-skill-link] {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: clamp(250px, 21vw, 300px);
+  padding: clamp(20px, 1.8vw, 26px);
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.9s var(--sec-ease);
+  transition-delay: calc(200ms + var(--i, 0) * 60ms);
+}
+
+[data-ac-in] [data-ac-skill-link] {
+  opacity: 1;
+  transform: none;
+}
+
+[data-ac-skill-link]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* The light that follows the pointer (position from the script). */
+[data-ac-skill-link]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    280px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--color-accent) 13%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+[data-ac-skill-top] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+[data-ac-skill-number] {
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+}
+
+[data-ac-skill-arrow] {
+  color: var(--sec-muted);
+  transition:
+    transform 400ms var(--sec-ease),
+    color 300ms ease;
+}
+
+[data-ac-skill-icon] {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-top: clamp(18px, 2vw, 26px);
+  border: 1px solid var(--ac-line);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--sec-ink);
+  transition:
+    background-color 400ms ease,
+    border-color 400ms ease,
+    color 400ms ease,
+    transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* The name sits on the floor; the description opens beneath it and lifts it. */
+[data-ac-skill-copy] {
+  display: grid;
+  grid-template-rows: auto 0fr;
+  margin-top: auto;
+  padding-top: 20px;
+  transition: grid-template-rows 500ms var(--sec-ease);
+}
+
+[data-ac-skill-name] {
+  margin: 0;
+  font-family: var(--font-display-stack);
+  font-size: clamp(20px, 1.75vw, 26px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+[data-ac-skill-body] {
+  min-height: 0;
+  overflow: hidden;
+}
+
+[data-ac-skill-body] p {
+  margin: 0;
+  padding-top: 10px;
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: var(--text-ls);
+  color: var(--sec-muted);
+  opacity: 0;
+  transform: translateY(8px);
+  filter: blur(4px);
+  transition:
+    opacity 300ms ease,
+    transform 500ms var(--sec-ease),
+    filter 300ms ease;
+}
+
+@media (hover: hover) {
+  [data-ac-skill-link]:hover::before {
+    opacity: 1;
+  }
+}
+
+[data-ac-skill-link]:is(:hover, :focus-visible) [data-ac-skill-icon] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #ffffff;
+  transform: rotate(-8deg) scale(1.06);
+}
+
+[data-ac-skill-link]:is(:hover, :focus-visible) [data-ac-skill-arrow] {
+  color: var(--color-accent);
+  transform: translate(3px, -3px);
+}
+
+[data-ac-skill-link]:is(:hover, :focus-visible) [data-ac-skill-copy] {
+  grid-template-rows: auto 1fr;
+}
+
+[data-ac-skill-link]:is(:hover, :focus-visible) [data-ac-skill-body] p {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition-delay: 80ms;
+}
+
+[data-ac-skill]:hover > [data-ac-joints] i::before,
+[data-ac-skill]:hover > [data-ac-joints] i::after {
+  background: var(--color-accent);
+}
+
+/* No hover to reveal with: show the descriptions outright. */
+@media (hover: none) {
+  [data-ac-skill-copy] {
+    grid-template-rows: auto 1fr;
+  }
+
+  [data-ac-skill-body] p {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@media (max-width: 991px) {
+  [data-ac-skills-grid] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  [data-ac-skill]:nth-last-child(-n + 4) > [data-ac-joints] i:is([data-ac-corner="bl"], [data-ac-corner="br"]) {
+    display: none;
+  }
+
+  [data-ac-skill]:nth-last-child(-n + 2) > [data-ac-joints] i {
+    display: block;
+  }
+}
+
+@media (max-width: 479px) {
+  [data-ac-skills-grid] {
+    grid-template-columns: 1fr;
+  }
+
+  /* One role per row: the icon on the left, the number and arrow over the
+     name and description on the right, so each card is as tall as its words
+     rather than a 250px tile with its name on the floor. */
+  [data-ac-skill-link] {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: 16px;
+    min-height: 0;
+    padding: 20px;
+  }
+
+  [data-ac-skill-top] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  [data-ac-skill-icon] {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: 44px;
+    height: 44px;
+    margin-top: 0;
+  }
+
+  [data-ac-skill-copy] {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 0;
+    padding-top: 6px;
+  }
+
+  [data-ac-skill-name] {
+    font-size: 20px;
+  }
+
+  [data-ac-skill-body] p {
+    padding-top: 6px;
+  }
+
+  [data-ac-skill]:nth-last-child(-n + 2) > [data-ac-joints] i:is([data-ac-corner="bl"], [data-ac-corner="br"]) {
+    display: none;
+  }
+
+  [data-ac-skill]:last-child > [data-ac-joints] i {
+    display: block;
+  }
+
+  [data-ac-skill-link] {
+    min-height: 0;
+  }
+
+  [data-ac-skill-copy] {
+    margin-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-skill-link],
+  [data-ac-skill-copy],
+  [data-ac-skill-body] p,
+  [data-ac-skill-icon] {
+    transition: none;
+  }
+
+  [data-ac-skill-link] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Why AgentCraft — three reasons in a row on the page's columns. People leads:
+   two columns over a photo of the team, inked dark so the copy reads.
+   Leverage and coverage are feature cells with an icon tile and a rule
+   that draws along the floor on hover. See docs/components/why.md.
+   --------------------------------------------------------------------------- */
+
+[data-ac-why-frame] {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+[data-ac-why-cell] {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: clamp(460px, 40vw, 580px);
+  padding: clamp(24px, 2.6vw, 40px);
+  overflow: hidden;
+}
+
+[data-ac-why-cell] > [data-ac-joints] {
+  z-index: 2;
+}
+
+[data-ac-why-cell] > [data-ac-joints] i {
+  display: block;
+}
+
+[data-ac-why-cell="people"] {
+  grid-column: 1 / 3;
+  color: #ffffff;
+  --ac-line: rgb(255 255 255 / 0.3);
+}
+
+[data-ac-why-cell="leverage"],
+[data-ac-why-cell="coverage"] {
+  border-left: 1px solid var(--ac-rule);
+}
+
+/* -- the photo -------------------------------------------------------------- */
+
+[data-ac-why-photo] {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #0a1022;
+}
+
+[data-ac-why-photo] img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+  transition: transform 1.4s var(--sec-ease);
+}
+
+/* Ink from the floor up, so the copy reads over any part of the photo. */
+[data-ac-why-photo]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgb(10 16 34 / 0.94) 0%,
+    rgb(10 16 34 / 0.78) 38%,
+    rgb(10 16 34 / 0.2) 72%,
+    rgb(10 16 34 / 0.35) 100%
+  );
+}
+
+[data-ac-why-cell="people"]:hover [data-ac-why-photo] img {
+  transform: scale(1.04);
+}
+
+/* -- content ---------------------------------------------------------------- */
+
+[data-ac-why-top] {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+[data-ac-why-icon] {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-accent) 9%, #ffffff);
+  color: var(--color-accent);
+  transition:
+    background-color 400ms ease,
+    color 400ms ease,
+    transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+[data-ac-why-cell="people"] [data-ac-why-icon] {
+  border-radius: 0;
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+[data-ac-why-label] {
+  margin: 4px 0 0;
+  color: var(--color-accent);
+}
+
+[data-ac-why-cell="people"] [data-ac-why-label] {
+  color: rgb(255 255 255 / 0.8);
+}
+
+[data-ac-why-copy] {
+  margin-top: auto;
+  padding-top: 40px;
+}
+
+[data-ac-why-title] {
+  margin: 0;
+  font-family: var(--font-display-stack);
+  font-size: clamp(26px, 2.3vw, 34px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+[data-ac-why-cell="people"] [data-ac-why-title] {
+  max-width: 13ch;
+  font-size: clamp(36px, 4.4vw, 66px);
+  line-height: 1.02;
+}
+
+[data-ac-why-body] {
+  max-width: 44ch;
+  margin: 16px 0 0;
+  font-size: clamp(15px, 1.1vw, 16px);
+  line-height: 1.55;
+  letter-spacing: var(--text-ls);
+  color: var(--sec-soft);
+}
+
+[data-ac-why-cell="people"] [data-ac-why-body] {
+  color: rgb(255 255 255 / 0.76);
+}
+
+/* A rule drawn along the floor on hover, from the right, as in the brief. */
+[data-ac-why-cell]::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 42%;
+  height: 3px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: 100% 50%;
+  transition: transform 600ms var(--sec-ease);
+}
+
+[data-ac-why-cell]:hover::after {
+  transform: none;
+}
+
+[data-ac-why-cell]:not([data-ac-why-cell="people"]):hover [data-ac-why-icon] {
+  background: var(--color-accent);
+  color: #ffffff;
+  transform: rotate(-8deg) scale(1.06);
+}
+
+/* Entrance: the cells rise in turn. */
+[data-ac-why-cell] > :not([data-ac-why-photo], [data-ac-joints]) {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.9s var(--sec-ease);
+  transition-delay: calc(200ms + var(--i, 0) * 120ms);
+}
+
+[data-ac-in] [data-ac-why-cell] > :not([data-ac-why-photo], [data-ac-joints]) {
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 1199px) {
+  [data-ac-why-frame] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  [data-ac-why-cell="people"] {
+    grid-column: 1 / -1;
+  }
+
+  [data-ac-why-cell="leverage"] {
+    border-left: 0;
+  }
+
+  [data-ac-why-cell="leverage"],
+  [data-ac-why-cell="coverage"] {
+    min-height: clamp(320px, 36vw, 420px);
+    border-top: 1px solid var(--ac-rule);
+  }
+}
+
+@media (max-width: 767px) {
+  [data-ac-why-frame] {
+    grid-template-columns: 1fr;
+  }
+
+  [data-ac-why-cell="coverage"] {
+    border-left: 0;
+  }
+
+  [data-ac-why-cell="leverage"],
+  [data-ac-why-cell="coverage"] {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-why-cell] > :not([data-ac-why-photo], [data-ac-joints]) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  [data-ac-why-photo] img,
+  [data-ac-why-cell]::after,
+  [data-ac-why-icon] {
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   FAQ — the header holds on the left while the questions scroll past on the
+   right. Native <details> sharing a name: one open at a time, no script. The
+   open answer eases its height where the browser can (interpolate-size) and
+   simply appears where it can't. See docs/components/faq.md.
+   --------------------------------------------------------------------------- */
+
+[data-ac-faq-layout] {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: start;
+}
+
+[data-ac-faq-aside] {
+  grid-column: 1 / 3;
+  position: sticky;
+  top: 140px;
+  padding-right: clamp(20px, 3vw, 48px);
+}
+
+[data-ac-faq-aside] [data-ac-sec-head] {
+  grid-template-columns: 1fr;
+  margin-bottom: 0;
+}
+
+[data-ac-faq-aside] [data-ac-sec-headline] {
+  grid-column: 1;
+}
+
+/* The brief's dark button, square like ours. */
+[data-ac-faq-cta] {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: clamp(28px, 4vh, 40px);
+  padding: 14px 22px;
+  background: var(--color-accent);
+  color: #ffffff;
+  text-decoration: none;
+  transition: background-color 200ms ease;
+}
+
+/* The brand button, as in the navbar: accent at rest, the darker accent on
+   hover. */
+[data-ac-faq-cta]:hover {
+  background: var(--color-accent-dark);
+}
+
+[data-ac-faq-cta]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+[data-ac-faq-list] {
+  grid-column: 3 / 5;
+}
+
+[data-ac-faq-list] > [data-ac-joints] i {
+  display: block;
+}
+
+[data-ac-faq-item] {
+  position: relative;
+  interpolate-size: allow-keywords;
+  border-bottom: 1px solid var(--ac-line);
+}
+
+[data-ac-faq-item]:last-of-type {
+  border-bottom: 0;
+}
+
+/* A rule down the open question's leading edge, as in the case studies. */
+[data-ac-faq-item]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: var(--color-accent);
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+  transition: transform 500ms var(--sec-ease);
+}
+
+[data-ac-faq-item][open]::before {
+  transform: none;
+}
+
+[data-ac-faq-question] {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: clamp(20px, 2vw, 26px) var(--sec-pad-x);
+  cursor: pointer;
+  list-style: none;
+  transition: background-color 200ms ease;
+}
+
+[data-ac-faq-question]::-webkit-details-marker {
+  display: none;
+}
+
+[data-ac-faq-question]:hover {
+  background: color-mix(in srgb, var(--color-accent) 4%, #ffffff);
+}
+
+[data-ac-faq-question]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+[data-ac-faq-number] {
+  flex: none;
+  width: 24px;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+}
+
+[data-ac-faq-text] {
+  flex: 1;
+  font-family: var(--font-display-stack);
+  font-size: clamp(18px, 1.45vw, 22px);
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+/* Our "+" eyebrow mark, turning to a "×" when open. */
+[data-ac-faq-toggle] {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--ac-line);
+  border-radius: 999px;
+  transition:
+    transform 400ms var(--sec-ease),
+    background-color 300ms ease,
+    border-color 300ms ease;
+}
+
+[data-ac-faq-toggle]::before,
+[data-ac-faq-toggle]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 11px;
+  height: 1.5px;
+  margin: -0.75px 0 0 -5.5px;
+  background: currentColor;
+}
+
+[data-ac-faq-toggle]::after {
+  transform: rotate(90deg);
+}
+
+[data-ac-faq-item][open] [data-ac-faq-toggle] {
+  transform: rotate(45deg);
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+[data-ac-faq-item]::details-content {
+  block-size: 0;
+  overflow: clip;
+  transition:
+    block-size 500ms var(--sec-ease),
+    content-visibility 500ms allow-discrete;
+}
+
+[data-ac-faq-item][open]::details-content {
+  block-size: auto;
+}
+
+[data-ac-faq-answer] p {
+  max-width: 52ch;
+  margin: 0;
+  padding: 0 var(--sec-pad-x) clamp(22px, 2.2vw, 28px) calc(var(--sec-pad-x) + 24px + 18px);
+  font-size: clamp(15px, 1.1vw, 16px);
+  line-height: 1.6;
+  letter-spacing: var(--text-ls);
+  color: var(--sec-soft);
+}
+
+@media (max-width: 991px) {
+  [data-ac-faq-layout] {
+    grid-template-columns: 1fr;
+  }
+
+  [data-ac-faq-aside] {
+    grid-column: 1;
+    position: static;
+    padding-right: 0;
+    margin-bottom: clamp(36px, 6vh, 56px);
+  }
+
+  [data-ac-faq-list] {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 479px) {
+  [data-ac-faq-question] {
+    gap: 12px;
+  }
+
+  [data-ac-faq-answer] p {
+    padding-left: var(--sec-pad-x);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-faq-item]::before,
+  [data-ac-faq-toggle],
+  [data-ac-faq-item]::details-content {
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Call to action — on the accent, with a drafting compass behind the copy:
+   concentric circles on a crosshair, one dashed ring turning slowly. Then the
+   footer. See docs/components/cta-footer.md.
+   --------------------------------------------------------------------------- */
+
+[data-ac-cta-section] {
+  overflow: hidden;
+}
+
+[data-ac-cta-section] [data-ac-sec-head] {
+  margin-bottom: 0;
+}
+
+[data-ac-cta-section] [data-ac-sec-eyebrow] > span:first-child {
+  color: #ffffff;
+}
+
+[data-ac-cta-side] {
+  grid-column: 4;
+  grid-row: 2;
+  align-self: end;
+  max-width: 340px;
+}
+
+[data-ac-cta-body] {
+  margin: 0;
+  font-size: clamp(15px, 1.15vw, 17px);
+  line-height: 1.5;
+  letter-spacing: var(--text-ls);
+  color: var(--sec-soft);
+}
+
+[data-ac-cta-button] {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 26px;
+  padding: 14px 22px;
+  background: #ffffff;
+  color: #0a1022;
+  text-decoration: none;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+[data-ac-cta-button]:hover {
+  background: #0a1022;
+  color: #ffffff;
+}
+
+[data-ac-cta-button]:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
+[data-ac-cta-compass] {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--gutter) - clamp(120px, 12vw, 220px));
+  z-index: 0;
+  width: clamp(420px, 48vw, 760px);
+  height: auto;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: rgb(255 255 255 / 0.22);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+[data-ac-cta-core] {
+  fill: rgb(255 255 255 / 0.1);
+}
+
+[data-ac-cta-ring] {
+  stroke: rgb(255 255 255 / 0.4);
+  stroke-dasharray: 2 10;
+  transform-origin: 300px 300px;
+  animation: ac-cta-turn 60s linear infinite;
+}
+
+@keyframes ac-cta-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 991px) {
+  [data-ac-cta-side] {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    max-width: 520px;
+    margin-top: clamp(28px, 4vh, 40px);
+  }
+
+  [data-ac-cta-compass] {
+    top: 0;
+    transform: translateY(-30%);
+    opacity: 0.7;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-cta-ring] {
+    animation: none;
+  }
+}
+
+/* -- footer ----------------------------------------------------------------- */
+
+[data-ac-footer] {
+  --ac-rule: rgb(255 255 255 / 0.07);
+  --ac-line: rgb(255 255 255 / 0.12);
+
+  position: relative;
+  isolation: isolate;
+  background: #0a1022;
+  color: #ffffff;
+  padding: var(--band-pad) 0 32px;
+}
+
+[data-ac-footer] [data-ac-grid-rules] span {
+  transform: none;
+  transition: none;
+}
+
+[data-ac-footer-inner] {
+  position: relative;
+  z-index: 1;
+  margin-inline: var(--gutter);
+}
+
+/* The sign-off, one line sized to run nearly the full width of the columns
+   (the string measures about 14em in Outfit caps). Phones let it wrap. */
+[data-ac-footer-signoff] {
+  margin: 0;
+  white-space: nowrap;
+  font-family: var(--font-display-stack);
+  font-size: clamp(34px, 6.2vw, 124px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+
+[data-ac-footer-accent] {
+  color: var(--color-accent);
+}
+
+[data-ac-footer-grid] {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: clamp(48px, 8vh, 88px);
+  padding-top: clamp(32px, 5vh, 48px);
+  border-top: 1px solid var(--ac-line);
+}
+
+[data-ac-footer-grid] > * {
+  padding-right: 24px;
+}
+
+[data-ac-footer-logo] {
+  font-family: var(--font-display-stack);
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+[data-ac-footer-brand] p {
+  max-width: 24ch;
+  margin: 14px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.56);
+}
+
+[data-ac-footer-col] > p {
+  margin: 0 0 18px;
+  color: rgb(255 255 255 / 0.5);
+}
+
+[data-ac-footer-col] ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-ac-footer-col] a {
+  position: relative;
+  font-size: 15px;
+  color: rgb(255 255 255 / 0.82);
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+/* An underline drawn in from the left on hover. */
+[data-ac-footer-col] a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 1px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 300ms var(--sec-ease, ease);
+}
+
+[data-ac-footer-col] a:hover {
+  color: #ffffff;
+}
+
+[data-ac-footer-col] a:hover::after {
+  transform: none;
+}
+
+[data-ac-footer] a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+[data-ac-footer-col] address {
+  display: flex;
+  gap: 10px;
+  font-size: 15px;
+  font-style: normal;
+  line-height: 1.55;
+  color: rgb(255 255 255 / 0.82);
+}
+
+[data-ac-footer-col] address svg {
+  flex: none;
+  margin-top: 4px;
+  color: var(--color-accent);
+}
+
+[data-ac-footer-base] {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-top: clamp(48px, 8vh, 80px);
+  padding-top: 20px;
+  border-top: 1px solid var(--ac-line);
+  color: rgb(255 255 255 / 0.5);
+}
+
+[data-ac-footer-top] {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgb(255 255 255 / 0.82);
+  text-decoration: none;
+}
+
+[data-ac-footer-top]:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 991px) {
+  [data-ac-footer-grid] {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 36px;
+  }
+}
+
+@media (max-width: 809px) {
+  [data-ac-footer-signoff] {
+    white-space: normal;
+    font-size: clamp(34px, 11vw, 64px);
+  }
+}
+
+@media (max-width: 479px) {
+  /* The brand across the top, the two link lists side by side under it, the
+     address last and full width: a third shorter than four stacked columns. */
+  [data-ac-footer-grid] {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 36px;
+  }
+
+  [data-ac-footer-grid] > * {
+    padding-right: 12px;
+  }
+
+  /* The right-hand list already ends on the page margin; without the extra
+     padding "Specialist developers" keeps to one line, so the two lists'
+     rows stay level down to 360px. */
+  [data-ac-footer-grid] > nav[data-ac-footer-col]:last-child {
+    padding-right: 0;
+  }
+
+  [data-ac-footer-brand],
+  [data-ac-footer-grid] > div[data-ac-footer-col] {
+    grid-column: 1 / -1;
+  }
+
+  [data-ac-footer-grid] > div[data-ac-footer-col] {
+    order: 1;
+  }
+}
+
+/* Thumb-sized links: each row is 44px tall, the text unmoved within it. */
+@media (max-width: 809px) {
+  [data-ac-footer-col] ul {
+    gap: 0;
+  }
+
+  [data-ac-footer-col] a {
+    display: inline-block;
+    padding-block: 12px;
+  }
+
+  [data-ac-footer-col] a::after {
+    bottom: 9px;
+  }
+
+  [data-ac-footer-col] > p {
+    margin-bottom: 6px;
+  }
+}
+
+@media (max-width: 809px), (pointer: coarse) {
+  [data-ac-footer-top] {
+    padding-block: 14px;
+    margin-block: -14px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Navbar menus — the desktop dropdowns and the mobile menu's groups. The bar
+   itself is styled with utilities in Navbar.astro.
+   --------------------------------------------------------------------------- */
+
+/* The bar's button is 38px drawn; on a touch screen (tablets show it) an
+   invisible margin makes the target 44. */
+@media (pointer: coarse) {
+  [data-ac-nav-cta] {
+    position: relative;
+  }
+
+  [data-ac-nav-cta]::before {
+    content: "";
+    position: absolute;
+    inset: -3px 0;
+  }
+}
+
+.ac-nav-chevron {
+  transition: transform 200ms ease;
+}
+
+[aria-expanded="true"] > .ac-nav-chevron,
+[data-ac-mnav-group][open] .ac-nav-chevron {
+  transform: rotate(180deg);
+}
+
+/* The dropdown: one panel for every menu. It hangs from the bar and spans the
+   page between the outer column rules, a square drafting frame with crosshair
+   corners, and unrolls downward (clip-path) when a menu opens. Moving between
+   triggers keeps it open: the accent caret on its top edge slides to the new
+   trigger and the panes crossfade. Each pane is split by 1px cell rules into
+   two large cards, two columns of icon rows, and a strip along the bottom. */
+[data-ac-nav-mega] {
+  --ac-line: rgb(14 18 26 / 0.1);
+  --nav-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  position: absolute;
+  top: 100%;
+  left: var(--gutter);
+  right: var(--gutter);
+  z-index: 30;
+  display: grid;
+  border: 1px solid var(--ac-line);
+  background: #ffffff;
+  color: #0e121a;
+  box-shadow:
+    0 40px 80px -40px rgb(10 16 34 / 0.32),
+    0 2px 6px rgb(10 16 34 / 0.04);
+  opacity: 0;
+  visibility: hidden;
+  /* The top inset leaves the hover bridge below uncut. */
+  clip-path: inset(-20px -120px 100% -120px);
+  transition:
+    clip-path 420ms var(--nav-ease),
+    opacity 200ms ease,
+    visibility 0s linear 420ms;
+}
+
+/* Bridges the bar's padding under the triggers so hover survives the
+   crossing. */
+[data-ac-nav-mega]::before {
+  content: "";
+  position: absolute;
+  inset: -16px 0 auto;
+  height: 16px;
+}
+
+[data-ac-nav-mega][data-open] {
+  opacity: 1;
+  visibility: visible;
+  clip-path: inset(-20px -120px -120px -120px);
+  transition:
+    clip-path 480ms var(--nav-ease),
+    opacity 160ms ease,
+    visibility 0s;
+}
+
+[data-ac-nav-mega] [data-ac-joints] {
+  z-index: 1;
+}
+
+[data-ac-nav-mega] [data-ac-joints] i {
+  display: block;
+}
+
+[data-ac-nav-caret] {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  z-index: 2;
+  width: var(--caret-w, 0px);
+  height: 2px;
+  background: var(--color-accent);
+  transform: translateX(calc(var(--caret-x, 0px) - 1px));
+  transition:
+    transform 420ms var(--nav-ease),
+    width 420ms var(--nav-ease);
+}
+
+[data-ac-nav-mega] ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Every pane in one cell: the panel is as tall as the tallest, whichever is
+   showing, so it never jumps as the menus change. */
+[data-ac-nav-pane] {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 140ms ease,
+    visibility 0s linear 140ms;
+}
+
+[data-ac-nav-pane][data-active] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 260ms ease 60ms,
+    visibility 0s;
+}
+
+[data-ac-nav-pane-body] {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: 320px;
+}
+
+[data-ac-nav-pane-body][data-variant="tech"] {
+  grid-template-columns: 300px 1fr;
+}
+
+/* Left overview column */
+[data-ac-nav-overview-panel] {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 36px 36px 36px 32px;
+  border-right: 1px solid var(--ac-line);
+  background: #ffffff;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+[data-ac-nav-pane][data-active] [data-ac-nav-overview-panel] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 350ms ease 60ms,
+    transform 500ms var(--nav-ease) 60ms;
+}
+
+[data-ac-nav-tag] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  color: var(--color-accent);
+}
+
+[data-ac-nav-tag-line] {
+  display: inline-block;
+  width: 22px;
+  height: 2px;
+  background: var(--color-accent);
+  border-radius: 1px;
+}
+
+[data-ac-nav-tag] .mono-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+}
+
+[data-ac-nav-overview-headline] {
+  font-family: var(--font-display-stack);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #0e121a;
+  margin: 0 0 16px;
+}
+
+[data-ac-nav-overview-desc] {
+  font-family: var(--font-body-stack);
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: rgb(14 18 26 / 0.68);
+  margin: 0 0 28px;
+  max-width: 32ch;
+}
+
+[data-ac-nav-overview-link] {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display-stack);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  outline: none;
+}
+
+[data-ac-nav-overview-link] svg {
+  transition: transform 250ms var(--nav-ease);
+}
+
+[data-ac-nav-overview-link]:is(:hover, :focus-visible) svg {
+  transform: translate(2px, -2px);
+}
+
+[data-ac-nav-overview-link]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* Right link columns */
+[data-ac-nav-columns] {
+  display: grid;
+  padding: 36px 36px 36px 40px;
+  gap: 28px 40px;
+}
+
+[data-ac-nav-columns][data-variant="standard"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+[data-ac-nav-columns][data-variant="tech"] {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px 22px;
+  padding: 34px 28px 36px 32px;
+}
+
+[data-ac-nav-col] {
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+[data-ac-nav-pane][data-active] [data-ac-nav-col] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 350ms ease var(--nav-delay, 100ms),
+    transform 500ms var(--nav-ease) var(--nav-delay, 100ms);
+}
+
+[data-ac-nav-col]:nth-child(1) { --nav-delay: 80ms; }
+[data-ac-nav-col]:nth-child(2) { --nav-delay: 130ms; }
+[data-ac-nav-col]:nth-child(3) { --nav-delay: 180ms; }
+[data-ac-nav-col]:nth-child(4) { --nav-delay: 230ms; }
+[data-ac-nav-col]:nth-child(5) { --nav-delay: 280ms; }
+[data-ac-nav-col]:nth-child(6) { --nav-delay: 330ms; }
+
+[data-ac-nav-col-header] {
+  margin-bottom: 12px;
+  padding-bottom: 4px;
+}
+
+[data-ac-nav-col-title] {
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+[data-ac-nav-col-title-link] {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: opacity 150ms ease;
+}
+
+[data-ac-nav-col-title-link]:hover {
+  opacity: 0.8;
+}
+
+[data-ac-nav-col-list] {
+  display: flex;
+  flex-direction: column;
+}
+
+[data-ac-nav-item-link] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0 11px;
+  border-bottom: 1px solid var(--ac-line);
+  color: #0e121a;
+  text-decoration: none;
+  font-size: 14.5px;
+  font-weight: 450;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  outline: none;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease;
+}
+
+[data-ac-nav-item-label] {
+  transition: transform 180ms ease;
+}
+
+[data-ac-nav-item-arrow] {
+  display: grid;
+  place-items: center;
+  color: #0e121a;
+  opacity: 0.8;
+  flex-shrink: 0;
+  transition:
+    transform 250ms var(--nav-ease),
+    color 180ms ease,
+    opacity 180ms ease;
+}
+
+[data-ac-nav-item-link]:is(:hover, :focus-visible) {
+  color: var(--color-accent);
+  border-bottom-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+
+[data-ac-nav-item-link]:is(:hover, :focus-visible) [data-ac-nav-item-arrow] {
+  color: var(--color-accent);
+  opacity: 1;
+  transform: translate(2px, -2px);
+}
+
+[data-ac-nav-item-link]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (max-width: 1280px) {
+  [data-ac-nav-pane-body] {
+    grid-template-columns: 260px 1fr;
+  }
+
+  [data-ac-nav-overview-panel] {
+    padding: 28px 24px;
+  }
+
+  [data-ac-nav-overview-headline] {
+    font-size: 22px;
+  }
+
+  [data-ac-nav-columns][data-variant="tech"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px 20px;
+    padding: 28px 24px;
+  }
+
+  [data-ac-nav-columns][data-variant="standard"] {
+    padding: 28px 24px;
+    gap: 20px 24px;
+  }
+}
+
+/* The triggers are gone below 992; so is the panel. */
+@media (max-width: 991px) {
+  [data-ac-nav-mega] {
+    display: none;
+  }
+}
+
+/* Dims the page under the open panel. Absolute, not fixed, so it can't be
+   caught by the header's own transform during the intro. */
+.ac-nav::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  height: 100vh;
+  background: rgb(10 16 34 / 0.16);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 300ms ease,
+    visibility 0s linear 300ms;
+}
+
+.ac-nav:has([data-ac-nav-mega][data-open])::after {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 300ms ease;
+}
+
+/* Mobile menu groups: native <details>, one open at a time. */
+[data-ac-mnav-group] summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+[data-ac-mnav-group] summary::-webkit-details-marker {
+  display: none;
+}
+
+[data-ac-mnav-list] {
+  margin: 0;
+  padding: 6px 0 14px;
+  list-style: none;
+  border-bottom: 1px solid rgb(14 18 26 / 0.1);
+}
+
+[data-ac-mnav-list] a {
+  display: block;
+  padding: 10px 0 10px 14px;
+  border-left: 2px solid var(--color-accent);
+  color: #0e121a;
+  font-size: 17px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+[data-ac-mnav-list] li + li a {
+  margin-top: 4px;
+}
+
+[data-ac-mnav-note] {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 400;
+  color: rgb(14 18 26 / 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ac-nav-mega],
+  [data-ac-nav-caret],
+  [data-ac-nav-pane],
+  [data-ac-nav-group],
+  [data-ac-nav-icon],
+  [data-ac-nav-card-mark] > *,
+  .ac-nav::after,
+  .ac-nav-chevron {
+    transition: none !important;
+  }
+
+  [data-ac-nav-group] {
+    transform: none;
+  }
+}

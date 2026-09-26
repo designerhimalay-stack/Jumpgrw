@@ -1,0 +1,670 @@
+---
+import { Image } from "astro:assets";
+import Chevron from "@/components/icons/Chevron.astro";
+import type { NavLink } from "@/types/hero";
+import jumpgrowthLogo from "@/assets/jumpgrowth-logo.webp";
+import jumpgrowthLogoDark from "@/assets/jumpgrowth-logo-dark.webp";
+
+/* Every link points at a section of this page until the other pages exist.
+   In-page links are handled by SmoothScroll (it retires the opening frame
+   first, then travels clear of this bar).
+
+   There is one dropdown. Each trigger fills the same panel (an overview column
+   on the left, link categories on the right), and moving between triggers
+   swaps the content in place.
+   NavMenu's types hold every menu to that shape. See docs/components/navbar.md. */
+const NAV_LINKS: NavLink[] = [
+  {
+    label: "Teams",
+    href: "#teams",
+    menu: {
+      overview: {
+        tag: "HOW WE ENGAGE",
+        headline: "A product team built around your next milestone",
+        description: "Start with an MVP squad, add a production team, or extend your organization with experienced developers.",
+        href: "#teams",
+        label: "Explore the overview",
+      },
+      columns: [
+        {
+          title: "LAUNCH",
+          items: [
+            { label: "MVP Launch Teams", href: "#teams" },
+            { label: "Product Discovery", href: "#process" },
+            { label: "Prototype to Launch", href: "#process" },
+          ],
+        },
+        {
+          title: "BUILD & RUN",
+          items: [
+            { label: "Production Teams", href: "#teams" },
+            { label: "QA Pods", href: "#skills" },
+            { label: "DevOps Pods", href: "#skills" },
+          ],
+        },
+        {
+          title: "EXTEND",
+          items: [
+            { label: "Staff Augmentation", href: "#teams" },
+            { label: "Specialist Developers", href: "#skills" },
+            { label: "Global Capability Center", href: "#x-shore" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    label: "Technologies",
+    href: "#skills",
+    menu: {
+      variant: "tech",
+      overview: {
+        tag: "WHO YOU CAN ADD",
+        headline: "Technology specialists across the product stack",
+        description: "Add individual specialists or assemble a coordinated team across product, experience, engineering, data, quality, and cloud.",
+        href: "#skills",
+        label: "Explore the overview",
+      },
+      columns: [
+        {
+          title: "PRODUCT & EXPERIENCE",
+          href: "#skills",
+          items: [
+            { label: "Product Managers", href: "#skills" },
+            { label: "UX/UI Designers", href: "#skills" },
+            { label: "Business Analysts", href: "#skills" },
+          ],
+        },
+        {
+          title: "FRONTEND",
+          href: "#skills",
+          items: [
+            { label: "React", href: "#skills" },
+            { label: "Angular", href: "#skills" },
+          ],
+        },
+        {
+          title: "BACKEND",
+          href: "#skills",
+          items: [
+            { label: "Full Stack", href: "#skills" },
+            { label: "Node.js", href: "#skills" },
+            { label: "Python", href: "#skills" },
+            { label: ".NET", href: "#skills" },
+            { label: "Java", href: "#skills" },
+            { label: "PHP", href: "#skills" },
+          ],
+        },
+        {
+          title: "MOBILE",
+          href: "#skills",
+          items: [
+            { label: "iOS", href: "#skills" },
+            { label: "Android", href: "#skills" },
+            { label: "Kotlin", href: "#skills" },
+            { label: "React Native", href: "#skills" },
+            { label: "Flutter", href: "#skills" },
+          ],
+        },
+        {
+          title: "AI & DATA",
+          href: "#skills",
+          items: [
+            { label: "Generative AI", href: "#skills" },
+            { label: "Machine Learning", href: "#skills" },
+            { label: "Data Engineers", href: "#skills" },
+          ],
+        },
+        {
+          title: "DELIVERY",
+          href: "#skills",
+          items: [
+            { label: "QA Engineers", href: "#skills" },
+            { label: "Automation QA Engineers", href: "#skills" },
+            { label: "DevOps Engineers", href: "#skills" },
+          ],
+        },
+      ],
+    },
+  },
+  { label: "Case Studies", href: "#case-studies" },
+  {
+    label: "X-Shore",
+    href: "#x-shore",
+    menu: {
+      overview: {
+        tag: "WHERE TEAMS WORK",
+        headline: "One delivery model across three talent regions",
+        description: "Combine US onshore leadership, Mexico and Canada nearshore collaboration, and India offshore depth around your product.",
+        href: "#x-shore",
+        label: "Explore the overview",
+      },
+      columns: [
+        {
+          title: "ONSHORE",
+          items: [
+            { label: "United States", href: "#x-shore" },
+          ],
+        },
+        {
+          title: "NEARSHORE",
+          items: [
+            { label: "Mexico", href: "#x-shore" },
+            { label: "Canada", href: "#x-shore" },
+          ],
+        },
+        {
+          title: "OFFSHORE",
+          items: [
+            { label: "India", href: "#x-shore" },
+            { label: "GCC from India", href: "#x-shore" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    label: "Company",
+    href: "#why-agentcraft",
+    menu: {
+      overview: {
+        tag: "WHY JUMPGROWTH",
+        headline: "20+ years building productive teams",
+        description: "A Dallas-headquartered technology company connecting clients with accountable product talent across four countries.",
+        href: "#why-agentcraft",
+        label: "Explore the overview",
+      },
+      columns: [
+        {
+          title: "COMPANY",
+          items: [
+            { label: "About Us", href: "#why-agentcraft" },
+            { label: "Leadership", href: "#why-agentcraft" },
+            { label: "Locations", href: "#x-shore" },
+            { label: "Careers", href: "#contact" },
+          ],
+        },
+        {
+          title: "PROOF",
+          items: [
+            { label: "Case Studies", href: "#case-studies" },
+            { label: "How We Build Teams", href: "#process" },
+          ],
+        },
+        {
+          title: "CONNECT",
+          items: [
+            { label: "Book a Discovery Call", href: "#contact" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    label: "Insights",
+    href: "#faq",
+    menu: {
+      overview: {
+        tag: "IDEAS IN MOTION",
+        headline: "Practical guidance for building better teams",
+        description: "Field notes on AI-assisted delivery, product staffing, MVP execution, and distributed engineering leadership.",
+        href: "#faq",
+        label: "Explore the overview",
+      },
+      columns: [
+        {
+          title: "EXPLORE",
+          items: [
+            { label: "Blogs", href: "#faq" },
+            { label: "Whitepapers", href: "#faq" },
+          ],
+        },
+        {
+          title: "POPULAR TOPICS",
+          items: [
+            { label: "AI-Assisted Teams", href: "#teams" },
+            { label: "MVP Staffing", href: "#teams" },
+            { label: "X-Shore Delivery", href: "#x-shore" },
+          ],
+        },
+        {
+          title: "RESOURCES",
+          items: [
+            { label: "FAQ", href: "#faq" },
+            { label: "Engagement Models", href: "#process" },
+          ],
+        },
+      ],
+    },
+  },
+];
+
+/* The links that open the dropdown, in bar order; trigger n fills pane n. */
+const MENUS = NAV_LINKS.filter((link): link is NavLink & Required<Pick<NavLink, "menu">> => Boolean(link.menu));
+const paneId = (link: NavLink) => `nav-pane-${link.label.toLowerCase().replace(/\W+/g, "-")}`;
+
+const ARROW = '<path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" />';
+
+const REGIONS = ["US", "Mexico", "Canada", "India"];
+
+/* Tighter between 992 and 1199, where six links, the logo and the button
+   otherwise wrap. An open menu's trigger keeps the hover state. */
+const MENU_LINK_CLASS =
+  "ac-nav-link inline-flex items-center gap-[6px] whitespace-nowrap px-[13px] py-[9px] text-[15px] font-medium leading-[1.5] tracking-[-0.005em] text-[#0e121a] no-underline " +
+  "max-[1199px]:px-[8px] max-[1199px]:text-[14px] " +
+  "border border-transparent transition-colors duration-200 " +
+  "hover:border-[#0e121a]/12 hover:bg-[#0e121a]/[0.04] aria-expanded:border-[#0e121a]/12 aria-expanded:bg-[#0e121a]/[0.04]";
+
+const MOBILE_MENU_LINK_CLASS =
+  "flex w-full items-center justify-between border-b border-[#0e121a]/10 px-0 py-[18px] text-[24px] font-medium text-[#0e121a] no-underline";
+---
+
+<header class="ac-nav fixed inset-x-0 top-0 z-[20]">
+  {/* Meta strip — mono micro-labels on a dark rule above the main nav. */}
+  <div class="ac-nav-strip bg-[#0a0d14] text-[#e4e4e7] sdown:hidden">
+    <div class="mx-auto flex h-[34px] w-full max-w-[1920px] items-center justify-between px-[var(--gutter)]">
+      <span class="mono-label flex items-center gap-[10px] text-white">
+        <span
+          aria-hidden="true"
+          class="h-[5px] w-[5px] rounded-full bg-[var(--color-accent)]"
+        />
+        Dallas
+        <span class="text-white/25">/</span>
+        X-Shore
+      </span>
+
+      <span class="mono-label flex items-center gap-[8px] text-white/45">
+        <span>Delivery</span>
+        <span class="text-white/25">:</span>
+        {REGIONS.map((region, i) => (
+          <span class="flex items-center gap-[8px]">
+            {i > 0 ? <span class="text-white/20">·</span> : null}
+            <span class="text-white/80">{region}</span>
+          </span>
+        ))}
+      </span>
+    </div>
+  </div>
+
+  {/* Main bar. The border tone follows scroll position; the script below swaps
+      border-transparent for the hairline once the page has moved. */}
+  <div
+    data-ac-nav-bar
+    class="ac-nav-bar border-b transition-colors duration-300 border-transparent bg-white"
+  >
+    <div class="relative mx-auto w-full max-w-[1920px] px-[var(--gutter)]">
+      <div class="flex items-center justify-between py-[16px] mdown:py-[12px]">
+        <a href="#top" class="-my-[11px] flex items-center py-[11px] no-underline" aria-label="JumpGrowth, back to top">
+          <Image
+            src={jumpgrowthLogo}
+            alt="JumpGrowth"
+            class="h-[28px] w-auto object-contain sdown:h-[22px] ac-nav-logo-light"
+            loading="eager"
+          />
+          <Image
+            src={jumpgrowthLogoDark}
+            alt="JumpGrowth"
+            class="h-[28px] w-auto object-contain sdown:h-[22px] ac-nav-logo-dark"
+            loading="eager"
+          />
+        </a>
+
+        <nav aria-label="Primary" class="flex gap-[2px] mdown:hidden">
+          {NAV_LINKS.map((link) =>
+            link.menu ? (
+              <button
+                type="button"
+                class={MENU_LINK_CLASS}
+                aria-expanded="false"
+                aria-controls={paneId(link)}
+                data-ac-nav-trigger
+              >
+                {link.label}
+                <Chevron class="ac-nav-chevron" />
+              </button>
+            ) : (
+              <a href={link.href} class={MENU_LINK_CLASS}>
+                {link.label}
+              </a>
+            ),
+          )}
+        </nav>
+
+        <div class="flex items-center">
+          <div class="xsdown:hidden">
+            <a
+              href="#contact"
+              data-ac-nav-cta
+              class="mono-label flex items-center gap-[9px] whitespace-nowrap bg-[var(--color-accent)] px-[20px] py-[11px] text-white no-underline hover:bg-[var(--color-accent-dark)] max-[1199px]:px-[14px]"
+            >
+              Build your team
+              <svg
+                width="11"
+                height="11"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+                class="shrink-0"
+              >
+                <path
+                  d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </a>
+          </div>
+
+          <button
+            type="button"
+            aria-label="Open menu"
+            aria-expanded="false"
+            aria-controls="mobile-menu"
+            data-ac-nav-burger
+            class="ac-nav-burger -my-[5px] -mr-[5px] ml-[13px] hidden h-[44px] w-[44px] flex-col items-center justify-center gap-[6px] mdown:flex"
+          >
+            <span aria-hidden="true" class="block h-[1.5px] w-[20px] bg-[#0e121a]" />
+            <span aria-hidden="true" class="block h-[1.5px] w-[20px] bg-[#0e121a]" />
+            <span aria-hidden="true" class="block h-[1.5px] w-[20px] bg-[#0e121a]" />
+          </button>
+        </div>
+      </div>
+
+      {/* The one dropdown. It hangs from the bar across the page between the
+          outer column rules; every menu's pane sits in the same grid cell, so
+          the panel keeps the tallest one's height whichever is showing. */}
+      <div data-ac-nav-mega>
+        <span data-ac-joints aria-hidden="true">
+          <i data-ac-corner="tl" />
+          <i data-ac-corner="tr" />
+          <i data-ac-corner="bl" />
+          <i data-ac-corner="br" />
+        </span>
+        <span data-ac-nav-caret aria-hidden="true" />
+        {MENUS.map((link) => (
+          <div data-ac-nav-pane id={paneId(link)} role="group" aria-label={link.label}>
+            <div data-ac-nav-pane-body data-variant={link.menu.variant || "standard"}>
+              <div data-ac-nav-overview-panel>
+                <div data-ac-nav-tag>
+                  <span data-ac-nav-tag-line aria-hidden="true" />
+                  <span class="mono-label">{link.menu.overview.tag}</span>
+                </div>
+                <h3 data-ac-nav-overview-headline>{link.menu.overview.headline}</h3>
+                <p data-ac-nav-overview-desc>{link.menu.overview.description}</p>
+                <a href={link.menu.overview.href} data-ac-nav-overview-link>
+                  <span>{link.menu.overview.label || "Explore the overview"}</span>
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
+                </a>
+              </div>
+
+              <div data-ac-nav-columns data-variant={link.menu.variant || "standard"}>
+                {link.menu.columns.map((group) => (
+                  <div data-ac-nav-col>
+                    <div data-ac-nav-col-header>
+                      {group.href ? (
+                        <a href={group.href} data-ac-nav-col-title-link class="mono-label">
+                          <span>{group.title}</span>
+                          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
+                        </a>
+                      ) : (
+                        <span data-ac-nav-col-title class="mono-label">{group.title}</span>
+                      )}
+                    </div>
+                    <ul data-ac-nav-col-list>
+                      {group.items.map((item) => (
+                        <li>
+                          <a href={item.href} data-ac-nav-item-link>
+                            <span data-ac-nav-item-label>{item.label}</span>
+                            <span data-ac-nav-item-arrow aria-hidden="true">
+                              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={ARROW} />
+                            </span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <nav
+    id="mobile-menu"
+    aria-label="Mobile"
+    inert
+    class="absolute left-0 top-full hidden h-screen w-full overflow-y-auto bg-white px-[var(--gutter)] pb-[160px] pt-[28px] transition-[opacity,transform] duration-[300ms] ease-[ease] mdown:block pointer-events-none -translate-y-[12px] opacity-0"
+  >
+    <span class="mono-label mb-[14px] block text-[#0e121a]/40">Menu</span>
+    {NAV_LINKS.map((link) =>
+      link.menu ? (
+        <details data-ac-mnav-group name="mobile-nav">
+          <summary class={MOBILE_MENU_LINK_CLASS}>
+            {link.label}
+            <Chevron class="ac-nav-chevron h-[16px] w-[16px]" />
+          </summary>
+          <ul data-ac-mnav-list>
+            <li>
+              <a href={link.menu.overview.href} class="font-semibold text-[var(--color-accent)]">
+                <span>{link.menu.overview.label || `${link.label} Overview`} &nearr;</span>
+              </a>
+            </li>
+            {link.menu.columns.flatMap((group) => group.items).map((item) => (
+              <li>
+                <a href={item.href}>
+                  <span>{item.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : (
+        <a href={link.href} class={MOBILE_MENU_LINK_CLASS}>
+          {link.label}
+        </a>
+      ),
+    )}
+    <a
+      href="#contact"
+      class="mono-label mt-[28px] inline-flex items-center gap-[9px] bg-[var(--color-accent)] px-[20px] py-[14px] text-white no-underline"
+    >
+      Build your team
+      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="shrink-0">
+        <path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </a>
+  </nav>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>(".ac-nav")!;
+  const bar = document.querySelector<HTMLElement>("[data-ac-nav-bar]")!;
+  const burger = document.querySelector<HTMLButtonElement>("[data-ac-nav-burger]")!;
+  const menu = document.getElementById("mobile-menu")!;
+
+  const handleScroll = () => {
+    const scrolled = window.scrollY > 0;
+    bar.classList.toggle("border-[#0e121a]/10", scrolled && !header.hasAttribute("data-ac-nav-dark"));
+    bar.classList.toggle("border-transparent", !scrolled || header.hasAttribute("data-ac-nav-dark"));
+  };
+  handleScroll();
+  window.addEventListener("scroll", handleScroll, { passive: true });
+
+  /* -- dark-section logo swap --
+     When the navbar bar overlaps a dark section, switch to the white logo
+     and adjust the bar styling. Uses IntersectionObserver with a rootMargin
+     that targets the navbar's exact vertical band. */
+  const darkSections = Array.from(document.querySelectorAll<HTMLElement>('[data-ac-sec="dark"], [data-ac-sec="accent"]'));
+
+  const updateNavTheme = () => {
+    const barRect = bar.getBoundingClientRect();
+    const barMid = barRect.top + barRect.height / 2;
+    let onDark = false;
+    for (const sec of darkSections) {
+      const r = sec.getBoundingClientRect();
+      if (r.top <= barMid && r.bottom >= barMid) {
+        onDark = true;
+        break;
+      }
+    }
+    header.toggleAttribute("data-ac-nav-dark", onDark);
+    bar.classList.toggle("bg-white", !onDark);
+    bar.classList.toggle("bg-transparent", onDark);
+    bar.classList.toggle("border-[#0e121a]/10", !onDark && window.scrollY > 0);
+    bar.classList.toggle("border-transparent", onDark || window.scrollY === 0);
+  };
+  updateNavTheme();
+  window.addEventListener("scroll", updateNavTheme, { passive: true });
+
+  /* -- mobile menu -- */
+
+  const OPEN = ["pointer-events-auto", "translate-y-0", "opacity-100"];
+  const CLOSED = ["pointer-events-none", "-translate-y-[12px]", "opacity-0"];
+  let isMenuOpen = false;
+
+  const setMenuOpen = (open: boolean) => {
+    isMenuOpen = open;
+    burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    burger.setAttribute("aria-expanded", String(open));
+    menu.inert = !open;
+    menu.classList.remove(...(open ? CLOSED : OPEN));
+    menu.classList.add(...(open ? OPEN : CLOSED));
+  };
+
+  burger.addEventListener("click", () => setMenuOpen(!isMenuOpen));
+  for (const link of menu.querySelectorAll("a")) {
+    link.addEventListener("click", () => setMenuOpen(false));
+  }
+
+  /* -- the dropdown --
+     One panel, one pane per trigger. Hover opens at once and closes after a
+     short grace period, so the pointer can cross from a trigger to the panel
+     or on to the next trigger, which swaps the pane without closing. Click
+     toggles; a click on a menu hover already opened keeps it open instead of
+     closing it under the pointer. Escape, a click outside, or focus leaving
+     the trigger and its pane all close. */
+
+  const mega = document.querySelector<HTMLElement>("[data-ac-nav-mega]")!;
+  const caret = mega.querySelector<HTMLElement>("[data-ac-nav-caret]")!;
+  const triggers = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-ac-nav-trigger]"));
+  const panes = triggers.map((trigger) => document.getElementById(trigger.getAttribute("aria-controls")!)!);
+  const linksIn = (pane: HTMLElement) => Array.from(pane.querySelectorAll<HTMLElement>("a[href]"));
+  let open: number | null = null;
+  let openedByHover = false;
+  let closeTimer = 0;
+
+  const setOpen = (index: number | null) => {
+    window.clearTimeout(closeTimer);
+    if (open === index) return;
+    const opening = open === null;
+    open = index;
+    triggers.forEach((trigger, i) => trigger.setAttribute("aria-expanded", String(i === index)));
+    panes.forEach((pane, i) => pane.toggleAttribute("data-active", i === index));
+    mega.toggleAttribute("data-open", index !== null);
+    if (index === null) return;
+
+    /* The caret marks the open trigger on the panel's top edge and slides
+       between triggers; opening from closed, it starts in place. */
+    const t = triggers[index].getBoundingClientRect();
+    const m = mega.getBoundingClientRect();
+    if (opening) caret.style.transition = "none";
+    mega.style.setProperty("--caret-x", `${t.left - m.left}px`);
+    mega.style.setProperty("--caret-w", `${t.width}px`);
+    if (opening) {
+      void caret.offsetWidth;
+      caret.style.transition = "";
+    }
+  };
+
+  const closeSoon = () => {
+    window.clearTimeout(closeTimer);
+    closeTimer = window.setTimeout(() => setOpen(null), 180);
+  };
+
+  triggers.forEach((trigger, i) => {
+    trigger.addEventListener("click", () => {
+      if (open === i && openedByHover) {
+        openedByHover = false;
+        return;
+      }
+      openedByHover = false;
+      setOpen(open === i ? null : i);
+    });
+    trigger.addEventListener("pointerenter", (event) => {
+      if (event.pointerType !== "mouse") return;
+      if (open !== i) openedByHover = true;
+      setOpen(i);
+    });
+    trigger.addEventListener("pointerleave", (event) => {
+      if (event.pointerType === "mouse") closeSoon();
+    });
+    /* The pane lives after the bar in the document, so Tab from an open
+       trigger is sent into it, as if it followed the trigger. */
+    trigger.addEventListener("keydown", (event) => {
+      if (event.key === "Tab" && !event.shiftKey && open === i) {
+        event.preventDefault();
+        linksIn(panes[i])[0]?.focus();
+      }
+    });
+  });
+
+  mega.addEventListener("pointerenter", (event) => {
+    if (event.pointerType === "mouse") window.clearTimeout(closeTimer);
+  });
+  mega.addEventListener("pointerleave", (event) => {
+    if (event.pointerType === "mouse") closeSoon();
+  });
+
+  /* Out of the pane by keyboard: back to its trigger, or on to whatever
+     follows the trigger in the bar. */
+  mega.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab" || open === null) return;
+    const links = linksIn(panes[open]);
+    const trigger = triggers[open];
+    if (event.shiftKey && document.activeElement === links[0]) {
+      event.preventDefault();
+      trigger.focus();
+    } else if (!event.shiftKey && document.activeElement === links[links.length - 1]) {
+      const inBar = Array.from(bar.querySelectorAll<HTMLElement>("a[href], button")).filter(
+        (el) => !mega.contains(el) && el.checkVisibility(),
+      );
+      const next = inBar[inBar.indexOf(trigger) + 1];
+      if (next) {
+        event.preventDefault();
+        next.focus();
+      }
+    }
+  });
+
+  header.addEventListener("focusout", (event) => {
+    if (open === null) return;
+    const to = event.relatedTarget as Node | null;
+    if (to && (to === triggers[open] || mega.contains(to))) return;
+    setOpen(null);
+  });
+
+  for (const link of linksIn(mega)) {
+    link.addEventListener("click", () => setOpen(null));
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (open !== null) {
+      const trigger = triggers[open];
+      setOpen(null);
+      trigger.focus();
+    } else if (isMenuOpen) {
+      setMenuOpen(false);
+      burger.focus();
+    }
+  });
+  document.addEventListener("pointerdown", (event) => {
+    const target = event.target as Node;
+    if (open !== null && !mega.contains(target) && !triggers.some((trigger) => trigger.contains(target))) setOpen(null);
+  });
+</script>

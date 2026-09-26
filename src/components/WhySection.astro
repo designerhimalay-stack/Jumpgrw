@@ -1,0 +1,99 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import people from "@/assets/why/people.jpg";
+
+/* Why JumpGrowth: three reasons in a row of cells on the page's columns. The
+   first, people, is the lead: it spans two columns over a photo of the team
+   at work. The other two are feature cells. Copy is the brief's; the photo
+   is an Unsplash stand-in. See docs/components/why.md. */
+
+const COPY = {
+  eyebrow: "Why JumpGrowth",
+  lede: "Experienced people, flexible team design, and one accountable delivery system.",
+  photoAlt: "Two developers reviewing code together at a desk.",
+};
+
+const REASONS = [
+  {
+    key: "people",
+    label: "01 / People",
+    title: ["Product builders,", "not a stack of résumés"],
+    body: "We shape the team around the product, delivery environment, and working style—then help the people operate as one unit.",
+    icon: '<path d="m12 3 9 4.5-9 4.5-9-4.5L12 3Z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/>',
+  },
+  {
+    key: "leverage",
+    label: "02 / Leverage",
+    title: ["AI-assisted", "execution"],
+    body: "Modern tools improve speed across the delivery cycle while experienced engineers own the result.",
+    icon: '<path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/><path d="m13.5 5-3 14"/>',
+  },
+  {
+    key: "coverage",
+    label: "03 / Coverage",
+    title: ["Flexible", "X-shore teams"],
+    body: "Blend US, Mexico, Canada, and India talent around overlap, skills, leadership, and scale.",
+    icon: '<rect x="9.5" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><rect x="16" y="16" width="5" height="5" rx="1"/><path d="M12 8v4M5.5 16v-2a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v2"/>',
+  },
+];
+
+/* Each title is [ink, accent]: the closing phrase takes the accent, as in every
+   section headline. Balanced titles otherwise split "X-shore" and "AI-assisted"
+   at the hyphen. The titles are our own static strings, so building markup from
+   them is safe. */
+const keepHyphenated = (title: string) => title.replace(/(\S+-\S+)/g, '<span class="whitespace-nowrap">$1</span>');
+---
+
+<section data-ac-sec="light" data-ac-why id="why-agentcraft">
+  <span id="why-jumpgrowth" class="sr-only"></span>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={COPY.eyebrow} lede={COPY.lede} />
+
+    <div data-ac-sec-frame data-ac-why-frame>
+      {REASONS.map((reason, i) => (
+        <article data-ac-why-cell={reason.key} style={`--i:${i}`}>
+          <Joints />
+          {i === 0 && (
+            <div data-ac-why-photo>
+              <Image src={people} alt={COPY.photoAlt} widths={[720, 1080, 1440, 1600]} sizes="(max-width: 1199px) 100vw, 50vw" quality={78} />
+            </div>
+          )}
+          <div data-ac-why-top>
+            <span data-ac-why-icon aria-hidden="true">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                set:html={reason.icon}
+              />
+            </span>
+            <p data-ac-why-label class="mono-label">{reason.label}</p>
+          </div>
+          <div data-ac-why-copy>
+            <h3 data-ac-why-title>
+              <Fragment set:html={keepHyphenated(reason.title[0])} />{" "}
+              <span data-ac-why-accent set:html={keepHyphenated(reason.title[1])} />
+            </h3>
+            <p data-ac-why-body>{reason.body}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  toggleInView(document.querySelector<HTMLElement>("[data-ac-why]")!);
+</script>

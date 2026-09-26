@@ -1,0 +1,84 @@
+---
+/* The AI tools card: the tools our developers work with, on a ring that turns
+   as the page scrolls. Laid out on a 391 × 435 card: positions are percentages
+   of it and sizes are multiples of --u (one card unit, 100cqw / 391), so it
+   scales with its slot. Logos: LobeHub icons (MIT). The marks remain their
+   owners' trademarks. */
+import ChatGpt from "@/assets/ai-logos/chatgpt.svg";
+import Claude from "@/assets/ai-logos/claude.svg";
+import Cursor from "@/assets/ai-logos/cursor.svg";
+import DeepSeek from "@/assets/ai-logos/deepseek.svg";
+import Gemini from "@/assets/ai-logos/gemini.svg";
+import GithubCopilot from "@/assets/ai-logos/github-copilot.svg";
+import HuggingFace from "@/assets/ai-logos/hugging-face.svg";
+import Meta from "@/assets/ai-logos/meta.svg";
+import Mistral from "@/assets/ai-logos/mistral.svg";
+import Perplexity from "@/assets/ai-logos/perplexity.svg";
+
+const COPY = {
+  title: "Fluent in today's AI tools",
+  body: "Our developers ship faster with ChatGPT, Claude, Gemini and the tools around them.",
+};
+
+/* Five spokes at 72° steps, each carrying a logo at either end, so ten sit
+   36° apart on the ring. At the resting angle (144°) the top arc reads, left
+   to right: Cursor, Gemini, ChatGPT, Claude, GitHub Copilot. */
+const SPOKES = [
+  [Meta, Gemini],
+  [HuggingFace, Claude],
+  [Cursor, Perplexity],
+  [ChatGpt, DeepSeek],
+  [GithubCopilot, Mistral],
+];
+---
+
+<div data-ac-orbit>
+  <div data-ac-orbit-stage aria-hidden="true">
+    <div data-ac-orbit-ring>
+      <span data-ac-orbit-track />
+      {SPOKES.map(([Top, Bottom], k) => (
+        <div data-ac-orbit-spoke style={`--spoke:${k * 72}deg`}>
+          <span data-ac-orbit-logo><Top /></span>
+          <span data-ac-orbit-logo data-ac-orbit-flip><Bottom /></span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div data-ac-orbit-copy>
+    <h3 data-ac-orbit-title>{COPY.title}</h3>
+    <p data-ac-orbit-body>{COPY.body}</p>
+  </div>
+</div>
+
+<script>
+  /* The ring turns with the page: 0° to 144° while the
+     card's top travels from 1.518 to 0.05 viewport heights below the top of
+     the viewport, which is 0.109° per pixel on a 900px-tall window. Under
+     reduced motion it rests at 144°, the angle it would settle at anyway. */
+  const MAX = 144;
+  const START = 1.518;
+  const END = 0.05;
+
+  const cards = Array.from(document.querySelectorAll<HTMLElement>("[data-ac-orbit]"));
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  let frame = 0;
+  const apply = () => {
+    frame = 0;
+    const vh = window.innerHeight;
+    for (const card of cards) {
+      const top = card.getBoundingClientRect().top;
+      const progress = Math.min(1, Math.max(0, (START * vh - top) / ((START - END) * vh)));
+      card.style.setProperty("--orbit-angle", `${reduce.matches ? MAX : progress * MAX}deg`);
+    }
+  };
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(apply);
+  };
+
+  apply();
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", schedule);
+  reduce.addEventListener("change", schedule);
+</script>
