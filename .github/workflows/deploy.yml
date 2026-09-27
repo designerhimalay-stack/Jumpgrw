@@ -27,9 +27,9 @@ jobs:
     outputs:
       publish: ${{ steps.pages.outputs.enabled }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -65,16 +65,6 @@ jobs:
           fi
 
       - name: Install exactly what package-lock.json records
-        run: npm ci
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Type-check
-        run: npm run check
-
-      - name: Lint
-        run: npm run lint
         run: npm ci
 
       - name: Type-check

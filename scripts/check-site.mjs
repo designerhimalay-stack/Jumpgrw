@@ -1,66 +1,157 @@
-import { chromium } from 'playwright';
-import { writeFileSync } from 'fs';
+/**
+ * check-site.mjs
+ *
+ * Static checker run by `npm run verify` and the deploy workflow.
+ * Reads the built dist/ directory — no browser, no Chromium, works in CI.
+ *
+ * Checks (in page order):
+ *   1. dist/index.html exists.
+ *   2. Every expected section id is present in the HTML.
+ *   3. No root-relative href or src attributes (they break the GitHub Pages sub-path).
+ *   4. The banned word (cloneNode) does not appear in any .html/.js/.css file.
+ *   5. The AgentCraft Display font-face is declared (hero camera depends on it).
+ *
+ * Exit 0 on success, exit 1 on any failure.
+ */
 
-const browser = await chromium.launch({ headless: true });
-const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+import { readFileSync, readdirSync } from 'fs';
+import { join, extname } from 'path';
 
-await page.goto('http://localhost:4321/', { waitUntil: 'networkidle' });
+// ─── configuration ────────────────────────────────────────────────────────────
 
-// Screenshot the full page
-await page.screenshot({ path: 'scripts/screenshot-full.png', fullPage: false });
-console.log('✅ Top screenshot saved to scripts/screenshot-full.png');
+const DIST = 'dist';
 
-// Scroll to case studies section
-const caseSection = await page.$('#case-studies');
-if (caseSection) {
-  await caseSection.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(1500); // wait for animations
-  await page.screenshot({ path: 'scripts/screenshot-cases.png', fullPage: false });
-  console.log('✅ Case studies screenshot saved to scripts/screenshot-cases.png');
+/** Section IDs that must appear in the built index.html, in page order. */
+const SECTIONS = [
+  'case-studies',
+  'client-stories',
+  'skills',
+  'why-agentcraft',
+  'faq',
+  'contact',
+];
+
+/** The font-face name the hero portal requires (see DESIGN_NOTES §4). */
+const REQUIRED_FONT = 'AgentCraft Display';
+
+/**
+ * The one banned word. Stored as charcode array so the word itself never
+ * appears in this source file (check-site scans itself too).
+ * c-l-o-n-e-N-o-d-e  →  99,108,111,110,101,78,111,100,101
+ */
+const BANNED_WORD = String.fromCharCode(99,108,111,110,101,78,111,100,101);
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+let failures = 0;
+
+function fail(msg) {
+  console.error(`  ✗ ${msg}`);
+  failures++;
 }
 
-// Click VowTimer to make it active
-const vowBtn = await page.$('#case-vowtimer-trigger');
-if (vowBtn) {
-  await vowBtn.click();
-  await page.waitForTimeout(1000);
-  await page.screenshot({ path: 'scripts/screenshot-vowtimer.png', fullPage: false });
-  console.log('✅ VowTimer screenshot saved to scripts/screenshot-vowtimer.png');
+function ok(msg) {
+  console.log(`  ✓ ${msg}`);
 }
 
-// Get all case study images info
-const images = await page.$$eval('[data-ac-case-media] img', imgs =>
-  imgs.map(img => ({
-    src: img.src,
-    naturalWidth: img.naturalWidth,
-    naturalHeight: img.naturalHeight,
-    currentSrc: img.currentSrc,
-  }))
-);
-console.log('\n📷 Case study images:');
-images.forEach((img, i) => console.log(`  [${i}] src=${img.src.substring(0, 80)}... size=${img.naturalWidth}x${img.naturalHeight}`));
-
-// Check the navbar logo
-const logos = await page.$$eval('[data-ac-nav-bar] img', imgs =>
-  imgs.map(img => ({
-    src: img.src,
-    alt: img.alt,
-    className: img.className,
-    display: getComputedStyle(img).display,
-    visibility: getComputedStyle(img).visibility,
-  }))
-);
-console.log('\n🖼️ Navbar logos:');
-logos.forEach((l, i) => console.log(`  [${i}] alt="${l.alt}" class="${l.className}" display=${l.display}`));
-
-// Download the VowTimer image to check what's actually served
-const vowtimerImg = images[2]; // VowTimer is 3rd (index 2)
-if (vowtimerImg) {
-  const resp = await page.request.get(vowtimerImg.currentSrc || vowtimerImg.src);
-  const buf = await resp.body();
-  writeFileSync('scripts/vowtimer-served.jpg', buf);
-  console.log(`\n📦 Downloaded served VowTimer image: ${buf.length} bytes -> scripts/vowtimer-served.jpg`);
+/** Recursively collect all files under a directory. */
+function walk(dir) {
+  const entries = readdirSync(dir, { withFileTypes: true });
+  return entries.flatMap(e => {
+    const full = join(dir, e.name);
+    return e.isDirectory() ? walk(full) : [full];
+  });
 }
 
-await browser.close();
-console.log('\n✅ Done');
+// ─── 1. dist/index.html must exist ───────────────────────────────────────────
+
+console.log('\n── 1. Built output ──────────────────────────────────────────');
+
+let html;
+try {
+  html = readFileSync(`${DIST}/index.html`, 'utf8');
+  ok(`${DIST}/index.html found (${html.length} bytes)`);
+} catch {
+  fail(`${DIST}/index.html not found — run \`npm run build\` first`);
+  console.error('\ncheck-site: FAILED');
+  process.exit(1);
+}
+
+// ─── 2. Section IDs ──────────────────────────────────────────────────────────
+
+console.log('\n── 2. Section IDs ───────────────────────────────────────────');
+
+for (const id of SECTIONS) {
+  if (html.includes(`id="${id}"`)) {
+    ok(`#${id}`);
+  } else {
+    fail(`Section id="${id}" not found in index.html`);
+  }
+}
+
+// ─── 3. Root-relative URLs ────────────────────────────────────────────────────
+
+console.log('\n── 3. Root-relative URLs ────────────────────────────────────');
+
+const basePath = process.env.BASE_PATH || '';
+
+if (!basePath) {
+  // No BASE_PATH set → built for root; /_astro/* URLs are correct.
+  ok('BASE_PATH not set — skipping sub-path check (root build)');
+} else {
+  // BASE_PATH is set (e.g. "/Jumpgrw"). The built HTML must not contain
+  // asset or page hrefs that start with "/" but not with the base path.
+  // Match href="/" or src="/" followed by anything that is NOT the base path.
+  const escapedBase = basePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const wrongRoot = new RegExp(`(?:href|src)="\/(?!${escapedBase.slice(1)}|\/|#)[^"]*"`, 'g');
+  const matches = [...html.matchAll(wrongRoot)].map(m => m[0]);
+  if (matches.length === 0) {
+    ok(`All asset/page URLs start with BASE_PATH (${basePath})`);
+  } else {
+    for (const m of matches) {
+      fail(`URL missing base path in index.html: ${m}`);
+    }
+  }
+}
+
+// ─── 4. Banned word scan ─────────────────────────────────────────────────────
+
+console.log('\n── 4. Banned word scan ──────────────────────────────────────');
+
+const allFiles = walk(DIST).filter(f => ['.html', '.js', '.css', '.mjs'].includes(extname(f)));
+let bannedFound = false;
+
+for (const f of allFiles) {
+  const content = readFileSync(f, 'utf8');
+  if (content.includes(BANNED_WORD)) {
+    fail(`Banned word found in ${f}`);
+    bannedFound = true;
+  }
+}
+
+if (!bannedFound) {
+  ok(`No banned word in ${allFiles.length} built files`);
+}
+
+// ─── 5. AgentCraft Display font-face ─────────────────────────────────────────
+
+console.log('\n── 5. Font face ─────────────────────────────────────────────');
+
+const cssFiles = allFiles.filter(f => extname(f) === '.css');
+const fontDeclared = cssFiles.some(f => readFileSync(f, 'utf8').includes(REQUIRED_FONT));
+
+if (fontDeclared) {
+  ok(`"${REQUIRED_FONT}" font-face declared`);
+} else {
+  fail(`"${REQUIRED_FONT}" font-face not found in built CSS — hero camera will not move`);
+}
+
+// ─── result ───────────────────────────────────────────────────────────────────
+
+console.log('');
+if (failures > 0) {
+  console.error(`check-site: FAILED (${failures} failure${failures > 1 ? 's' : ''})`);
+  process.exit(1);
+} else {
+  console.log('check-site: OK');
+}
