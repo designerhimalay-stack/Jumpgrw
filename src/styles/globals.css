@@ -3783,6 +3783,83 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   transform: none;
 }
 
+/* ── video play button & iframe ──────────────────────────────────────────── */
+
+/* The play button fills the whole figure so the entire thumbnail is clickable */
+[data-ac-story-play] {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: opacity 300ms ease;
+}
+
+[data-ac-story-play] img {
+  /* Override the inherited story-photo img rules — this is a thumbnail */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  transform: none !important;
+  transition: transform 400ms var(--sec-ease);
+}
+
+[data-ac-story-play]:hover img {
+  transform: scale(1.03) !important;
+}
+
+[data-ac-story-play-icon] {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 250ms var(--sec-ease), filter 250ms ease;
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.45));
+}
+
+[data-ac-story-play]:hover [data-ac-story-play-icon] {
+  transform: scale(1.12);
+}
+
+[data-ac-story-play]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  border-radius: 12px;
+}
+
+/* Once data-ac-playing is set, hide the play button and show the iframe */
+[data-ac-story-photo][data-ac-playing] [data-ac-story-play] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-ac-story-photo] iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 400ms ease 200ms;
+}
+
+[data-ac-story-photo][data-ac-playing] iframe {
+  opacity: 1;
+}
+
+
+
 /* -- quote ------------------------------------------------------------------ */
 
 [data-ac-stories-mark] {

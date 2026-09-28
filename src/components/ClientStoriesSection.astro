@@ -1,71 +1,60 @@
 ---
-import { Image } from "astro:assets";
 import Arrow from "@/components/icons/Arrow.astro";
 import GridRules from "@/components/GridRules.astro";
 import SectionHead from "@/components/SectionHead.astro";
 import Joints from "@/components/process/Joints.astro";
-import ethnomet from "@/assets/clients/ethnomet.jpg";
-import sindyxr from "@/assets/clients/sindyxr.jpg";
-import gunlox from "@/assets/clients/gunlox.jpg";
-import steadfast from "@/assets/clients/steadfast.jpg";
-import shipitpro from "@/assets/clients/shipitpro.jpg";
-import wakesmart from "@/assets/clients/wakesmart.jpg";
-import dnavibe from "@/assets/clients/dnavibe.jpg";
 
-/* "Teams that bring products to life." One client at a time: a portrait, the
-   quote, who said it, and a strip of all seven clients whose bars time the
-   rotation. See docs/components/client-stories.md.
+/* "Teams that bring products to life." One client at a time: a YouTube video
+   thumbnail, the quote, who said it, and a strip of all seven clients whose
+   bars time the rotation. Clicking the thumbnail plays the video inline.
+   See docs/components/client-stories.md. */
 
-   Ethnomet's quote and attribution are the brief's. The other six quotes and
-   roles are placeholders to replace with approved testimonials, and every
-   portrait is an Unsplash stand-in (Ethnomet's for the video still). */
-
-type Story = { client: string; quote: string; name?: string; role: string; image: ImageMetadata };
+type Story = { client: string; quote: string; name?: string; role: string; videoId: string };
 
 const STORIES: Story[] = [
   {
     client: "Ethnomet",
     quote:
-      "Ethnomet’s blend of telemedicine and digital health-as-a-service calls for product thinking that understands both technology and healthcare. JumpGrowth helped bring those worlds together.",
+      "Ethnomet's blend of telemedicine and digital health-as-a-service calls for product thinking that understands both technology and healthcare. JumpGrowth helped bring those worlds together.",
     name: "Mike Amanyi",
     role: "Chief Product Officer",
-    image: ethnomet,
+    videoId: "0c-BfY8DQes",
   },
   {
     client: "SindyXR",
     quote: "They treated our XR roadmap like their own. Every sprint ended with something we could put in front of users.",
     role: "Founder",
-    image: sindyxr,
+    videoId: "b6_-fER-YCs",
   },
   {
     client: "GunLox",
     quote: "Security products leave no room for guesswork. The team shipped a companion app our customers trust from the first unlock.",
     role: "Head of Product",
-    image: gunlox,
+    videoId: "SJ006Sre3Ns",
   },
   {
     client: "Steadfast",
     quote: "A steady, senior team that raised the quality bar early and kept it there, release after release.",
     role: "Engineering Director",
-    image: steadfast,
+    videoId: "JFXWTm4BseA",
   },
   {
     client: "ShipITPro",
     quote: "We went from idea to production faster than we planned, without cutting corners on the parts that matter.",
     role: "CTO",
-    image: shipitpro,
+    videoId: "B50UV2k6hUY",
   },
   {
     client: "WakeSmart",
     quote: "Clear communication, honest estimates, and engineers who care about the product as much as we do.",
     role: "Product Manager",
-    image: wakesmart,
+    videoId: "mX5eZ_FTLWw",
   },
   {
     client: "DNAVibe",
     quote: "They understood the science and the software. That combination is rare, and it shows in the product.",
     role: "Co-founder",
-    image: dnavibe,
+    videoId: "ldhWd2TD2ic",
   },
 ];
 
@@ -99,8 +88,31 @@ const pad = (n: number) => String(n).padStart(2, "0");
         <Joints />
         <div data-ac-stories-photo aria-hidden="true">
           {STORIES.map((story, i) => (
-            <figure data-ac-story-photo data-active={i === 0 || undefined}>
-              <Image src={story.image} alt="" widths={[400, 800, 1000]} sizes="(max-width: 809px) 100vw, 25vw" quality={78} />
+            <figure
+              data-ac-story-photo
+              data-active={i === 0 || undefined}
+              data-video-id={story.videoId}
+            >
+              <button
+                type="button"
+                data-ac-story-play
+                aria-label={`Play ${story.client} testimonial video`}
+              >
+                <img
+                  src={`https://i.ytimg.com/vi/${story.videoId}/hqdefault.jpg`}
+                  alt={`${story.client} testimonial`}
+                  width="480"
+                  height="360"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span data-ac-story-play-icon aria-hidden="true">
+                  <svg width="68" height="48" viewBox="0 0 68 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="68" height="48" rx="12" fill="#1a1a2e" fill-opacity="0.82"/>
+                    <path d="M26 14L50 24L26 34V14Z" fill="white"/>
+                  </svg>
+                </span>
+              </button>
             </figure>
           ))}
         </div>
@@ -187,6 +199,32 @@ const pad = (n: number) => String(n).padStart(2, "0");
       });
     }
   };
+
+  /* ── click-to-play ───────────────────────────────────────────────────────── */
+
+  for (const photo of photos) {
+    const playBtn = photo.querySelector<HTMLButtonElement>("[data-ac-story-play]");
+    if (!playBtn) continue;
+
+    playBtn.addEventListener("click", () => {
+      const videoId = photo.dataset.videoId;
+      if (!videoId || photo.hasAttribute("data-ac-playing")) return;
+
+      /* Mark as playing so CSS hides the thumbnail button and shows the iframe */
+      photo.setAttribute("data-ac-playing", "");
+
+      /* Build the iframe — autoplay + rel=0 to suppress related videos */
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+      iframe.title = playBtn.getAttribute("aria-label") ?? "Testimonial video";
+      iframe.allow = "autoplay; encrypted-media; picture-in-picture";
+      iframe.allowFullscreen = true;
+      iframe.setAttribute("loading", "lazy");
+      photo.appendChild(iframe);
+    }, { once: true });
+  }
+
+  /* ── carousel rotation ───────────────────────────────────────────────────── */
 
   /* The open tab's bar is the timer: when its CSS animation ends, the next
      story opens. Choosing a story moves the bar to its tab, so the timer
