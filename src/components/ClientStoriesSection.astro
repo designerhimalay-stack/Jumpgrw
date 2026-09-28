@@ -5,9 +5,10 @@ import SectionHead from "@/components/SectionHead.astro";
 import Joints from "@/components/process/Joints.astro";
 
 /* "Teams that bring products to life." One client at a time: a YouTube video
-   thumbnail, the quote, who said it, and a strip of all seven clients whose
-   bars time the rotation. Clicking the thumbnail plays the video inline.
-   See docs/components/client-stories.md. */
+   thumbnail, the quote, who said it, and a strip of all seven clients.
+   Slides change ONLY on explicit user click — no auto-rotation.
+   Clicking the thumbnail plays the video inline; YouTube's own controls
+   handle play/pause. Switching slides kills the active video cleanly. */
 
 type Story = { client: string; quote: string; name?: string; role: string; videoId: string };
 
@@ -172,113 +173,81 @@ const pad = (n: number) => String(n).padStart(2, "0");
   import { holdOnKeyboardFocus } from "@/lib/rotation";
 
   const section = document.querySelector<HTMLElement>("[data-ac-stories]")!;
-  const frame = section.querySelector<HTMLElement>("[data-ac-stories-frame]")!;
-  const deck = section.querySelector<HTMLElement>("[data-ac-stories-deck]")!;
-  const strip = section.querySelector<HTMLElement>("[data-ac-stories-index]")!;
-  const slides = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-story]"));
-  const photos = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-story-photo]"));
-  const tabs = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-story-tab]"));
-  const current = section.querySelector<HTMLElement>("[data-ac-stories-current]")!;
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const frame   = section.querySelector<HTMLElement>("[data-ac-stories-frame]")!;
+  const deck    = section.querySelector<HTMLElement>("[data-ac-stories-deck]")!;
+  const strip   = section.querySelector<HTMLElement>("[data-ac-stories-index]")!;
+  const slides  = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-story]"));
+  const photos  = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-story-photo]"));
+  const tabs    = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-story-tab]"));
+  const counter = section.querySelector<HTMLElement>("[data-ac-stories-current]")!;
+  const reduce  = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let active = 0;
 
-  /* ── video state tracking ────────────────────────────────────────────────── */
+  /* ── video ───────────────────────────────────────────────────────────────── */
 
-  /** The iframe that is currently loaded (playing or paused), or null. */
   let activeIframe: HTMLIFrameElement | null = null;
 
   /**
-   * Destroy the active iframe, restore the thumbnail, and release the carousel
-   * hold so rotation can resume. Safe to call when nothing is playing.
+   * Stop the active video completely.
+   *
+   * Strategy: set src="about:blank" first — this is a *synchronous* browser
+   * navigation that immediately destroys the iframe document, its JS heap, Web
+   * Audio context and all media elements. Then wait one rAF (≈16 ms) before
+   * removing the element from the DOM so the navigation has time to commit
+   * before the node is detached. This is the only approach that reliably
+   * silences cross-origin YouTube audio in every major browser.
    */
   function stopCurrentVideo() {
     if (!activeIframe) return;
-    /* Setting src to about:blank is a synchronous navigation that immediately
-       tears down all JS execution and audio/video contexts inside the iframe.
-       postMessage-based approaches (stopVideo command) are async and the player
-       often doesn't process them before the element is detached, leaving audio
-       running in the background. */
     activeIframe.src = "about:blank";
     const photoEl = activeIframe.closest<HTMLElement>("[data-ac-story-photo]");
-    activeIframe.remove();
+    const dead = activeIframe;
     activeIframe = null;
     photoEl?.removeAttribute("data-ac-playing");
-    section.removeAttribute("data-ac-hold");
+    requestAnimationFrame(() => dead.remove());
   }
 
-  /**
-   * YouTube iframes with enablejsapi=1 post messages to the parent window
-   * whenever the player state changes. We use this to hold/release the
-   * carousel without any polling — purely event-driven.
-   *
-   * State values:  -1 unstarted | 0 ended | 1 playing | 2 paused |
-   *                3 buffering  | 5 video cued
-   */
-  window.addEventListener("message", (event) => {
-    if (event.origin !== "https://www.youtube-nocookie.com") return;
-    let data: { event?: string; info?: number };
-    try { data = JSON.parse(event.data as string); } catch { return; }
-    if (data?.event !== "onStateChange") return;
-
-    if (data.info === 1 || data.info === 3) {
-      /* Playing or buffering → keep carousel frozen */
-      section.setAttribute("data-ac-hold", "");
-    } else if (data.info === 0 || data.info === 2) {
-      /* Ended or paused → let rotation resume */
-      section.removeAttribute("data-ac-hold");
-    }
-  });
-
-  /* ── click-to-play ───────────────────────────────────────────────────────── */
-
+  /* Wire up every play button. The listener is permanent (no { once }) so the
+     button works again after stopCurrentVideo() restores the thumbnail. */
   for (const photo of photos) {
     const playBtn = photo.querySelector<HTMLButtonElement>("[data-ac-story-play]");
     if (!playBtn) continue;
 
-    /* No { once: true } — after we clean up (slide change), the button must
-       work again for the same story. */
     playBtn.addEventListener("click", () => {
       if (photo.hasAttribute("data-ac-playing")) return;
-
       const videoId = photo.dataset.videoId;
       if (!videoId) return;
 
-      /* If another video was loaded, tear it down first */
-      stopCurrentVideo();
+      stopCurrentVideo(); // silence any other video first
 
-      /* Freeze carousel the moment play is clicked — before the iframe loads */
-      section.setAttribute("data-ac-hold", "");
       photo.setAttribute("data-ac-playing", "");
-
       const iframe = document.createElement("iframe");
-      /* enablejsapi=1 is required for postMessage state events */
-      iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
+      /* No enablejsapi — we no longer listen to postMessage events */
+      iframe.src   = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
       iframe.title = playBtn.getAttribute("aria-label") ?? "Testimonial video";
       iframe.allow = "autoplay; encrypted-media; picture-in-picture";
       iframe.allowFullscreen = true;
-      iframe.setAttribute("loading", "lazy");
       photo.appendChild(iframe);
       activeIframe = iframe;
     });
   }
 
-  /* ── carousel rotation ───────────────────────────────────────────────────── */
+  /* ── navigation (click-only, no auto-rotation) ───────────────────────────── */
 
   const show = (index: number) => {
-    /* Switching slides while a video is playing: destroy it so the thumbnail
-       is restored and the play button works again when the user comes back. */
-    stopCurrentVideo();
+    stopCurrentVideo(); // kill any playing/paused video before switching
 
     active = (index + slides.length) % slides.length;
-    slides.forEach((slide, i) => slide.toggleAttribute("data-active", i === active));
-    photos.forEach((photo, i) => photo.toggleAttribute("data-active", i === active));
-    tabs.forEach((tab, i) => (i === active
-      ? tab.setAttribute("aria-current", "true")
-      : tab.removeAttribute("aria-current")));
-    current.textContent = String(active + 1).padStart(2, "0");
+    slides.forEach((s, i) => s.toggleAttribute("data-active", i === active));
+    photos.forEach((p, i) => p.toggleAttribute("data-active", i === active));
+    tabs.forEach((t, i) =>
+      i === active
+        ? t.setAttribute("aria-current", "true")
+        : t.removeAttribute("aria-current")
+    );
+    counter.textContent = String(active + 1).padStart(2, "0");
 
-    /* On narrow screens the strip scrolls sideways; keep the open client in
-       view without moving the page. */
+    /* Keep active tab visible on the horizontal strip on small screens */
     if (strip.scrollWidth > strip.clientWidth) {
       const item = tabs[active].parentElement!;
       strip.scrollTo({
@@ -288,24 +257,16 @@ const pad = (n: number) => String(n).padStart(2, "0");
     }
   };
 
-  /* The open tab's bar is the timer: when its CSS animation ends, the next
-     story opens. Choosing a story moves the bar to its tab, so the timer
-     starts over from there. It pauses while the section is off screen and
-     under keyboard focus, when changes are announced instead. No rotation
-     under reduced motion. */
-  if (!reduce) section.setAttribute("data-ac-auto", "");
-  section.addEventListener("animationend", (event) => {
-    if (event.animationName === "ac-story-progress") show(active + 1);
-  });
-
-  for (const button of section.querySelectorAll<HTMLElement>("[data-ac-stories-step]")) {
-    button.addEventListener("click", () => show(active + Number(button.dataset.acStoriesStep)));
+  for (const btn of section.querySelectorAll<HTMLElement>("[data-ac-stories-step]")) {
+    btn.addEventListener("click", () => show(active + Number(btn.dataset.acStoriesStep)));
   }
   tabs.forEach((tab, i) => tab.addEventListener("click", () => show(i)));
 
-  holdOnKeyboardFocus(section, frame, (on) => deck.setAttribute("aria-live", on || reduce ? "polite" : "off"));
+  /* Announce the active slide to screen readers on keyboard focus */
+  holdOnKeyboardFocus(section, frame, (on) =>
+    deck.setAttribute("aria-live", on || reduce ? "polite" : "off")
+  );
   if (reduce) deck.setAttribute("aria-live", "polite");
 
   toggleInView(section);
 </script>
-
