@@ -193,15 +193,12 @@ const pad = (n: number) => String(n).padStart(2, "0");
    */
   function stopCurrentVideo() {
     if (!activeIframe) return;
-    /* Tell the YouTube player to stop BEFORE we detach the iframe.
-       Removing the element from the DOM alone doesn't kill the audio context
-       in most browsers — the postMessage gives the player time to tear down. */
-    try {
-      activeIframe.contentWindow?.postMessage(
-        JSON.stringify({ event: "command", func: "stopVideo", args: [] }),
-        "https://www.youtube-nocookie.com"
-      );
-    } catch (_) { /* cross-origin guard — safe to swallow */ }
+    /* Setting src to about:blank is a synchronous navigation that immediately
+       tears down all JS execution and audio/video contexts inside the iframe.
+       postMessage-based approaches (stopVideo command) are async and the player
+       often doesn't process them before the element is detached, leaving audio
+       running in the background. */
+    activeIframe.src = "about:blank";
     const photoEl = activeIframe.closest<HTMLElement>("[data-ac-story-photo]");
     activeIframe.remove();
     activeIframe = null;
