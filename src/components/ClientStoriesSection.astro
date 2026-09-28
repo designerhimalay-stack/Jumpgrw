@@ -193,6 +193,15 @@ const pad = (n: number) => String(n).padStart(2, "0");
    */
   function stopCurrentVideo() {
     if (!activeIframe) return;
+    /* Tell the YouTube player to stop BEFORE we detach the iframe.
+       Removing the element from the DOM alone doesn't kill the audio context
+       in most browsers — the postMessage gives the player time to tear down. */
+    try {
+      activeIframe.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "stopVideo", args: [] }),
+        "https://www.youtube-nocookie.com"
+      );
+    } catch (_) { /* cross-origin guard — safe to swallow */ }
     const photoEl = activeIframe.closest<HTMLElement>("[data-ac-story-photo]");
     activeIframe.remove();
     activeIframe = null;
