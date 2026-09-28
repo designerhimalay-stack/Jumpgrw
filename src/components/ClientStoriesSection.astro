@@ -182,11 +182,93 @@ const pad = (n: number) => String(n).padStart(2, "0");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let active = 0;
 
+  /* ── video state tracking ────────────────────────────────────────────────── */
+
+  /** The iframe that is currently loaded (playing or paused), or null. */
+  let activeIframe: HTMLIFrameElement | null = null;
+
+  /**
+   * Destroy the active iframe, restore the thumbnail, and release the carousel
+   * hold so rotation can resume. Safe to call when nothing is playing.
+   */
+  function stopCurrentVideo() {
+    if (!activeIframe) return;
+    const photoEl = activeIframe.closest<HTMLElement>("[data-ac-story-photo]");
+    activeIframe.remove();
+    activeIframe = null;
+    photoEl?.removeAttribute("data-ac-playing");
+    section.removeAttribute("data-ac-hold");
+  }
+
+  /**
+   * YouTube iframes with enablejsapi=1 post messages to the parent window
+   * whenever the player state changes. We use this to hold/release the
+   * carousel without any polling — purely event-driven.
+   *
+   * State values:  -1 unstarted | 0 ended | 1 playing | 2 paused |
+   *                3 buffering  | 5 video cued
+   */
+  window.addEventListener("message", (event) => {
+    if (event.origin !== "https://www.youtube-nocookie.com") return;
+    let data: { event?: string; info?: number };
+    try { data = JSON.parse(event.data as string); } catch { return; }
+    if (data?.event !== "onStateChange") return;
+
+    if (data.info === 1 || data.info === 3) {
+      /* Playing or buffering → keep carousel frozen */
+      section.setAttribute("data-ac-hold", "");
+    } else if (data.info === 0 || data.info === 2) {
+      /* Ended or paused → let rotation resume */
+      section.removeAttribute("data-ac-hold");
+    }
+  });
+
+  /* ── click-to-play ───────────────────────────────────────────────────────── */
+
+  for (const photo of photos) {
+    const playBtn = photo.querySelector<HTMLButtonElement>("[data-ac-story-play]");
+    if (!playBtn) continue;
+
+    /* No { once: true } — after we clean up (slide change), the button must
+       work again for the same story. */
+    playBtn.addEventListener("click", () => {
+      if (photo.hasAttribute("data-ac-playing")) return;
+
+      const videoId = photo.dataset.videoId;
+      if (!videoId) return;
+
+      /* If another video was loaded, tear it down first */
+      stopCurrentVideo();
+
+      /* Freeze carousel the moment play is clicked — before the iframe loads */
+      section.setAttribute("data-ac-hold", "");
+      photo.setAttribute("data-ac-playing", "");
+
+      const iframe = document.createElement("iframe");
+      /* enablejsapi=1 is required for postMessage state events */
+      iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
+      iframe.title = playBtn.getAttribute("aria-label") ?? "Testimonial video";
+      iframe.allow = "autoplay; encrypted-media; picture-in-picture";
+      iframe.allowFullscreen = true;
+      iframe.setAttribute("loading", "lazy");
+      photo.appendChild(iframe);
+      activeIframe = iframe;
+    });
+  }
+
+  /* ── carousel rotation ───────────────────────────────────────────────────── */
+
   const show = (index: number) => {
+    /* Switching slides while a video is playing: destroy it so the thumbnail
+       is restored and the play button works again when the user comes back. */
+    stopCurrentVideo();
+
     active = (index + slides.length) % slides.length;
     slides.forEach((slide, i) => slide.toggleAttribute("data-active", i === active));
     photos.forEach((photo, i) => photo.toggleAttribute("data-active", i === active));
-    tabs.forEach((tab, i) => (i === active ? tab.setAttribute("aria-current", "true") : tab.removeAttribute("aria-current")));
+    tabs.forEach((tab, i) => (i === active
+      ? tab.setAttribute("aria-current", "true")
+      : tab.removeAttribute("aria-current")));
     current.textContent = String(active + 1).padStart(2, "0");
 
     /* On narrow screens the strip scrolls sideways; keep the open client in
@@ -199,32 +281,6 @@ const pad = (n: number) => String(n).padStart(2, "0");
       });
     }
   };
-
-  /* ── click-to-play ───────────────────────────────────────────────────────── */
-
-  for (const photo of photos) {
-    const playBtn = photo.querySelector<HTMLButtonElement>("[data-ac-story-play]");
-    if (!playBtn) continue;
-
-    playBtn.addEventListener("click", () => {
-      const videoId = photo.dataset.videoId;
-      if (!videoId || photo.hasAttribute("data-ac-playing")) return;
-
-      /* Mark as playing so CSS hides the thumbnail button and shows the iframe */
-      photo.setAttribute("data-ac-playing", "");
-
-      /* Build the iframe — autoplay + rel=0 to suppress related videos */
-      const iframe = document.createElement("iframe");
-      iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
-      iframe.title = playBtn.getAttribute("aria-label") ?? "Testimonial video";
-      iframe.allow = "autoplay; encrypted-media; picture-in-picture";
-      iframe.allowFullscreen = true;
-      iframe.setAttribute("loading", "lazy");
-      photo.appendChild(iframe);
-    }, { once: true });
-  }
-
-  /* ── carousel rotation ───────────────────────────────────────────────────── */
 
   /* The open tab's bar is the timer: when its CSS animation ends, the next
      story opens. Choosing a story moves the bar to its tab, so the timer
@@ -246,3 +302,4 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
   toggleInView(section);
 </script>
+
