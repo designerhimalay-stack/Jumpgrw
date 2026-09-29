@@ -3765,11 +3765,22 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   inset: 0;
   margin: 0;
   opacity: 0;
-  transition: opacity 700ms ease;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 1;
+  transition:
+    opacity 500ms ease,
+    visibility 0s linear 500ms;
 }
 
 [data-ac-story-photo][data-active] {
   opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 2;
+  transition:
+    opacity 500ms ease,
+    visibility 0s;
 }
 
 [data-ac-story-photo] img {
@@ -3865,6 +3876,7 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   /* Cell boundary handles the shape */
   border-radius: 0;
   opacity: 0;
+  z-index: 3;
   transition: opacity 400ms ease 150ms;
 }
 

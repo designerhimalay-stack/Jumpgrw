@@ -87,7 +87,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
     <div data-ac-sec-frame data-ac-stories-frame role="region" aria-roledescription="carousel" aria-label="Client stories">
       <div data-ac-stories-cell="photo">
         <Joints />
-        <div data-ac-stories-photo aria-hidden="true">
+        <div data-ac-stories-photo>
           {STORIES.map((story, i) => (
             <figure
               data-ac-story-photo
@@ -185,8 +185,6 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
   /* ── video ───────────────────────────────────────────────────────────────── */
 
-  let activeIframe: HTMLIFrameElement | null = null;
-
   /**
    * Stop the active video completely.
    *
@@ -198,13 +196,13 @@ const pad = (n: number) => String(n).padStart(2, "0");
    * silences cross-origin YouTube audio in every major browser.
    */
   function stopCurrentVideo() {
-    if (!activeIframe) return;
-    activeIframe.src = "about:blank";
-    const photoEl = activeIframe.closest<HTMLElement>("[data-ac-story-photo]");
-    const dead = activeIframe;
-    activeIframe = null;
-    photoEl?.removeAttribute("data-ac-playing");
-    requestAnimationFrame(() => dead.remove());
+    const iframes = section.querySelectorAll<HTMLIFrameElement>("iframe");
+    for (const iframe of iframes) {
+      iframe.src = "about:blank";
+      const photoEl = iframe.closest<HTMLElement>("[data-ac-story-photo]");
+      photoEl?.removeAttribute("data-ac-playing");
+      requestAnimationFrame(() => iframe.remove());
+    }
   }
 
   /* Wire up every play button. The listener is permanent (no { once }) so the
@@ -228,7 +226,6 @@ const pad = (n: number) => String(n).padStart(2, "0");
       iframe.allow = "autoplay; encrypted-media; picture-in-picture";
       iframe.allowFullscreen = true;
       photo.appendChild(iframe);
-      activeIframe = iframe;
     });
   }
 
