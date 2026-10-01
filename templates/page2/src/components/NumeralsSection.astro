@@ -1,0 +1,82 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { Phase, SectionPhoto } from "@/types/page";
+
+/* How discovery works, on the dark tone. Columns 1–2: the claim, then the
+   steps as a list led by large outlined numerals, which fill with the
+   accent one after another as the section arrives. Columns 3–4: a photo of
+   the team at work, as tall as the list. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  steps: Phase[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, steps } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+---
+
+<section data-ac-sec="dark" data-ac-numerals id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-numerals-grid>
+    <div data-ac-numerals-copy>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-numerals-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+      <p data-ac-numerals-lede data-ac-sec-rise>{lede}</p>
+
+      <ol data-ac-numerals-list>
+        {steps.map((step, i) => (
+          <li style={`--ac-i:${i}`}>
+            <span data-ac-numerals-digit aria-hidden="true">{pad(i + 1)}</span>
+            <span data-ac-numerals-text>
+              <span data-ac-numerals-title>{step.title}</span>
+              <span data-ac-numerals-body>{step.body}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    <div data-ac-numerals-photo>
+      <Joints />
+      <div data-ac-numerals-image>
+        <Image
+          src={media.image}
+          alt={media.alt}
+          widths={[480, 800, 1200, media.image.width]}
+          sizes="(max-width: 991px) 100vw, 46vw"
+          quality={78}
+          style={media.focus ? `object-position:${media.focus}` : undefined}
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-numerals]").forEach(toggleInView);
+</script>

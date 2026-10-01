@@ -1,0 +1,82 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import CapabilitiesSection from "@/components/hire/CapabilitiesSection.astro";
+import ContactSection from "@/components/hire/ContactSection.astro";
+import ExamplesSection from "@/components/hire/ExamplesSection.astro";
+import FitSection from "@/components/hire/FitSection.astro";
+import HelpSection from "@/components/hire/HelpSection.astro";
+import PodSection from "@/components/hire/PodSection.astro";
+import RolesSection from "@/components/hire/RolesSection.astro";
+import SavingsSection from "@/components/hire/SavingsSection.astro";
+import StackSection from "@/components/hire/StackSection.astro";
+import StepsSection from "@/components/hire/StepsSection.astro";
+import WaysSection from "@/components/hire/WaysSection.astro";
+import WhySection from "@/components/hire/WhySection.astro";
+import WorkSection from "@/components/hire/WorkSection.astro";
+import { TECH } from "@/data/tech";
+import { BRAND } from "@/lib/brand";
+import { FIGURES, hireCopy } from "@/lib/hire-copy";
+import type { PageHeroContent } from "@/types/page";
+import "@/styles/hire.css";
+
+/* A Technologies page: the hire kit, filled from this page's profile
+   (src/data/tech.ts) and the shared words in src/lib/hire-copy.ts. Every
+   Technologies page has this same file. See docs/sections.md. */
+
+const c = hireCopy(TECH);
+
+const HERO: PageHeroContent = {
+  trail: c.hero.trail,
+  audience: c.hero.audience,
+  headline: c.hero.headline,
+  size: "long",
+  lede: TECH.hero.lede,
+  ctas: c.hero.ctas,
+  assurances: c.hero.assurances,
+  image: TECH.hero.photo.image,
+  imageAlt: TECH.hero.photo.alt,
+  card: c.hero.card,
+  specs: [
+    { label: FIGURES[0].label, value: FIGURES[0].value },
+    { label: FIGURES[1].label, value: FIGURES[1].value },
+    { label: FIGURES[2].label, value: FIGURES[2].value },
+    { label: FIGURES[3].label, value: FIGURES[3].value },
+  ],
+  base: c.hero.base,
+};
+---
+
+<Layout title={`Hire ${TECH.many} · ${BRAND.name}`} description={TECH.hero.lede} navTone="field">
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <StackSection copy={c.stack} core={TECH.core} ecosystem={TECH.ecosystem} />
+    <WorkSection copy={c.work} benefits={TECH.benefits} />
+    <WhySection copy={c.why} />
+    <WaysSection copy={c.ways} ways={c.ways.cards} />
+    <SavingsSection copy={c.savings} />
+    <RolesSection copy={c.roles} roles={TECH.roles} />
+    <CapabilitiesSection copy={c.capabilities} items={TECH.capabilities} />
+    <HelpSection copy={c.help} />
+    <ExamplesSection copy={c.examples} examples={TECH.examples} />
+    <PodSection copy={c.pod} roles={TECH.roles} />
+    <FitSection copy={c.fit} />
+    <StepsSection copy={c.steps} photo={TECH.photos.steps} />
+    <FaqSection
+      eyebrow={c.faq.eyebrow}
+      headline={c.faq.headline}
+      accent={1}
+      cta={c.faq.cta}
+      faqs={c.faq.faqs}
+      media={TECH.photos.faq}
+    />
+    <ContactSection copy={c.contact} />
+  </main>
+  <Footer />
+</Layout>

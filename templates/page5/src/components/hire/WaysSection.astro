@@ -1,0 +1,69 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@/components/icons/Arrow.astro";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { WayToWork } from "@/types/hire";
+
+/* Ways to work together: one engineer, a squad, a managed pod. Three framed
+   photo cards on the columns: the first, one engineer, spans columns 1–2 with
+   its copy over the photo; the squad and the pod take a column each, photo
+   above copy. A line under them says who stays in charge. Photos open upward
+   on arrival, as every framed photo here does. Phones: the first card full
+   width, the other two with short photos. See docs/sections.md. */
+
+interface Props {
+  copy: { eyebrow: string; headline: string[]; lede: string; cta: string; note: string[] };
+  ways: WayToWork[];
+}
+
+const { copy, ways } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-ways id="ways">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={copy.eyebrow} headline={copy.headline} accent={1} lede={copy.lede} />
+
+    <ul data-ac-ways-grid>
+      {ways.map((way, i) => (
+        <li data-ac-ways-card data-lead={i === 0 || undefined} style={`--ac-i:${i}`}>
+          <Joints />
+          <div data-ac-ways-photo>
+            <Image
+              src={way.photo.image}
+              alt={way.photo.alt}
+              widths={i === 0 ? [480, 800, 1200] : [400, 640, 900]}
+              sizes={i === 0 ? "(max-width: 767px) 100vw, 50vw" : "(max-width: 767px) 100vw, 25vw"}
+              quality={78}
+              style={way.photo.focus ? `object-position:${way.photo.focus}` : undefined}
+            />
+            <span data-ac-ways-kicker class="mono-label-sm">{way.kicker}</span>
+          </div>
+          <div data-ac-ways-copy>
+            <h3 data-ac-ways-title>{way.title}</h3>
+            <p data-ac-ways-body>{way.body}</p>
+            <ul data-ac-chips data-ac-ways-chips>{way.chips.map((c) => <li>{c}</li>)}</ul>
+            <a data-ac-link class="mono-label" href="#contact">
+              {copy.cta}
+              <Arrow direction="right" />
+            </a>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <p data-ac-kit-note>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14a6.5 6.5 0 0 1 3 6" /></svg>
+      <span><b>{copy.note[0]}</b> {copy.note[1]}</span>
+    </p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  toggleInView(document.querySelector<HTMLElement>("[data-ac-ways]")!);
+</script>

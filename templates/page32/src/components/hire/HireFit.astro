@@ -1,0 +1,46 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { HireHead } from "@/components/hire/types";
+
+/* Is this a good fit? Four numbered statements, one per column of the
+   page's grid, in one frame; each number fills with the accent as the
+   section arrives.
+
+   Phones: two by two, so the four statements take two short rows. */
+
+interface Props extends HireHead {
+  /** Four, one per column. */
+  items: string[];
+  /** "tint" is a light section on a pale blue ground. */
+  tone?: "light" | "tint" | "dark";
+}
+
+const { id, eyebrow, headline, accent, lede, items, tone = "light" } = Astro.props;
+---
+
+<section data-ac-sec={tone === "tint" ? "light" : tone} data-ac-hire-tint={tone === "tint" || undefined} data-ac-hire="fit" id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent ?? headline.length - 1} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-hire-fit-frame>
+      <Joints />
+      <ol data-ac-hire-fit role="list">
+        {items.map((item, i) => (
+          <li style={`--i:${i}`}>
+            <span data-ac-hire-fit-num aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+            <p>{item}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>('[data-ac-hire="fit"]').forEach(toggleInView);
+</script>

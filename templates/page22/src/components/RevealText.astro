@@ -1,0 +1,47 @@
+---
+/**
+ * Splits a line into per-character spans so a heading can fill in left to right
+ * when its section arrives.
+ *
+ * Each character fades its opacity in turn with no movement; the soft fade
+ * suits a display face at 88px. The stagger and the fade live in `globals.css`
+ * as `--ac-char-step` and the transition on `[data-ac-reveal-char]`.
+ *
+ * Nothing here animates. The component only emits the index each character sits
+ * at; the section's own `data-ac-in` (or `data-portal-state`) gate drives the
+ * reveal in CSS, which is what makes it reversible and replay on the way back.
+ *
+ * Accessibility: every span is `aria-hidden`. Put the real sentence on the
+ * heading as `aria-label`, which wins over the element's contents, so assistive
+ * technology reads one clean string instead of a letter at a time.
+ */
+interface Props {
+  text: string;
+  /** Start the stagger partway in, so a heading split across lines keeps counting. */
+  offset?: number;
+}
+
+const { text, offset = 0 } = Astro.props;
+const words = text.split(" ");
+
+/* Each word's first character index. The +1 per word is the space, which
+   counts toward the stagger so the rhythm does not speed up across a gap. */
+const starts = words.map((_, i) =>
+  words.slice(0, i).reduce((n, word) => n + Array.from(word).length + 1, offset),
+);
+---
+
+<span data-ac-reveal-text aria-hidden="true">
+  {words.map((word, wordIndex) => (
+    <span>
+      {wordIndex > 0 ? " " : null}
+      <span data-ac-reveal-word>
+        {Array.from(word).map((char, charIndex) => (
+          <span data-ac-reveal-char style={`--ac-char-i:${starts[wordIndex] + charIndex}`}>
+            {char}
+          </span>
+        ))}
+      </span>
+    </span>
+  ))}
+</span>

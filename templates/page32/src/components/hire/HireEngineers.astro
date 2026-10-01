@@ -1,0 +1,129 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@/components/icons/Arrow.astro";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { HireEngineer, HireFilter, HireHead, HireLink } from "@/components/hire/types";
+
+/* Find the engineer you need: the heart of a hire page. Specialty filter
+   chips over a wall of engineer cards, four across on a desk. Each card is a
+   real photo of a person at work, then the role, who it is for, years of
+   experience, skill tags and a call to action.
+
+   The chips are native radios (arrow keys move between them). Filtering dims
+   the cards that don't match rather than removing them, so the wall never
+   changes height; on a phone, where the cards are a sideways rail, it also
+   slides the rail to the first match (the rail scrolls, the page doesn't).
+   Without the script every card stays lit. */
+
+interface Props extends HireHead {
+  filters: HireFilter[];
+  /** The first chip, which shows everyone. */
+  allLabel: string;
+  engineers: HireEngineer[];
+  cta: HireLink;
+  footnote: string;
+  filterLabel?: string;
+  /** "tint" is a light section on a pale blue ground. */
+  tone?: "light" | "tint" | "dark";
+}
+
+const {
+  id,
+  eyebrow,
+  headline,
+  accent,
+  lede,
+  filters,
+  allLabel,
+  engineers,
+  cta,
+  footnote,
+  filterLabel = "Filter by specialty",
+  tone = "dark",
+} = Astro.props;
+const name = `${id}-filter`;
+---
+
+<section data-ac-sec={tone === "tint" ? "light" : tone} data-ac-hire-tint={tone === "tint" || undefined} data-ac-hire="engineers" id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent ?? headline.length - 1} lede={lede} />
+
+    <fieldset data-ac-hire-filters data-ac-sec-rise>
+      <legend class="sr-only">{filterLabel}</legend>
+      {[{ key: "all", label: allLabel }, ...filters].map((filter, i) => (
+        <label data-ac-hire-filter>
+          <input type="radio" name={name} value={filter.key} checked={i === 0} />
+          <span>{filter.label}</span>
+        </label>
+      ))}
+    </fieldset>
+
+    <ul data-ac-hire-rail data-ac-hire-eng-cards role="list">
+      {engineers.map((eng, i) => (
+        <li data-ac-sec-frame data-ac-hire-eng-card data-tags={eng.tags.join(" ")} style={`--i:${i}`}>
+          <Joints />
+          <div data-ac-hire-photo data-ac-hire-eng-photo>
+            <Image
+              src={eng.photo.image}
+              alt={eng.photo.alt}
+              widths={[360, 560, 800]}
+              sizes="(max-width: 599px) 78vw, (max-width: 991px) 46vw, 23vw"
+              quality={78}
+              style={eng.photo.focus ? `object-position:${eng.photo.focus}` : undefined}
+            />
+            <span data-ac-hire-tag class="mono-label">{eng.years}</span>
+          </div>
+          <div data-ac-hire-eng-body>
+            <p data-ac-hire-eng-level class="mono-label">{eng.level}</p>
+            <h3 data-ac-hire-card-title>{eng.role}</h3>
+            <p data-ac-hire-card-body>{eng.for}</p>
+            <ul data-ac-hire-chips role="list">
+              {eng.skills.map((skill) => <li>{skill}</li>)}
+            </ul>
+            <a data-ac-hire-link class="mono-label" href={cta.href}>
+              {cta.label}
+              <Arrow direction="right" />
+            </a>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <p data-ac-hire-note data-ac-sec-rise>{footnote}</p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>('[data-ac-hire="engineers"]').forEach((section) => {
+    toggleInView(section);
+
+    const rail = section.querySelector<HTMLElement>("[data-ac-hire-eng-cards]")!;
+    const cards = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-hire-eng-card]"));
+
+    section.querySelectorAll<HTMLInputElement>("[data-ac-hire-filter] input").forEach((input) => {
+      input.addEventListener("change", () => {
+        const key = input.value;
+        let first: HTMLElement | null = null;
+        cards.forEach((card) => {
+          const on = key === "all" || (card.dataset.tags ?? "").split(" ").includes(key);
+          card.toggleAttribute("data-off", !on);
+          if (on && !first) first = card;
+        });
+        /* On a phone the cards are a sideways rail: bring the first match
+           into view by scrolling the rail only. */
+        if (first && rail.scrollWidth > rail.clientWidth) {
+          const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          rail.scrollTo({
+            left: (first as HTMLElement).offsetLeft - cards[0].offsetLeft,
+            behavior: reduce ? "auto" : "smooth",
+          });
+        }
+      });
+    });
+  });
+</script>

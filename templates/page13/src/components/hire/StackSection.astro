@@ -1,0 +1,71 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import { monogram } from "@/lib/monogram";
+import type { StackItem } from "@/types/hire";
+
+/* Tech we use: the one place a Technologies page shows technology. A frame
+   on the columns: the row's name in column 1, the six core tools as tiles in
+   columns 2–4 (logo, name, what it is), then the wider ecosystem as plain
+   chips, and a line on how tools are chosen. Tiles rise in turn on arrival.
+   Phones: tiles two-up, the row names above them. See docs/sections.md. */
+
+interface Props {
+  copy: {
+    eyebrow: string;
+    headline: string[];
+    lede: string;
+    coreLabel: string;
+    ecosystemLabel: string;
+    note: string;
+  };
+  core: StackItem[];
+  ecosystem: string[];
+}
+
+const { copy, core, ecosystem } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-stack id="stack">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={copy.eyebrow} headline={copy.headline} accent={1} lede={copy.lede} />
+
+    <div data-ac-sec-frame data-ac-stack-frame>
+      <Joints />
+      <div data-ac-stack-row>
+        <p data-ac-stack-label class="mono-label">{copy.coreLabel}</p>
+        <ul data-ac-stack-tiles>
+          {core.map((item, i) => (
+            <li data-ac-stack-tile style={`--ac-i:${i}`}>
+              <span data-ac-stack-mark>
+                {item.logo ? <TechLogo slug={item.logo} size={26} /> : <b aria-hidden="true">{monogram(item.name)}</b>}
+              </span>
+              <span data-ac-stack-name>{item.name}</span>
+              <span data-ac-stack-note class="mono-label-sm">{item.note}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div data-ac-stack-row>
+        <p data-ac-stack-label class="mono-label">{copy.ecosystemLabel}</p>
+        <ul data-ac-chips data-ac-stack-eco>
+          {ecosystem.map((name) => <li>{name}</li>)}
+        </ul>
+      </div>
+      <p data-ac-stack-foot>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5" /></svg>
+        {copy.note}
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  toggleInView(document.querySelector<HTMLElement>("[data-ac-stack]")!);
+</script>

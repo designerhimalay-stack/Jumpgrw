@@ -1,0 +1,91 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* Two teams becoming one. The headline and lede run across the top; under
+   them a photo of people at work fills columns 2–4, and a card hangs over
+   its left edge: the client's team in one row, AgentCraft's engineers in
+   another, and as the section arrives the second row slides up into the
+   first until they read as one team. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  yours: { label: string; marks: string[] };
+  ours: { label: string; marks: string[] };
+  merged: string;
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, yours, ours, merged } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+---
+
+<section data-ac-sec="light" data-ac-merge id={id} style={`--ac-yours:${yours.marks.length};--ac-ours:${ours.marks.length}`}>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-merge-grid>
+    <div data-ac-merge-head>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-merge-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+    </div>
+    <p data-ac-merge-lede data-ac-sec-rise>{lede}</p>
+
+    <div data-ac-merge-photo>
+      <Joints />
+      <div data-ac-merge-image>
+        <Image
+          src={media.image}
+          alt={media.alt}
+          widths={[640, 1024, 1440, media.image.width]}
+          sizes="(max-width: 991px) 100vw, 70vw"
+          quality={78}
+          style={media.focus ? `object-position:${media.focus}` : undefined}
+        />
+      </div>
+    </div>
+
+    <div data-ac-merge-card role="img" aria-label={`${yours.label} and ${ours.label}: ${merged}`}>
+      <p data-ac-merge-row-label class="mono-label-sm" data-row="yours" aria-hidden="true">{yours.label}</p>
+      <p data-ac-merge-row-label class="mono-label-sm" data-row="ours" aria-hidden="true">{ours.label}</p>
+      <div data-ac-merge-seats aria-hidden="true">
+        {yours.marks.map((mark, i) => (
+          <span data-ac-merge-seat data-team="yours" style={`--ac-slot:${i}`}>{mark}</span>
+        ))}
+        {ours.marks.map((mark, i) => (
+          <span data-ac-merge-seat data-team="ours" style={`--ac-slot:${yours.marks.length + i};--ac-i:${i}`}>{mark}</span>
+        ))}
+      </div>
+      <p data-ac-merge-result aria-hidden="true">
+        <span data-ac-merge-check>
+          <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+        </span>
+        {merged}
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-merge]").forEach(toggleInView);
+</script>

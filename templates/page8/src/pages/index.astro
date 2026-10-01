@@ -1,0 +1,132 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import FunnelSection from "@/components/FunnelSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import RadarSection from "@/components/RadarSection.astro";
+import RevealListSection from "@/components/RevealListSection.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p8-hero.jpg";
+import aiPhoto from "@/assets/pages/p8-ai.jpg";
+import dataPhoto from "@/assets/pages/p8-data.jpg";
+import cloudPhoto from "@/assets/pages/p8-cloud.jpg";
+import productPhoto from "@/assets/pages/p8-product.jpg";
+import vettingPhoto from "@/assets/pages/p8-vetting.jpg";
+import faqPhoto from "@/assets/pages/p8-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* Specialist developers. There was no brief for this page: the copy is
+   written from what the home page says about specialist developers (AI and
+   machine learning, data engineering, cloud architecture, on call). The
+   radar shapes are illustrative, and the vetting stages and FAQ answers are
+   drafts. Have them checked before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Flexible", "Specialist developers"],
+  headline: ["Specialist", "developers."],
+  lede: "The deep expertise your team doesn’t have in-house: AI, data, cloud and more, for a project, a sprint or as long as you need.",
+  ctas: [
+    { label: "Find a specialist", href: "#contact", arrow: "diagonal" },
+    { label: "Browse specialties", href: "#specialties", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A smiling engineer stands in front of a whiteboard of diagrams.",
+  specs: [
+    { label: "Depth", value: "Senior specialists" },
+    { label: "Engagement", value: "Project or ongoing" },
+    { label: "Starts", value: "Within two weeks" },
+    { label: "Vetted", value: "Four-stage process" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Part-time or full-time?",
+    a: "Either. Some specialists advise a few days a week; others embed full-time for a build.",
+  },
+  {
+    q: "Can a specialist mentor our team?",
+    a: "Yes, and many clients ask for it: pairing, reviews and a handover plan so the knowledge stays.",
+  },
+  {
+    q: "What if we need two specialties?",
+    a: "Combine them. An AI engineer and a data engineer often work best as a pair.",
+  },
+  {
+    q: "Do they work in our stack?",
+    a: "Yes. We match specialists to the tools and languages you already use.",
+  },
+];
+---
+
+<Layout
+  title={`Specialist developers · ${BRAND.name}`}
+  description="Senior AI, data, cloud and product specialists, vetted and matched to your stack, for a project or ongoing."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <RevealListSection
+      id="specialties"
+      eyebrow="Specialties"
+      headline={["The expert", "you’re missing."]}
+      lede="Point at a specialty to meet the kind of engineer behind it."
+      specialties={[
+        { name: "AI & machine learning", note: "Models, retrieval, evaluation and AI features in production.", stack: "Python · PyTorch · LLM APIs", media: { image: aiPhoto, alt: "", focus: "50% 50%" } },
+        { name: "Data engineering", note: "Pipelines, warehouses and the data your product runs on.", stack: "SQL · Spark · dbt", media: { image: dataPhoto, alt: "", focus: "50% 50%" } },
+        { name: "Cloud architecture", note: "Scalable, secure platforms that cost what they should.", stack: "AWS · GCP · Kubernetes", media: { image: cloudPhoto, alt: "", focus: "50% 35%" } },
+        { name: "Product engineering", note: "Complex interfaces, design systems and performance.", stack: "React · TypeScript · Figma", media: { image: productPhoto, alt: "", focus: "50% 50%" } },
+      ]}
+    />
+    <RadarSection
+      id="profiles"
+      eyebrow="Profiles"
+      headline={["Deep where it counts.", "Broad enough to fit in."]}
+      accent={1}
+      lede="Every specialist goes deep in one area and brings enough breadth to work inside your team."
+      axes={["Depth", "Architecture", "Delivery", "Data", "Communication", "Tooling"]}
+      profiles={[
+        { label: "AI & ML", role: "AI / ML engineer", does: ["Builds and evaluates models and LLM features", "Designs retrieval and data flows for AI", "Puts AI into production, with monitoring"], tools: "Python, PyTorch, vector databases, LLM APIs", values: [0.95, 0.7, 0.65, 0.85, 0.7, 0.8] },
+        { label: "Data", role: "Data engineer", does: ["Builds reliable pipelines and models", "Designs warehouses and lakes", "Makes data trustworthy and documented"], tools: "SQL, Spark, dbt, Airflow", values: [0.9, 0.75, 0.7, 0.95, 0.6, 0.75] },
+        { label: "Cloud", role: "Cloud architect", does: ["Designs platforms for scale and cost", "Sets security and access foundations", "Guides teams through migrations"], tools: "AWS, GCP, Terraform, Kubernetes", values: [0.9, 0.95, 0.7, 0.5, 0.75, 0.9] },
+        { label: "Product", role: "Senior product engineer", does: ["Builds complex, accessible interfaces", "Leads design systems in code", "Chases performance to the last frame"], tools: "React, TypeScript, Figma, Playwright", values: [0.85, 0.7, 0.9, 0.45, 0.9, 0.7] },
+      ]}
+    />
+    <FunnelSection
+      id="vetting"
+      eyebrow="How we vet"
+      headline={["Vetted,", "not just sourced."]}
+      accent={1}
+      lede="Every specialist passes four stages before they meet you, so the first conversation is about your problem, not their CV."
+      media={{ image: vettingPhoto, alt: "Two women talk through a project across a table, a laptop open between them.", focus: "50% 45%" }}
+      stages={[
+        { name: "Screening", checks: "Experience, depth and the right specialty." },
+        { name: "Technical deep-dive", checks: "A senior engineer tests real-world judgment." },
+        { name: "Pairing session", checks: "Solving a real problem, side by side." },
+        { name: "Fit & communication", checks: "Clear, reliable, and good with your team." },
+      ]}
+      result="Your specialist"
+    />
+    <FaqSection
+      eyebrow="Questions"
+      headline={["Turn one", "over."]}
+      accent={1}
+      cta="Ask about a specialty"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "Two colleagues talk across a table by a bright window.", focus: "50% 45%" }}
+    />
+    <CtaSection
+      eyebrow="Ready when you are"
+      headline={["Tell us who", "you’re looking for."]}
+      body="Describe the expertise you need. We’ll introduce matched, vetted specialists within days."
+      cta="Find my specialist"
+    />
+  </main>
+  <Footer />
+</Layout>

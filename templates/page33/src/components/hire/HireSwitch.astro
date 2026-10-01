@@ -1,0 +1,35 @@
+---
+/* One option of a hire "switch": a visually hidden radio and its visible
+   label. HireServices, HireWhy and HireProcess build their tab lists from
+   it. The radios do all the work without JavaScript: arrow keys move the
+   choice (native radio-group behaviour), and the stylesheet shows the pane
+   whose index matches the checked option (see "switch" in the Hire sections
+   block of globals.css). Panes share one grid cell, so a change of choice
+   never moves the page.
+
+   Usage: put the options inside a <fieldset data-ac-hire-switch-list> and the
+   panes (data-ac-hire-pane="1".."8") anywhere inside the same element marked
+   data-ac-hire-switch. Up to eight options per switch. A pane can answer to
+   several options: data-ac-hire-pane="1 2 3". */
+
+interface Props {
+  /** Shared by every option of one switch, e.g. "help-service". */
+  name: string;
+  /** 1-based position; matches the pane's data-ac-hire-pane. */
+  index: number;
+  checked?: boolean;
+}
+
+const { name, index, checked = false } = Astro.props;
+---
+
+<label data-ac-hire-opt-label>
+  <input
+    type="radio"
+    name={name}
+    value={String(index)}
+    data-ac-hire-opt={index}
+    checked={checked}
+  />
+  <slot />
+</label>

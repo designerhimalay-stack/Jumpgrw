@@ -7,7 +7,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
   workflow_dispatch:
 
@@ -33,6 +33,9 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            templates/*/package-lock.json
 
       - name: Is GitHub Pages switched on?
         id: pages
@@ -73,16 +76,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Build
+      # The home page, then every template (npm ci, type-check, lint, build and
+      # its own check-site), copied in at /<name>/, then the whole site checked.
+      - name: Build and check the home page and the page templates
         env:
           SITE_URL: ${{ steps.base.outputs.origin }}
           BASE_PATH: ${{ steps.base.outputs.path }}
-        run: npm run build
-
-      - name: Check the built site
-        env:
-          BASE_PATH: ${{ steps.base.outputs.path }}
-        run: node scripts/check-site.mjs
+        run: npm run build:all
 
       - name: Upload the site
         if: steps.pages.outputs.enabled == 'true' && github.event_name != 'pull_request'

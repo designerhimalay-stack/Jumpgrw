@@ -1,0 +1,184 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* A specialist's profile, as a radar, on the dark tone. Choose a specialty
+   and the shape morphs to its profile: where the depth is, what else they
+   bring. Beside it, the role, what they typically do and their tools. The
+   shapes describe a typical profile, not a person. See docs/sections.md. */
+
+interface Profile {
+  label: string;
+  role: string;
+  does: string[];
+  tools: string;
+  /** One value per axis, 0–1. */
+  values: number[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  axes: string[];
+  profiles: Profile[];
+}
+
+const { id, eyebrow, headline, accent, lede, axes, profiles } = Astro.props;
+const n = axes.length;
+const R = 120;
+const point = (i: number, v: number) => {
+  const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+  return [150 + Math.cos(a) * R * v, 150 + Math.sin(a) * R * v];
+};
+const polygon = (values: number[]) => values.map((v, i) => point(i, v).map((c) => c.toFixed(1)).join(",")).join(" ");
+const rings = [0.25, 0.5, 0.75, 1];
+---
+
+<section data-ac-sec="dark" data-ac-radar id={id} data-profiles={JSON.stringify(profiles.map((p) => p.values))}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-radar-tabs role="tablist" aria-label="Specialty">
+      {profiles.map((p, i) => (
+        <button
+          type="button"
+          role="tab"
+          id={`${id}-tab-${i}`}
+          aria-controls={`${id}-panel-${i}`}
+          aria-selected={i === 0 ? "true" : "false"}
+          tabindex={i === 0 ? 0 : -1}
+          data-ac-radar-tab
+        >
+          {p.label}
+        </button>
+      ))}
+    </div>
+
+    <div data-ac-sec-frame data-ac-radar-frame>
+      <Joints />
+      <div data-ac-radar-chart>
+        <svg viewBox="0 0 300 300" aria-hidden="true">
+          {rings.map((r) => <polygon data-ac-radar-ring points={polygon(Array(n).fill(r))} />)}
+          {axes.map((_, i) => {
+            const [x, y] = point(i, 1);
+            return <line data-ac-radar-axis x1="150" y1="150" x2={x} y2={y} />;
+          })}
+          <polygon data-ac-radar-shape points={polygon(profiles[0].values)} />
+          {profiles[0].values.map((v, i) => {
+            const [x, y] = point(i, v);
+            return <circle data-ac-radar-dot cx={x} cy={y} r="4" />;
+          })}
+        </svg>
+        {axes.map((axis, i) => {
+          const [x, y] = point(i, 1.2);
+          return <span data-ac-radar-axis-label class="mono-label-sm" style={`left:${(x / 300) * 100}%;top:${(y / 300) * 100}%`}>{axis}</span>;
+        })}
+      </div>
+
+      <div data-ac-radar-stage>
+        {profiles.map((p, i) => (
+          <div
+            role="tabpanel"
+            id={`${id}-panel-${i}`}
+            aria-labelledby={`${id}-tab-${i}`}
+            data-ac-radar-panel
+            data-active={i === 0 || undefined}
+            inert={i !== 0}
+          >
+            <p data-ac-radar-role>{p.role}</p>
+            <ul data-ac-radar-does>
+              {p.does.map((d) => <li>{d}</li>)}
+            </ul>
+            <p data-ac-radar-tools>
+              <span class="mono-label-sm">Typical tools</span>
+              {p.tools}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+    <p data-ac-radar-note class="mono-label-sm">A typical profile for each specialty, not a score.</p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-radar]").forEach((section) => {
+    toggleInView(section);
+
+    const profiles: number[][] = JSON.parse(section.dataset.profiles ?? "[]");
+    const shape = section.querySelector<SVGPolygonElement>("[data-ac-radar-shape]")!;
+    const dots = Array.from(section.querySelectorAll<SVGCircleElement>("[data-ac-radar-dot]"));
+    const tabs = Array.from(section.querySelectorAll<HTMLButtonElement>("[data-ac-radar-tab]"));
+    const panels = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-radar-panel]"));
+    const n = profiles[0].length;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const pointAt = (i: number, v: number) => {
+      const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+      return [150 + Math.cos(a) * 120 * v, 150 + Math.sin(a) * 120 * v];
+    };
+    const draw = (values: number[]) => {
+      shape.setAttribute("points", values.map((v, i) => pointAt(i, v).map((c) => c.toFixed(1)).join(",")).join(" "));
+      values.forEach((v, i) => {
+        const [x, y] = pointAt(i, v);
+        dots[i].setAttribute("cx", x.toFixed(1));
+        dots[i].setAttribute("cy", y.toFixed(1));
+      });
+    };
+
+    /* Morphs the shape from where it is to the chosen profile. */
+    let current = profiles[0].slice();
+    let frame = 0;
+    const morph = (target: number[]) => {
+      cancelAnimationFrame(frame);
+      if (reduced) {
+        current = target.slice();
+        return draw(current);
+      }
+      const from = current.slice();
+      const start = performance.now();
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / 650);
+        const e = 1 - Math.pow(1 - t, 3);
+        current = from.map((v, i) => v + (target[i] - v) * e);
+        draw(current);
+        if (t < 1) frame = requestAnimationFrame(step);
+      };
+      frame = requestAnimationFrame(step);
+    };
+
+    const choose = (index: number, focus = false) => {
+      tabs.forEach((tab, i) => {
+        const on = i === index;
+        tab.setAttribute("aria-selected", String(on));
+        tab.tabIndex = on ? 0 : -1;
+        panels[i].toggleAttribute("data-active", on);
+        panels[i].inert = !on;
+      });
+      morph(profiles[index]);
+      if (focus) tabs[index].focus();
+    };
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => choose(i));
+      tab.addEventListener("keydown", (event) => {
+        const last = tabs.length - 1;
+        const next =
+          event.key === "ArrowRight" ? (i === last ? 0 : i + 1)
+          : event.key === "ArrowLeft" ? (i === 0 ? last : i - 1)
+          : -1;
+        if (next < 0) return;
+        event.preventDefault();
+        choose(next, true);
+      });
+    });
+  });
+</script>

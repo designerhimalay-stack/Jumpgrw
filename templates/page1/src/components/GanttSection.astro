@@ -1,0 +1,84 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* The build plan as a chart. The header splits around a photo of the squad
+   at work; under it, a ruler of weeks runs along the top of the frame and
+   each phase is a bar across the weeks it takes, its hand-over written on
+   the bar. The bars draw left to right in turn as the section arrives, so
+   the plan reads as a schedule filling in. Column 1 names each phase, on
+   the page's first column. See docs/sections.md. */
+
+interface Phase {
+  title: string;
+  body: string;
+  /** First and last week, 1-based and inclusive. */
+  from: number;
+  to: number;
+  output: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  weeks: number;
+  phases: Phase[];
+}
+
+const { id, eyebrow, headline, accent, lede, media, weeks, phases } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+const when = (p: Phase) => (p.from === p.to ? `Week ${p.from}` : `Weeks ${p.from}–${p.to}`);
+/* A bar three weeks or longer holds its label; a shorter one sets it beside
+   itself, before the bar when the bar ends the plan. */
+const place = (p: Phase) => (p.to - p.from + 1 >= 3 ? "in" : p.to === weeks ? "before" : "after");
+---
+
+<section data-ac-sec="light" data-ac-gantt id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div data-ac-sec-frame data-ac-gantt-frame style={`--ac-weeks:${weeks}`}>
+      <Joints />
+      <div data-ac-gantt-ruler aria-hidden="true">
+        <span class="mono-label" data-ac-gantt-corner>Week</span>
+        {Array.from({ length: weeks }, (_, w) => (
+          <span data-ac-gantt-week class="mono-label-sm">{w + 1}</span>
+        ))}
+      </div>
+      <ol data-ac-gantt-rows>
+        {phases.map((phase, i) => (
+          <li data-ac-gantt-row style={`--ac-i:${i};--ac-from:${phase.from};--ac-to:${phase.to}`}>
+            <div data-ac-gantt-label>
+              <span data-ac-gantt-meta class="mono-label">
+                <span>Phase {pad(i + 1)}</span>
+                <span>{when(phase)}</span>
+              </span>
+              <span data-ac-gantt-title>{phase.title}</span>
+              <span data-ac-gantt-body>{phase.body}</span>
+              <span data-ac-gantt-output aria-hidden="true">{phase.output}</span>
+            </div>
+            <div data-ac-gantt-lane>
+              <span data-ac-gantt-bar data-text={place(phase)} data-last={i === phases.length - 1 || undefined}>
+                <span>{phase.output}</span>
+              </span>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-gantt]").forEach(toggleInView);
+</script>

@@ -1,0 +1,65 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import { TECH_LOGOS } from "@/lib/tech-logos";
+import type { HireHead, HireStackGroup } from "@/components/hire/types";
+
+/* Tech we use. The one place a hire page shows technology: one framed table,
+   a row per group (web and app, mobile, back end ...), the group's name in
+   column 1 and its logos in brand colour across columns 2–4, each on a white
+   12px tile with its name. Brands with no icon we may draw are named in text
+   after the logos. Rows rise in turn as the section arrives.
+
+   Phones: the name sits over its row, and the logos lose their names (kept
+   for screen readers) so each group stays one or two lines. */
+
+interface Props extends HireHead {
+  groups: HireStackGroup[];
+  /** A closing line under the table. */
+  note?: string;
+  /** "tint" is a light section on a pale blue ground. */
+  tone?: "light" | "tint" | "dark";
+}
+
+const { id, eyebrow, headline, accent, lede, groups, note, tone = "light" } = Astro.props;
+---
+
+<section data-ac-sec={tone === "tint" ? "light" : tone} data-ac-hire-tint={tone === "tint" || undefined} data-ac-hire="stack" id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent ?? headline.length - 1} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-hire-stack-table>
+      <Joints />
+      {groups.map((group, i) => (
+        <div data-ac-hire-stack-row style={`--i:${i}`}>
+          <h3 data-ac-hire-stack-name class="mono-label">
+            <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+            {group.name}
+          </h3>
+          <ul data-ac-hire-stack-logos role="list">
+            {group.logos.map((slug) => (
+              <li data-ac-hire-stack-logo>
+                <span data-ac-hire-stack-tile><TechLogo slug={slug} size={20} /></span>
+                <span data-ac-hire-stack-label>{TECH_LOGOS[slug].title}</span>
+              </li>
+            ))}
+            {group.named?.map((name) => (
+              <li data-ac-hire-stack-named>{name}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+
+    {note && <p data-ac-hire-note data-ac-sec-rise>{note}</p>}
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>('[data-ac-hire="stack"]').forEach(toggleInView);
+</script>
