@@ -1,0 +1,88 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* The cost of assumptions, as a ledger. A photo of the board holds column
+   1 for the full height; column 2 is what skipping discovery costs, crossed
+   in grey; columns 3–4 are the same lines with discovery, on the accent. One
+   grid, so each line sits level with its counterpart. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  before: { label: string; verdict: string };
+  after: { label: string; verdict: string };
+  rows: { label: string; before: string; after: string }[];
+}
+
+const { id, eyebrow, headline, accent, lede, media, before, after, rows } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-ledger id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-ledger-frame style={`--ac-rows:${rows.length}`}>
+      <div data-ac-ledger-photo>
+        <Joints />
+        <div data-ac-ledger-image>
+          <Image
+            src={media.image}
+            alt={media.alt}
+            widths={[400, 700, 1000]}
+            sizes="(max-width: 991px) 100vw, 24vw"
+            quality={78}
+            style={media.focus ? `object-position:${media.focus}` : undefined}
+          />
+        </div>
+      </div>
+
+      <p data-ac-ledger-head="before">
+        <span class="mono-label">{before.label}</span>
+        <span data-ac-ledger-verdict>{before.verdict}</span>
+      </p>
+      <p data-ac-ledger-head="after">
+        <span class="mono-label">{after.label}</span>
+        <span data-ac-ledger-verdict>{after.verdict}</span>
+      </p>
+
+      {rows.map((row, i) => (
+        <Fragment>
+          <p data-ac-ledger-cell="before" style={`--ac-i:${i}`}>
+            <span class="mono-label-sm">{row.label}</span>
+            <span data-ac-ledger-line>
+              <span data-ac-ledger-mark aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
+              </span>
+              <span>{row.before}</span>
+            </span>
+          </p>
+          <p data-ac-ledger-cell="after" style={`--ac-i:${i}`}>
+            <span class="mono-label-sm">{row.label}</span>
+            <span data-ac-ledger-line>
+              <span data-ac-ledger-mark aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+              </span>
+              <span>{row.after}</span>
+            </span>
+          </p>
+        </Fragment>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-ledger]").forEach(toggleInView);
+</script>

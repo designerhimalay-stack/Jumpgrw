@@ -1,0 +1,110 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import { TECH_LOGOS, type TechLogoSlug } from "@/lib/tech-logos";
+import type { SectionPhoto } from "@/types/page";
+
+/* Frameworks and platforms, on the dark tone. Under the header, a tall
+   photo holds column 1 and six flip cards fill columns 2–4, three by two.
+   Each card's front is the platform's logo on a white tile, its name and
+   what kind of thing it is; its back is what the team builds on it.
+
+   A card is a native checkbox stretched over the whole card, so it flips by
+   click, tap, or Tab then Space, with no script; its checked state is the
+   flipped state. Both faces share one grid cell, so a card is the same size
+   either way round. Under reduced motion the faces cross-fade instead of
+   turning. See docs/sections.md. */
+
+interface Card {
+  slug: TechLogoSlug;
+  kind: string;
+  builds: string[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  /** The front's flip hint, e.g. "Flip". */
+  flip: string;
+  /** The back's heading, e.g. "We build". */
+  back: string;
+  cards: Card[];
+}
+
+const { id, eyebrow, headline, accent, lede, media, flip, back, cards } = Astro.props;
+
+/* Wordmark-shaped logos need more of the tile to read. */
+const WIDE: TechLogoSlug[] = ["woocommerce"];
+
+/* A brand colour too pale to read on the white tile draws in ink instead. */
+const tone = (slug: TechLogoSlug) => {
+  const hex = TECH_LOGOS[slug].hex.slice(1);
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.72 ? "ink" : "brand";
+};
+---
+
+<section data-ac-sec="dark" data-ac-flips id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-flips-grid>
+      <div data-ac-flips-photo data-ac-sec-rise>
+        <Joints />
+        <div data-ac-flips-image>
+          <Image
+            src={media.image}
+            alt={media.alt}
+            widths={[400, 700, media.image.width]}
+            sizes="(max-width: 991px) 100vw, 24vw"
+            quality={78}
+            style={media.focus ? `object-position:${media.focus}` : undefined}
+          />
+        </div>
+      </div>
+
+      <ul data-ac-flips-cards>
+        {cards.map((card, i) => {
+          const name = TECH_LOGOS[card.slug].title;
+          return (
+            <li data-ac-flip style={`--ac-i:${i}`}>
+              <input type="checkbox" data-ac-flip-toggle aria-label={`${name}: show what we build`} />
+              <div data-ac-flip-inner>
+                <div data-ac-flip-face data-side="front">
+                  <span data-ac-flip-tile><TechLogo slug={card.slug} size={WIDE.includes(card.slug) ? 56 : 36} tone={tone(card.slug)} /></span>
+                  <span data-ac-flip-name>{name}</span>
+                  <span data-ac-flip-kind class="mono-label-sm">{card.kind}</span>
+                  <span data-ac-flip-hint class="mono-label-sm" aria-hidden="true">{flip} ↻</span>
+                </div>
+                <div data-ac-flip-face data-side="back">
+                  <span data-ac-flip-backhead>
+                    <TechLogo slug={card.slug} size={18} tone="white" />
+                    <span class="mono-label-sm">{name} · {back}</span>
+                  </span>
+                  <ul data-ac-flip-builds>
+                    {card.builds.map((item) => <li>{item}</li>)}
+                  </ul>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-flips]").forEach(toggleInView);
+</script>

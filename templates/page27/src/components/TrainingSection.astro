@@ -1,0 +1,223 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* A training run, on the dark tone. Columns 1–3: training and validation
+   loss across the epochs, drawn left to right as the section arrives. The
+   best epoch (lowest validation loss) carries a callout, and a dashed rule
+   marks where early stopping ends the run, `patience` epochs later; past it
+   the curves go faint over a hatched band, showing what would have
+   happened. Under the chart, an epoch scrubber (a native range input, so
+   arrows, Home and End work) moves a marker along both curves. Column 4:
+   the reading at the scrubbed epoch: both losses, the gap, and what the
+   run is doing there. On arrival the scrubber sweeps to the best epoch
+   unless it has been moved. Without the script it rests on the best
+   epoch, with that reading. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  /** Loss per epoch, epoch 1 first. */
+  train: number[];
+  val: number[];
+  patience: number;
+  scrubLabel: string;
+  footnote: string;
+}
+
+const { id, eyebrow, headline, accent, lede, train, val, patience, scrubLabel, footnote } = Astro.props;
+
+const N = train.length;
+const best = val.reduce((b, v, i) => (v < val[b] ? i : b), 0);
+const stop = Math.min(best + patience, N - 1);
+const TOP = 1.2;
+const W = 1000;
+const H = 400;
+const px = (i: number) => (i / (N - 1)) * W;
+const py = (v: number) => H - (v / TOP) * H;
+const pct = (i: number) => (i / (N - 1)) * 100;
+const pctY = (v: number) => (1 - v / TOP) * 100;
+const line = (vals: number[], from: number, to: number) =>
+  vals
+    .slice(from, to + 1)
+    .map((v, k) => `${k === 0 ? "M" : "L"}${px(from + k).toFixed(1)} ${py(v).toFixed(1)}`)
+    .join(" ");
+const grid = [0.25, 0.5, 0.75, 1];
+const ticks = [1, 10, 20, 30, 40].filter((t) => t <= N);
+const f = (v: number) => v.toFixed(3);
+
+const status = (i: number) =>
+  i < best ? "learning" : i === best ? "best" : i <= stop ? "patience" : "over";
+---
+
+<section data-ac-sec="dark" data-ac-train id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div
+      data-ac-sec-frame
+      data-ac-train-frame
+      data-best={best}
+      data-stop={stop}
+      data-train={train.map(f).join(",")}
+      data-val={val.map(f).join(",")}
+      style={`--ac-x:${pct(best)}%;--ac-yt:${pctY(train[best])}%;--ac-yv:${pctY(val[best])}%`}
+    >
+      <Joints />
+
+      <figure data-ac-train-chart>
+        <p data-ac-train-legend aria-hidden="true">
+          <span data-kind="train"><i />Training loss</span>
+          <span data-kind="val"><i />Validation loss</span>
+        </p>
+
+        <div data-ac-train-plot>
+          <span data-ac-train-grid aria-hidden="true">
+            {grid.map((g) => (
+              <span style={`top:${pctY(g)}%`}><b class="mono-label-sm">{g.toFixed(2)}</b></span>
+            ))}
+          </span>
+          <span data-ac-train-over style={`left:${pct(stop)}%`} aria-hidden="true">
+            <span class="mono-label-sm">Early stop · epoch {stop + 1}</span>
+          </span>
+          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label={`Training loss falls from ${f(train[0])} to ${f(train[N - 1])} over ${N} epochs. Validation loss is lowest at epoch ${best + 1} (${f(val[best])}), so early stopping ends the run at epoch ${stop + 1}.`}>
+            <path data-ac-train-line="val" d={line(val, 0, stop)} />
+            <path data-ac-train-line="val" data-ghost d={line(val, stop, N - 1)} />
+            <path data-ac-train-line="train" d={line(train, 0, stop)} />
+            <path data-ac-train-line="train" data-ghost d={line(train, stop, N - 1)} />
+          </svg>
+          <span data-ac-train-best style={`left:${pct(best)}%;top:${pctY(val[best])}%`} aria-hidden="true">
+            <i />
+            <span data-ac-train-callout>
+              <span class="mono-label-sm">Best</span>
+              Epoch {best + 1} · {f(val[best])}
+            </span>
+          </span>
+          <span data-ac-train-lane aria-hidden="true">
+            <span data-ac-train-marker>
+              <i data-kind="train" />
+              <i data-kind="val" />
+            </span>
+          </span>
+        </div>
+
+        <div data-ac-train-scrub>
+          <input
+            type="range"
+            min="1"
+            max={N}
+            value={best + 1}
+            step="1"
+            aria-label={`${scrubLabel}, 1 to ${N}`}
+            aria-valuetext={`${scrubLabel} ${best + 1}: training loss ${f(train[best])}, validation loss ${f(val[best])}`}
+          />
+          <span data-ac-train-ticks aria-hidden="true">
+            {ticks.map((t) => (
+              <span class="mono-label-sm" style={`left:${pct(t - 1)}%`}>{t}</span>
+            ))}
+          </span>
+        </div>
+      </figure>
+
+      <aside data-ac-train-read aria-live="polite">
+        <p class="mono-label" data-ac-train-read-head>{scrubLabel}</p>
+        <p data-ac-train-epoch>
+          <b data-read="epoch">{best + 1}</b>
+          <span>/ {N}</span>
+        </p>
+        <dl>
+          <div data-kind="train">
+            <dt class="mono-label-sm">Training loss</dt>
+            <dd data-read="train">{f(train[best])}</dd>
+          </div>
+          <div data-kind="val">
+            <dt class="mono-label-sm">Validation loss</dt>
+            <dd data-read="val">{f(val[best])}</dd>
+          </div>
+          <div>
+            <dt class="mono-label-sm">Gap</dt>
+            <dd data-read="gap">{f(val[best] - train[best])}</dd>
+          </div>
+        </dl>
+        <p data-ac-train-status data-status={status(best)}>
+          <span data-status-text="learning">Still learning: validation loss falling.</span>
+          <span data-status-text="best">Best checkpoint. This is the one we keep.</span>
+          <span data-status-text="patience">No better for <b data-read="wait">0</b> of {patience} epochs. Waiting.</span>
+          <span data-status-text="over">Memorising: validation loss rising. Stopped.</span>
+        </p>
+        <p class="mono-label-sm" data-ac-train-foot>Patience {patience} · {footnote}</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-train]").forEach((section) => {
+    const frame = section.querySelector<HTMLElement>("[data-ac-train-frame]")!;
+    const input = section.querySelector<HTMLInputElement>("[data-ac-train-scrub] input")!;
+    const read = (k: string) => section.querySelector<HTMLElement>(`[data-read="${k}"]`)!;
+    const status = section.querySelector<HTMLElement>("[data-ac-train-status]")!;
+    const train = (frame.dataset.train ?? "").split(",").map(Number);
+    const val = (frame.dataset.val ?? "").split(",").map(Number);
+    const best = Number(frame.dataset.best);
+    const stop = Number(frame.dataset.stop);
+    const N = train.length;
+    const TOP = 1.2;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let touched = false;
+    let raf = 0;
+
+    const show = (i: number) => {
+      frame.style.setProperty("--ac-x", `${(i / (N - 1)) * 100}%`);
+      frame.style.setProperty("--ac-yt", `${(1 - train[i] / TOP) * 100}%`);
+      frame.style.setProperty("--ac-yv", `${(1 - val[i] / TOP) * 100}%`);
+      read("epoch").textContent = String(i + 1);
+      read("train").textContent = train[i].toFixed(3);
+      read("val").textContent = val[i].toFixed(3);
+      read("gap").textContent = (val[i] - train[i]).toFixed(3);
+      read("wait").textContent = String(Math.max(0, i - best));
+      status.dataset.status = i < best ? "learning" : i === best ? "best" : i <= stop ? "patience" : "over";
+      input.setAttribute(
+        "aria-valuetext",
+        `Epoch ${i + 1}: training loss ${train[i].toFixed(3)}, validation loss ${val[i].toFixed(3)}`,
+      );
+    };
+
+    input.addEventListener("input", () => {
+      touched = true;
+      cancelAnimationFrame(raf);
+      show(Number(input.value) - 1);
+    });
+
+    /* On arrival, the marker sweeps from the first epoch to the best. */
+    const sweep = () => {
+      if (touched || reduced) return;
+      const start = performance.now();
+      const DUR = 1800;
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - start) / DUR);
+        const e = 1 - Math.pow(1 - t, 3);
+        const i = Math.round(e * best);
+        input.value = String(i + 1);
+        show(i);
+        if (t < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    };
+
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        if (entry.isIntersecting) sweep();
+        else cancelAnimationFrame(raf);
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

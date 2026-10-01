@@ -1,0 +1,71 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { TechLogoSlug } from "@/lib/tech-logos";
+
+/* The Android stack as a dependency tree, on the light tone. The app
+   module sits at the root in the accent; a trunk drops from it to a bus
+   that feeds four branches (ui, build, data, ship), one per column, and
+   each branch lists its tools as tiles hanging off a vertical line, the way
+   a dependency report reads. The lines draw from the root outward as the
+   section arrives and the tiles follow; pointing at a branch lights its
+   path back to the root. See docs/sections.md. */
+
+interface Tool {
+  slug: TechLogoSlug;
+  label: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  root: { slug: TechLogoSlug; label: string };
+  branches: { name: string; tools: Tool[] }[];
+}
+
+const { id, eyebrow, headline, accent, lede, root, branches } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-deps id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-deps-frame>
+      <Joints />
+      <p data-ac-deps-root>
+        <span data-ac-deps-root-icon><TechLogo slug={root.slug} size={30} tone="white" label /></span>
+        <code>{root.label}</code>
+      </p>
+      <span data-ac-deps-trunk aria-hidden="true" />
+
+      <ul data-ac-deps-branches>
+        {branches.map((b, i) => (
+          <li data-ac-deps-branch style={`--ac-i:${i}`}>
+            <p data-ac-deps-name><code>{b.name}</code></p>
+            <ul data-ac-deps-tools>
+              {b.tools.map((t, j) => (
+                <li style={`--ac-j:${j}`}>
+                  <span data-ac-deps-tile><TechLogo slug={t.slug} size={26} tone="brand" /></span>
+                  <span data-ac-deps-label>{t.label}</span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-deps]").forEach(toggleInView);
+</script>

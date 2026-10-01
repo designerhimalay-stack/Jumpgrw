@@ -1,0 +1,130 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { TechLogoSlug } from "@/lib/tech-logos";
+
+/* Pick the framework. Under the header, a row of use-case pills (a radio
+   group: arrow keys move, the choice sticks). Under them, three framework
+   columns in one frame, each with its logo, its shape in three lines and the
+   use cases it fits best as pills. Choosing a use case lights its best-fit
+   column (a blue cap, the "Best fit" tag, the matching pill) and dims the
+   other two; a verdict line under the frame says why. Every verdict shares
+   one grid cell and the tag's space is always kept, so nothing moves. The
+   first use case is chosen in the markup, so the page reads the same
+   without the script. See docs/sections.md. */
+
+interface UseCase {
+  id: string;
+  label: string;
+  /** The best-fit framework's slug. */
+  fit: TechLogoSlug;
+  why: string;
+}
+
+interface Framework {
+  slug: TechLogoSlug;
+  name: string;
+  tagline: string;
+  traits: { label: string; value: string }[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  pickLabel: string;
+  uses: UseCase[];
+  frameworks: Framework[];
+}
+
+const { id, eyebrow, headline, accent, lede, pickLabel, uses, frameworks } = Astro.props;
+const first = uses[0];
+---
+
+<section data-ac-sec="light" data-ac-fw id={id} data-pick={first.id} data-fit={first.fit}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <fieldset data-ac-fw-pick data-ac-sec-rise>
+      <legend class="mono-label">{pickLabel}</legend>
+      <div data-ac-fw-pills>
+        {uses.map((use, i) => (
+          <label data-ac-fw-pill>
+            <input type="radio" name={`${id}-use`} value={use.id} data-fit={use.fit} checked={i === 0} />
+            <span>{use.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+
+    <div data-ac-sec-frame data-ac-fw-frame>
+      <Joints />
+      {frameworks.map((fw) => (
+        <article data-ac-fw-col data-slug={fw.slug} data-lit={fw.slug === first.fit || undefined}>
+          <p data-ac-fw-tag class="mono-label-sm" aria-hidden="true">Best fit</p>
+          <span data-ac-fw-logo>
+            <TechLogo slug={fw.slug} size={34} />
+          </span>
+          <h3 data-ac-fw-name>{fw.name}</h3>
+          <p data-ac-fw-tagline>{fw.tagline}</p>
+          <dl data-ac-fw-traits>
+            {fw.traits.map((trait) => (
+              <div>
+                <dt class="mono-label-sm">{trait.label}</dt>
+                <dd>{trait.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <ul data-ac-fw-uses aria-label="Best fit for">
+            {uses.filter((u) => u.fit === fw.slug).map((use) => (
+              <li data-use={use.id} data-on={use.id === first.id || undefined}>{use.label}</li>
+            ))}
+          </ul>
+        </article>
+      ))}
+    </div>
+
+    <div data-ac-fw-verdicts aria-live="polite">
+      {uses.map((use) => {
+        const fw = frameworks.find((f) => f.slug === use.fit);
+        return (
+          <p data-ac-fw-verdict data-use={use.id} data-on={use.id === first.id || undefined}>
+            <span class="mono-label-sm">{use.label}</span>
+            <span data-ac-fw-arrow aria-hidden="true">→</span>
+            <strong>{fw?.name}</strong>
+            <span>{use.why}</span>
+          </p>
+        );
+      })}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-fw]").forEach((section) => {
+    toggleInView(section);
+
+    const cols = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-fw-col]"));
+    const marks = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-fw-uses] li, [data-ac-fw-verdict]"));
+    const choose = (input: HTMLInputElement) => {
+      const fit = input.dataset.fit ?? "";
+      section.dataset.pick = input.value;
+      section.dataset.fit = fit;
+      cols.forEach((col) => col.toggleAttribute("data-lit", col.dataset.slug === fit));
+      marks.forEach((el) => el.toggleAttribute("data-on", el.dataset.use === input.value));
+    };
+
+    section.querySelectorAll<HTMLInputElement>("[data-ac-fw-pill] input").forEach((input) => {
+      input.addEventListener("change", () => choose(input));
+      if (input.checked) choose(input);
+    });
+  });
+</script>

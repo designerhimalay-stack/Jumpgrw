@@ -1,0 +1,178 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import ModerniseSection from "@/components/ModerniseSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import RingsSection from "@/components/RingsSection.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import SolutionSection from "@/components/SolutionSection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p18-hero.jpg";
+import modernisePhoto from "@/assets/pages/p18-modernise.jpg";
+import whiteboardPhoto from "@/assets/pages/p18-whiteboard.jpg";
+import faqPhoto from "@/assets/pages/p18-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* .NET developers. The modernisation figures are relative and illustrative,
+   the project names are an example solution, and the FAQ answers are
+   drafts; have them checked before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "Backend", ".NET"],
+  headline: [".NET", "developers."],
+  accent: 1,
+  lede: "Engineers who build clean, layered .NET systems and move legacy .NET Framework estates to modern .NET without stopping the business.",
+  ctas: [
+    { label: "Hire .NET developers", href: "#contact", arrow: "diagonal" },
+    { label: "See the architecture", href: "#architecture", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A developer works through code across two monitors.",
+  specs: [
+    { label: "Builds", value: "APIs, Blazor, services" },
+    { label: "Moves", value: "Framework 4.8 to .NET 8" },
+    { label: "Runs on", value: "Containers and cloud" },
+    { label: "Starts", value: "Within two weeks" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Can you modernise without a full rewrite?",
+    a: "Yes. We move one boundary at a time behind the existing app, so it keeps running while each part lands on modern .NET.",
+  },
+  {
+    q: "Do you work in our architecture or impose one?",
+    a: "Yours first. Where it helps, we introduce clean layers gradually, starting with the code that changes most.",
+  },
+  {
+    q: "Which IDEs and tools do your developers use?",
+    a: "Rider or Visual Studio, whichever your team uses, with your CI, your package feeds and your conventions.",
+  },
+  {
+    q: "Can they support what runs in production?",
+    a: "Yes. The team can own releases, monitoring and fixes for the services they build, or hand them over cleanly.",
+  },
+];
+---
+
+<Layout
+  title={`.NET developers · ${BRAND.name}`}
+  description=".NET engineers who build clean, layered systems and move .NET Framework estates to modern .NET."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <RingsSection
+      id="architecture"
+      eyebrow="Clean architecture"
+      headline={["Rules at the centre.", "Details at the edge."]}
+      accent={1}
+      lede="Business rules sit in the middle and depend on nothing. Frameworks, databases and screens plug in around them."
+      caption="Dependencies point inward"
+      rings={[
+        {
+          name: "Domain",
+          lives: "Entities · rules",
+          rule: "Depends on nothing",
+          projects: [
+            { name: "Shop.Domain", note: "Entities, value objects, domain events" },
+            { name: "Shop.SharedKernel", note: "Base types every module shares" },
+          ],
+        },
+        {
+          name: "Application",
+          lives: "Use cases",
+          rule: "Depends on Domain only",
+          projects: [
+            { name: "Shop.Application", note: "Commands, queries and their handlers" },
+            { name: "Shop.Contracts", note: "Request and response types" },
+          ],
+        },
+        {
+          name: "Infrastructure",
+          lives: "Data · messaging",
+          rule: "Implements Application’s interfaces",
+          projects: [
+            { name: "Shop.Persistence", note: "EF Core on PostgreSQL", logo: "postgresql" },
+            { name: "Shop.Messaging", note: "Integration events over RabbitMQ", logo: "rabbitmq" },
+            { name: "Shop.Caching", note: "Redis for hot reads", logo: "redis" },
+          ],
+        },
+        {
+          name: "UI / API",
+          lives: "Endpoints · screens",
+          rule: "Composes the rest at startup",
+          projects: [
+            { name: "Shop.Api", note: "ASP.NET Core minimal APIs" },
+            { name: "Shop.Admin", note: "Blazor back office", logo: "blazor" },
+            { name: "Shop.Api.Docs", note: "OpenAPI with Swagger UI", logo: "swagger" },
+          ],
+        },
+      ]}
+    />
+    <ModerniseSection
+      id="modernise"
+      eyebrow="Modernise"
+      headline={["Same app.", "Modern runtime."]}
+      accent={1}
+      lede="Moving from .NET Framework 4.8 to modern .NET usually buys speed, headroom and lower bills. Switch between them."
+      media={{ image: modernisePhoto, alt: "An engineer reads code on a large monitor at her desk.", focus: "50% 40%" }}
+      before=".NET Framework 4.8"
+      after=".NET 8"
+      note="4.8 = 100 · illustrative"
+      metrics={[
+        { label: "Throughput", better: "higher", after: 210, change: "2.1× the requests" },
+        { label: "Memory", better: "lower", after: 65, change: "35% less" },
+        { label: "Cold start", better: "lower", after: 45, change: "55% faster" },
+        { label: "Hosting cost", better: "lower", after: 70, change: "30% lower" },
+      ]}
+    />
+    <SolutionSection
+      id="solution"
+      eyebrow="Solution explorer"
+      headline={["Open the solution.", "Know where it lives."]}
+      accent={1}
+      lede="A layout every engineer on the team can navigate on day one, with the tooling around it named and in place."
+      media={{ image: whiteboardPhoto, alt: "Two engineers talk through a system diagram on a whiteboard.", focus: "50% 40%" }}
+      title="Solution Explorer"
+      meta="Shop.sln · net8.0"
+      nodes={[
+        { name: "Solution ‘Shop’ · 5 projects", depth: 0, kind: "solution", note: "net8.0 · central package versions" },
+        { name: "src", depth: 1, kind: "folder" },
+        { name: "Shop.Api", depth: 2, kind: "project", note: "Minimal APIs, OpenAPI", logos: ["swagger"] },
+        { name: "Dockerfile", depth: 3, kind: "file", note: "One image, every environment", logos: ["docker"] },
+        { name: "Shop.Admin", depth: 2, kind: "project", note: "Back office", logos: ["blazor"] },
+        { name: "Shop.Domain", depth: 2, kind: "project", note: "Entities and rules, no dependencies" },
+        { name: "Shop.Infrastructure", depth: 2, kind: "project", note: "Data, messaging, cache", logos: ["postgresql", "rabbitmq", "redis"] },
+        { name: "Dependencies", depth: 3, kind: "folder", note: "Packages, pinned and scanned", logos: ["nuget"] },
+        { name: "tests", depth: 1, kind: "folder" },
+        { name: "Shop.Tests", depth: 2, kind: "project", note: "Unit and container-backed tests", logos: ["docker"] },
+        { name: "deploy", depth: 1, kind: "folder" },
+        { name: "k8s", depth: 2, kind: "folder", note: "Manifests per environment", logos: ["kubernetes"] },
+        { name: "workflows", depth: 2, kind: "folder", note: "Build, test and ship", logos: ["githubactions"] },
+        { name: "dashboards", depth: 2, kind: "folder", note: "Metrics and alerts", logos: ["grafana"] },
+      ]}
+    />
+    <FaqSection
+      eyebrow=".NET questions"
+      headline={["Questions,", "compiled."]}
+      accent={1}
+      cta="Talk to a .NET lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "A team plans at a whiteboard while colleagues listen at the table.", focus: "50% 45%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to build"
+      headline={["dotnet new.", "Your next team."]}
+      body="Tell us what runs on .NET today and where you want it to go. We will shape the team and the path."
+      cta="Plan my .NET team"
+    />
+  </main>
+  <Footer />
+</Layout>

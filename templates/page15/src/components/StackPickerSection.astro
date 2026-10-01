@@ -1,0 +1,163 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { TechLogoSlug } from "@/lib/tech-logos";
+import type { SectionPhoto } from "@/types/page";
+
+/* Build your stack. A frame on the columns: in columns 1–3, one row per
+   layer (frontend, backend, data, API, shipping), each a set of chips with
+   the tools' logos, one pick per layer (native radio buttons, so arrow keys
+   move within a row). In column 4, the pod that fits: a photo of a team, the
+   five picks as a spine of logos, and who does what, rewritten from the
+   picks. Every option's logo sits in the same cell of the spine and every
+   line keeps one height, so changing a pick moves nothing. Without the
+   script the default stack and its pod show. See docs/sections.md. */
+
+interface Option {
+  key: string;
+  name: string;
+  logo?: TechLogoSlug;
+  /** Shown in place of a logo when there is none (REST). */
+  glyph?: string;
+}
+
+interface Layer {
+  key: string;
+  name: string;
+  options: Option[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  layers: Layer[];
+  pod: {
+    title: string;
+    /** Each role's line, with {layer} placeholders filled from the picks. */
+    roles: { role: string; line: string }[];
+    note: string;
+  };
+}
+
+const { id, eyebrow, headline, accent, lede, media, layers, pod } = Astro.props;
+
+const pick = Object.fromEntries(layers.map((l) => [l.key, l.options[0].name]));
+const fill = (line: string) => line.replace(/\{(\w+)\}/g, (_, k: string) => pick[k] ?? k);
+---
+
+<section data-ac-sec="light" data-ac-stack id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-stack-frame>
+      <Joints />
+
+      <div data-ac-stack-picker>
+        {layers.map((layer, li) => (
+          <fieldset data-ac-stack-layer style={`--ac-i:${li}`}>
+            <legend data-ac-stack-legend>
+              <span class="mono-label-sm">L{li + 1}</span>
+              {layer.name}
+            </legend>
+            <div data-ac-stack-chips>
+              {layer.options.map((o, oi) => (
+                <label data-ac-stack-chip>
+                  <input
+                    type="radio"
+                    name={`${id}-${layer.key}`}
+                    value={o.key}
+                    checked={oi === 0}
+                    data-layer={layer.key}
+                    data-name={o.name}
+                  />
+                  <span data-ac-stack-mark aria-hidden="true">
+                    {o.logo ? <TechLogo slug={o.logo} size={20} /> : <b>{o.glyph}</b>}
+                  </span>
+                  <span data-ac-stack-name>{o.name}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ))}
+      </div>
+
+      <aside data-ac-stack-pod aria-live="polite">
+        <div data-ac-stack-photo>
+          <Image
+            src={media.image}
+            alt={media.alt}
+            widths={[400, 700, 1000]}
+            sizes="(max-width: 991px) 100vw, 24vw"
+            quality={78}
+            style={media.focus ? `object-position:${media.focus}` : undefined}
+          />
+        </div>
+        <div data-ac-stack-body>
+          <p data-ac-stack-title class="mono-label">{pod.title}</p>
+          <ol data-ac-stack-spine aria-hidden="true">
+            {layers.map((layer) => (
+              <li>
+                {layer.options.map((o, oi) => (
+                  <span data-ac-stack-pick={`${layer.key}:${o.key}`} data-on={oi === 0 || undefined}>
+                    {o.logo ? <TechLogo slug={o.logo} size={18} /> : <b>{o.glyph}</b>}
+                  </span>
+                ))}
+              </li>
+            ))}
+          </ol>
+          <dl data-ac-stack-roles>
+            {pod.roles.map((r) => (
+              <div>
+                <dt class="mono-label-sm">{r.role}</dt>
+                <dd data-ac-stack-line={r.line}>{fill(r.line)}</dd>
+              </div>
+            ))}
+          </dl>
+          <p data-ac-stack-note>{pod.note}</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-stack]").forEach((section) => {
+    const inputs = Array.from(section.querySelectorAll<HTMLInputElement>("[data-ac-stack-picker] input"));
+    const marks = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-stack-pick]"));
+    const lines = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-stack-line]"));
+
+    /* Rows wait for the entrance only once the script is here. */
+    section.setAttribute("data-ac-armed", "");
+
+    const update = () => {
+      const pick: Record<string, string> = {};
+      const keys = new Set<string>();
+      inputs.forEach((i) => {
+        if (!i.checked) return;
+        pick[i.dataset.layer ?? ""] = i.dataset.name ?? "";
+        keys.add(`${i.dataset.layer}:${i.value}`);
+      });
+      marks.forEach((m) => m.toggleAttribute("data-on", keys.has(m.dataset.acStackPick ?? "")));
+      lines.forEach((l) => {
+        l.textContent = (l.dataset.acStackLine ?? "").replace(/\{(\w+)\}/g, (_, k: string) => pick[k] ?? k);
+      });
+    };
+
+    inputs.forEach((i) => i.addEventListener("change", update));
+    update();
+
+    new IntersectionObserver(
+      ([entry]) => section.toggleAttribute("data-ac-in", entry.isIntersecting),
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

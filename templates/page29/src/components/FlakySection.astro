@@ -1,0 +1,122 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* Flaky tests, tamed, on the light tone. Columns 1–3: a run history, one row
+   per test and one dot per run, oldest on the left. As the section arrives
+   the runs fill in column by column, as they were: green passes, amber
+   passes on retry, red failures. Then the fix line drops in at its run and
+   every dot after it settles to green, and each row's flake rate reads its
+   before and after. Column 4: what fixed it. It runs back when the section
+   leaves. Dots keep their size; only colour and scale change. Without the
+   script, or under reduced motion, the settled history shows.
+   See docs/sections.md. */
+
+type Run = "p" | "r" | "f";
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  /** Run number (from 1) of the first run after the fix. */
+  fixAt: number;
+  fixLabel: string;
+  runsLabel: string;
+  legend: { p: string; r: string; f: string };
+  rateLabel: string;
+  /** One letter per run: p pass, r passed on retry, f failed. The runs after
+      the fix are drawn as they would have gone without it, then settle. */
+  tests: { name: string; runs: string }[];
+  fixesLabel: string;
+  fixes: { title: string; note: string }[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, fixAt, fixLabel, runsLabel, legend, rateLabel, tests, fixesLabel, fixes } =
+  Astro.props;
+
+const rows = tests.map((t) => {
+  const runs = Array.from(t.runs) as Run[];
+  const pre = runs.slice(0, fixAt - 1);
+  const bad = pre.filter((r) => r !== "p").length;
+  return { ...t, runs, before: Math.round((bad / pre.length) * 100) };
+});
+const count = rows[0]?.runs.length ?? 0;
+const label = (r: Run) => legend[r];
+---
+
+<section data-ac-sec="light" data-ac-flaky id={id} style={`--ac-runs:${count};--ac-fix:${fixAt - 1}`}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-flaky-grid>
+      <div data-ac-sec-frame data-ac-flaky-board>
+        <Joints />
+        <div data-ac-flaky-head aria-hidden="true">
+          <span class="mono-label-sm">{runsLabel}</span>
+          <ul data-ac-flaky-legend>
+            {(["p", "r", "f"] as Run[]).map((r) => (
+              <li><i data-run={r} />{legend[r]}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div data-ac-flaky-rows>
+          {rows.map((row) => (
+            <div data-ac-flaky-row>
+              <span data-ac-flaky-name>{row.name}</span>
+              <ol data-ac-flaky-runs aria-label={`${row.name}: ${row.before}% unstable before the fix, 0% after.`}>
+                {row.runs.map((r, i) => {
+                  const fixed = i >= fixAt - 1;
+                  return (
+                    <li
+                      data-run={fixed ? "p" : r}
+                      data-was={fixed && r !== "p" ? r : undefined}
+                      style={`--c:${i}`}
+                      title={`Run ${i + 1}: ${label(fixed ? "p" : r)}`}
+                    />
+                  );
+                })}
+              </ol>
+              <span data-ac-flaky-rate>
+                <s>{row.before}%</s>
+                <b>0%</b>
+              </span>
+            </div>
+          ))}
+          <span data-ac-flaky-fix aria-hidden="true">
+            <span class="mono-label-sm">{fixLabel}</span>
+          </span>
+        </div>
+        <p data-ac-flaky-ratelabel class="mono-label-sm" aria-hidden="true">{rateLabel}</p>
+      </div>
+
+      <aside data-ac-flaky-fixes>
+        <p class="mono-label-sm">{fixesLabel}</p>
+        <ol>
+          {fixes.map((f, i) => (
+            <li style={`--ac-i:${i}`}>
+              <span data-ac-flaky-n class="mono-label-sm">{String(i + 1).padStart(2, "0")}</span>
+              <b>{f.title}</b>
+              <span>{f.note}</span>
+            </li>
+          ))}
+        </ol>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.querySelectorAll<HTMLElement>("[data-ac-flaky]").forEach((section) => {
+    if (!reduced) section.setAttribute("data-ac-armed", "");
+    toggleInView(section);
+  });
+</script>

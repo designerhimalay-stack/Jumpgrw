@@ -1,0 +1,102 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* The delivery pipeline, running, on the dark tone. Columns 1–2: the claim
+   over a photo of the team. Columns 3–4: the pipeline top to bottom, a
+   stage per node, with changes flowing down it for good as small packets
+   of light, each stage glowing as one passes. Pure CSS motion; it stands
+   still under reduced motion. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  stages: { name: string; note: string; tool: string }[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, stages } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+---
+
+<section data-ac-sec="dark" data-ac-flow id={id} style={`--ac-stages:${stages.length}`}>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-flow-grid>
+    <div data-ac-flow-copy>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-flow-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+      <p data-ac-flow-lede data-ac-sec-rise>{lede}</p>
+      <div data-ac-flow-photo>
+        <Joints />
+        <div data-ac-flow-image>
+          <Image
+            src={media.image}
+            alt={media.alt}
+            widths={[480, 800, 1200]}
+            sizes="(max-width: 991px) 100vw, 46vw"
+            quality={78}
+            style={media.focus ? `object-position:${media.focus}` : undefined}
+          />
+        </div>
+      </div>
+    </div>
+
+    <ol data-ac-flow-pipe>
+      <span data-ac-flow-rail aria-hidden="true">
+        <i style="--ac-p:0" /><i style="--ac-p:1" /><i style="--ac-p:2" /><i style="--ac-p:3" />
+      </span>
+      {stages.map((stage, i) => (
+        <li data-ac-flow-stage style={`--ac-i:${i}`}>
+          <span data-ac-flow-node aria-hidden="true" />
+          <span data-ac-flow-name>{stage.name}</span>
+          <span data-ac-flow-note>{stage.note}</span>
+          <span data-ac-flow-tool class="mono-label-sm">{stage.tool}</span>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-flow]").forEach((section) => {
+    toggleInView(section);
+
+    /* The rail runs from the first node's centre to the last node's, never
+       past it. Measured, since the stages' heights follow their text. */
+    const pipe = section.querySelector<HTMLElement>("[data-ac-flow-pipe]")!;
+    const rail = section.querySelector<HTMLElement>("[data-ac-flow-rail]")!;
+    const nodes = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-flow-node]"));
+    const centre = (el: HTMLElement) => {
+      const r = el.getBoundingClientRect();
+      return r.top + r.height / 2;
+    };
+    const fit = () => {
+      const first = centre(nodes[0]);
+      rail.style.top = `${first - pipe.getBoundingClientRect().top}px`;
+      rail.style.height = `${centre(nodes[nodes.length - 1]) - first}px`;
+    };
+    fit();
+    new ResizeObserver(fit).observe(pipe);
+  });
+</script>

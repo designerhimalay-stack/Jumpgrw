@@ -1,0 +1,126 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* How it works, as spines on a shelf. Five steps stand side by side in one
+   frame, each a narrow spine with its number and name set upright; the
+   chosen one opens wide to show what happens at that step. The frame keeps
+   one height and one width, so opening a spine only shares out the width.
+   On phones the steps become a list of buttons over one detail panel,
+   every step's detail stacked in the same cell. Under the frame, who it
+   suits. Without the script the first step stays open. See
+   docs/sections.md. */
+
+interface Step {
+  title: string;
+  body: string;
+  points: string[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  steps: Step[];
+  fitLabel: string;
+  fit: string[];
+}
+
+const { id, eyebrow, headline, accent, lede, steps, fitLabel, fit } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-spines id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-spines-frame>
+      <Joints />
+      <div data-ac-spines-row role="tablist" aria-label="Steps">
+        {steps.map((step, i) => (
+          <div data-ac-spines-spine data-open={i === 0 ? "" : undefined} style={`--ac-i:${i}`}>
+            <button
+              type="button"
+              role="tab"
+              id={`${id}-tab-${i}`}
+              aria-controls={`${id}-panel-${i}`}
+              aria-selected={i === 0 ? "true" : "false"}
+              tabindex={i === 0 ? 0 : -1}
+              data-ac-spines-tab
+            >
+              <span data-ac-spines-num>{pad(i + 1)}</span>
+              <span data-ac-spines-name>{step.title}</span>
+            </button>
+            <div data-ac-spines-panel role="tabpanel" id={`${id}-panel-${i}`} aria-labelledby={`${id}-tab-${i}`}>
+              <p data-ac-spines-big aria-hidden="true">
+                <span data-ac-spines-bars>
+                  {steps.map((_, j) => <i data-on={j <= i ? "" : undefined} style={`--ac-j:${j}`} />)}
+                </span>
+                <span class="mono-label-sm">Step {i + 1} of {steps.length}</span>
+              </p>
+              <h3 data-ac-spines-title>{step.title}</h3>
+              <p data-ac-spines-body>{step.body}</p>
+              <ul data-ac-spines-points>
+                {step.points.map((point) => <li>{point}</li>)}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div data-ac-spines-fit data-ac-sec-rise>
+      <p class="mono-label">{fitLabel}</p>
+      <ul>
+        {fit.map((line, i) => (
+          <li>
+            <span class="mono-label-sm" aria-hidden="true">{pad(i + 1)}</span>
+            {line}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-spines]").forEach((section) => {
+    toggleInView(section);
+
+    const spines = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-spines-spine]"));
+    const tabs = spines.map((s) => s.querySelector<HTMLButtonElement>("[data-ac-spines-tab]")!);
+
+    const open = (index: number, focus = false) => {
+      spines.forEach((spine, i) => {
+        const on = i === index;
+        spine.toggleAttribute("data-open", on);
+        tabs[i].setAttribute("aria-selected", String(on));
+        tabs[i].tabIndex = on ? 0 : -1;
+      });
+      if (focus) tabs[index].focus();
+    };
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => open(i));
+      tab.addEventListener("keydown", (event) => {
+        const last = tabs.length - 1;
+        const next =
+          event.key === "ArrowRight" || event.key === "ArrowDown" ? (i === last ? 0 : i + 1)
+          : event.key === "ArrowLeft" || event.key === "ArrowUp" ? (i === 0 ? last : i - 1)
+          : event.key === "Home" ? 0
+          : event.key === "End" ? last
+          : -1;
+        if (next < 0) return;
+        event.preventDefault();
+        open(next, true);
+      });
+    });
+  });
+</script>

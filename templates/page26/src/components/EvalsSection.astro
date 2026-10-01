@@ -1,0 +1,184 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* The eval board and its release gate, on the dark tone. The header splits
+   around a photo of the team reviewing results. Under it, columns 1–3: one
+   row per prompt suite, one bar per metric, each bar with its threshold
+   marked; the bars fill metric by metric as the section arrives and each
+   ticks as it clears its bar. Column 4: the release gate, a barrier arm
+   and a count of thresholds met; once every one is met the arm lifts and
+   the gate turns green. Reversible; without the script, or under reduced
+   motion, the finished run shows with the gate open. See
+   docs/sections.md. */
+
+interface Metric {
+  label: string;
+  /** A short label for phones, where each cell names its metric. */
+  short: string;
+  threshold: number;
+  /** The bar's full length, in the metric's own units. */
+  max: number;
+  better: "higher" | "lower";
+  format: "pct" | "ratio" | "sec" | "usd";
+}
+
+interface Suite {
+  name: string;
+  cases: number;
+  /** One value per metric, in the metrics' order. */
+  values: number[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  metrics: Metric[];
+  suites: Suite[];
+  gate: { label: string; closed: string; open: string; build: string };
+  footnote: string;
+}
+
+const { id, eyebrow, headline, accent, lede, media, metrics, suites, gate, footnote } = Astro.props;
+
+const fmt = (m: Metric, v: number) =>
+  m.format === "pct" ? `${v}%` : m.format === "ratio" ? v.toFixed(2) : m.format === "sec" ? `${v.toFixed(1)} s` : `$${v.toFixed(2)}`;
+const passes = (m: Metric, v: number) => (m.better === "higher" ? v >= m.threshold : v <= m.threshold);
+const total = metrics.length * suites.length;
+const met = suites.reduce((n, s) => n + s.values.filter((v, i) => passes(metrics[i], v)).length, 0);
+---
+
+<section data-ac-sec="dark" data-ac-evals id={id} style={`--ac-metrics:${metrics.length}`}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div data-ac-sec-frame data-ac-evals-frame data-open={met === total || undefined}>
+      <Joints />
+
+      <table data-ac-evals-board>
+        <caption class="sr-only">Eval results per prompt suite, against each release threshold</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="mono-label-sm">Prompt suite</th>
+            {metrics.map((m) => (
+              <th scope="col">
+                <span data-ac-evals-metric>{m.label}</span>
+                <span class="mono-label-sm" data-ac-evals-bar-label>
+                  {m.better === "higher" ? "min" : "max"} {fmt(m, m.threshold)}
+                </span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {suites.map((s, r) => (
+            <tr>
+              <th scope="row">
+                <span data-ac-evals-suite>{s.name}</span>
+                <span class="mono-label-sm">{s.cases} cases</span>
+              </th>
+              {s.values.map((v, c) => {
+                const m = metrics[c];
+                const ok = passes(m, v);
+                return (
+                  <td
+                    data-ac-evals-cell
+                    data-pass={ok || undefined}
+                    style={`--ac-v:${Math.min(v / m.max, 1)};--ac-t:${m.threshold / m.max};--ac-d:${c * 4 + r}`}
+                  >
+                    <span data-ac-evals-cell-label class="mono-label-sm" aria-hidden="true">{m.short}</span>
+                    <span data-ac-evals-value>
+                      <span data-ac-evals-num>{fmt(m, v)}</span>
+                      <span data-ac-evals-tick aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+                      </span>
+                      <span class="sr-only">{ok ? "meets the threshold" : "misses the threshold"}</span>
+                    </span>
+                    <span data-ac-evals-track aria-hidden="true">
+                      <i data-ac-evals-fill />
+                      <i data-ac-evals-mark />
+                    </span>
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <aside data-ac-evals-gate aria-label={gate.label}>
+        <p class="mono-label" data-ac-evals-gate-head>{gate.label}</p>
+        <p data-ac-evals-count>
+          <b data-ac-evals-met>{met}</b>
+          <span>/ {total} thresholds met</span>
+        </p>
+        <p data-ac-evals-state>
+          <span data-state="closed">{gate.closed}</span>
+          <span data-state="open">{gate.open}</span>
+        </p>
+        <div data-ac-evals-barrier aria-hidden="true">
+          <span data-ac-evals-post />
+          <span data-ac-evals-arm />
+          <span data-ac-evals-light />
+        </div>
+        <p class="mono-label-sm" data-ac-evals-build>{gate.build} · {footnote}</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-evals]").forEach((section) => {
+    const frame = section.querySelector<HTMLElement>("[data-ac-evals-frame]")!;
+    const cells = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-evals-cell]"));
+    const count = section.querySelector<HTMLElement>("[data-ac-evals-met]")!;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const allPass = cells.every((c) => c.hasAttribute("data-pass"));
+    /* Each cell's tick lands when its bar has filled (see the CSS delays). */
+    const STEP = 70;
+    const FILL = 700;
+    let timers: number[] = [];
+
+    const reset = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      frame.removeAttribute("data-open");
+      count.textContent = "0";
+    };
+
+    const play = () => {
+      reset();
+      const order = cells
+        .map((c) => ({ c, d: Number(getComputedStyle(c).getPropertyValue("--ac-d")) }))
+        .sort((a, b) => a.d - b.d);
+      let met = 0;
+      order.forEach(({ c, d }) => {
+        timers.push(
+          window.setTimeout(() => {
+            if (c.hasAttribute("data-pass")) count.textContent = String(++met);
+          }, 300 + d * STEP + FILL),
+        );
+      });
+      const end = 300 + Math.max(...order.map((o) => o.d)) * STEP + FILL + 350;
+      if (allPass) timers.push(window.setTimeout(() => frame.setAttribute("data-open", ""), end));
+    };
+
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        if (reduced) return;
+        if (entry.isIntersecting) play();
+        else reset();
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

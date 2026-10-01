@@ -1,0 +1,82 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { TechLogoSlug } from "@/lib/tech-logos";
+
+/* The stack, as a type case. One frame split into drawers, a drawer per
+   part of an AI stack; each drawer is numbered and counted in column 1 and
+   holds its tools as compartments across columns 2–4, every compartment a
+   logo set in its brand colour. The compartments drop into the case drawer
+   by drawer as the section arrives. A tool with no logo we may draw is set
+   as a lettered block instead, named in full. See docs/sections.md. */
+
+interface Tool {
+  name: string;
+  /** Omit for tools named in text only; `mark` is then set in the block. */
+  slug?: TechLogoSlug;
+  mark?: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  drawers: { name: string; tools: Tool[] }[];
+  note: string;
+}
+
+const { id, eyebrow, headline, accent, lede, drawers, note } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+/* Eight compartments to a drawer; the unused ones are drawn empty. */
+const COLS = 8;
+const empties = (n: number) => (COLS - (n % COLS)) % COLS;
+---
+
+<section data-ac-sec="light" data-ac-case id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-case-frame>
+      <Joints />
+      {drawers.map((drawer, d) => (
+        <div data-ac-case-drawer style={`--ac-d:${d}`}>
+          <p data-ac-case-label>
+            <span data-ac-case-num class="mono-label-sm">{pad(d + 1)}</span>
+            <span data-ac-case-name>{drawer.name}</span>
+            <span data-ac-case-count class="mono-label-sm">{drawer.tools.length} tools</span>
+          </p>
+          <ul data-ac-case-tools>
+            {drawer.tools.map((tool, t) => (
+              <li data-ac-case-tool data-text={tool.slug ? undefined : ""} style={`--ac-t:${t}`}>
+                {tool.slug ? (
+                  <TechLogo slug={tool.slug} size={30} />
+                ) : (
+                  <span data-ac-case-mono aria-hidden="true">{tool.mark ?? tool.name.slice(0, 2)}</span>
+                )}
+                <span data-ac-case-tool-name>{tool.name}</span>
+              </li>
+            ))}
+            {Array.from({ length: empties(drawer.tools.length) }, () => <li data-ac-case-empty aria-hidden="true" />)}
+          </ul>
+        </div>
+      ))}
+    </div>
+
+    <p data-ac-case-note data-ac-sec-rise>
+      <span data-ac-case-key aria-hidden="true" />
+      {note}
+    </p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-case]").forEach(toggleInView);
+</script>

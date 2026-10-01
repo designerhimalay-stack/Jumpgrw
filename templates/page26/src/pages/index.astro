@@ -1,0 +1,183 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import EvalsSection from "@/components/EvalsSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import RagSection from "@/components/RagSection.astro";
+import RouterSection from "@/components/RouterSection.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p26-hero.jpg";
+import ragPhoto from "@/assets/pages/p26-rag.jpg";
+import evalsPhoto from "@/assets/pages/p26-evals.jpg";
+import faqPhoto from "@/assets/pages/p26-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* Generative AI engineers. The knowledge base, the routing figures and the
+   eval scores are illustrative, and the FAQ answers are drafts. Have them
+   checked before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "AI & data", "Generative AI"],
+  headline: ["Generative", "AI engineers."],
+  accent: 1,
+  lede: "Engineers who ship LLM features that hold up in production: grounded answers, the right model per request, and evals before every release.",
+  ctas: [
+    { label: "Hire AI engineers", href: "#contact", arrow: "diagonal" },
+    { label: "Watch an answer", href: "#rag", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "An engineer in headphones works through code on a laptop at night.",
+  specs: [
+    { label: "Builds", value: "RAG, agents, copilots" },
+    { label: "Models", value: "Hosted or open" },
+    { label: "Measured by", value: "Evals on every change" },
+    { label: "Team", value: "1 to 4 engineers" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Do you fine-tune, or use retrieval?",
+    a: "Retrieval first: it keeps answers current and citable. We fine-tune when evals show a smaller tuned model beats it on cost or quality.",
+  },
+  {
+    q: "Which models do you work with?",
+    a: "Anthropic, Google, OpenAI, Mistral and open-weight models you host yourself. The router keeps you free to switch.",
+  },
+  {
+    q: "How do you stop the model making things up?",
+    a: "Answers must cite retrieved sources, groundedness is scored on every run, and a release can't ship below its threshold.",
+  },
+  {
+    q: "Where does our data go?",
+    a: "Where you decide. We can keep embeddings in your own database and run open models inside your cloud account.",
+  },
+];
+---
+
+<Layout
+  title={`Generative AI engineers · ${BRAND.name}`}
+  description="Engineers who build retrieval, model routing and evaluation into your product, so LLM features ship grounded, fast and measured."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <RagSection
+      id="rag"
+      eyebrow="Retrieval, grounded"
+      headline={["Ask, retrieve,", "answer."]}
+      accent={1}
+      lede="Every answer is built from your own documents and cites them, so people can check it in one click."
+      media={{ image: ragPhoto, alt: "An engineer works on a laptop on a window ledge high above a city.", focus: "60% 50%" }}
+      steps={["Embed", "Retrieve", "Generate"]}
+      embedLabel="Query vector · 1,024 dims"
+      chunks={[
+        { source: "refund-policy.md · §2", text: "Annual plans are refunded pro rata within 30 days of renewal." },
+        { source: "refund-policy.md · §4", text: "Refunds return to the original card in 5–10 business days." },
+        { source: "billing-faq.md", text: "Monthly plans renew each month and are not refunded." },
+        { source: "sso-setup.md · §1", text: "SSO comes with the Business plan, over SAML 2.0 or OIDC." },
+        { source: "sso-setup.md · §3", text: "Admins verify the domain, then upload the IdP metadata." },
+        { source: "security.md", text: "Data is encrypted at rest (AES-256) and in transit (TLS 1.3)." },
+        { source: "changelog.md", text: "Usage-based seats arrived on the Team plan in March." },
+        { source: "api-limits.md", text: "The API allows 600 requests a minute per workspace." },
+      ]}
+      questions={[
+        {
+          label: "Refunds",
+          text: "Can I get a refund on an annual plan?",
+          scores: [0.91, 0.84, 0.77, 0.21, 0.18, 0.24, 0.33, 0.12],
+          answer: [
+            { text: "Yes. Annual plans are refunded pro rata if you cancel within 30 days of renewal.", cite: 1 },
+            { text: "The money returns to your original card in 5–10 business days.", cite: 2 },
+            { text: "Monthly plans aren’t refunded.", cite: 3 },
+          ],
+        },
+        {
+          label: "SSO",
+          text: "How do we switch on single sign-on?",
+          scores: [0.14, 0.11, 0.19, 0.93, 0.88, 0.62, 0.27, 0.22],
+          answer: [
+            { text: "SSO comes with the Business plan, over SAML 2.0 or OIDC.", cite: 1 },
+            { text: "An admin verifies your domain, then uploads your identity provider’s metadata.", cite: 2 },
+          ],
+        },
+      ]}
+      topK={3}
+      stats={[
+        { label: "Index", value: "12,480 chunks" },
+        { label: "Search", value: "38 ms" },
+        { label: "Top k", value: "3, by cosine" },
+      ]}
+      footnote="Illustrative knowledge base"
+    />
+    <RouterSection
+      id="router"
+      eyebrow="Model routing"
+      headline={["One request.", "The right model."]}
+      accent={1}
+      lede="A router sends each request to the model that fits it best, so you never pay flagship prices for a simple job."
+      request={{ label: "Incoming request", text: "Summarise this 40-page contract", meta: "18k tokens · tier: pro" }}
+      priorities={[
+        { value: "quality", label: "Quality" },
+        { value: "latency", label: "Speed" },
+        { value: "cost", label: "Cost" },
+      ]}
+      models={[
+        { slug: "anthropic", provider: "Anthropic", note: "Reasoning, long context", cost: 3.0, latency: 1.6, quality: 92 },
+        { slug: "googlegemini", provider: "Google Gemini", note: "Fast and multimodal", cost: 1.25, latency: 0.7, quality: 88 },
+        { slug: "mistralai", provider: "Mistral AI", note: "Lean, EU-hosted", cost: 0.4, latency: 0.9, quality: 81 },
+        { slug: "meta", provider: "Meta Llama", note: "Open weights, self-hosted", cost: 0.2, latency: 1.2, quality: 79 },
+        { slug: "huggingface", provider: "Hugging Face", note: "Fine-tuned for your domain", cost: 0.3, latency: 0.8, quality: 84 },
+      ]}
+      tools={[
+        { label: "Orchestrate", items: [{ slug: "langchain", name: "LangChain" }, { slug: "langgraph", name: "LangGraph" }] },
+        { label: "Retrieve", items: [{ slug: "qdrant", name: "Qdrant" }, { slug: "postgresql", name: "pgvector" }, { slug: "redis", name: "Redis cache" }] },
+        { label: "Self-host", items: [{ slug: "ollama", name: "Ollama" }, { slug: "huggingface", name: "Hugging Face" }] },
+      ]}
+      footnote="Also routes to OpenAI and Azure-hosted models. Figures illustrative."
+    />
+    <EvalsSection
+      id="evals"
+      eyebrow="Evaluation"
+      headline={["Evals before", "launch."]}
+      accent={1}
+      lede="Every prompt change runs the full suite. The release ships only when every score clears its bar."
+      media={{ image: evalsPhoto, alt: "Engineers review results on their laptops around a meeting table.", focus: "50% 40%" }}
+      metrics={[
+        { label: "Pass rate", short: "Pass", threshold: 90, max: 100, better: "higher", format: "pct" },
+        { label: "Groundedness", short: "Grounded", threshold: 0.85, max: 1, better: "higher", format: "ratio" },
+        { label: "p95 latency", short: "p95", threshold: 2.5, max: 4, better: "lower", format: "sec" },
+        { label: "Cost / 1k", short: "Cost/1k", threshold: 4, max: 6, better: "lower", format: "usd" },
+      ]}
+      suites={[
+        { name: "Contract Q&A", cases: 240, values: [94, 0.91, 2.1, 3.2] },
+        { name: "Support replies", cases: 180, values: [92, 0.89, 1.4, 1.1] },
+        { name: "Data extraction", cases: 320, values: [97, 0.95, 0.9, 0.6] },
+        { name: "Safety & refusals", cases: 90, values: [100, 0.93, 0.8, 0.4] },
+      ]}
+      gate={{ label: "Release gate", closed: "Held", open: "Cleared to ship", build: "prompt v14 · build 2291" }}
+      footnote="Illustrative run"
+    />
+    <FaqSection
+      eyebrow="Generative AI questions"
+      headline={["Grounded", "answers."]}
+      accent={1}
+      cta="Talk to an AI lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "Two engineers talk through a result on a laptop in a bright office.", focus: "55% 40%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to ship AI"
+      headline={["From demo", "to production."]}
+      body="Tell us what your model should answer and where it falls short. We’ll staff the engineers and the evals to get it live."
+      cta="Plan my AI team"
+    />
+  </main>
+  <Footer />
+</Layout>

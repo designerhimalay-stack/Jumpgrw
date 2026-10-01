@@ -1,0 +1,154 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* Ways to work together, as a swatch fan, on the dark tone. The headline
+   spans the top. Under it, a framed photo of engineers at work holds the
+   left half, with the "you stay in control" line set into its foot. On the
+   right, the three engagement models are swatch cards on one bolt, each
+   swatch a deeper blue as the team grows, all pinned at one bolt. A picker above the deck (native
+   radios, so arrow keys work and it runs without the script) brings the
+   chosen card upright to the front; the others fan out behind it. Clicking
+   a card behind does the same. The deck opens from a closed stack as the
+   section arrives, and every card shares one grid cell, so nothing moves.
+   See docs/sections.md. */
+
+interface Model {
+  kind: string;
+  title: string;
+  body: string;
+  /** The team size, set large on the swatch ("1", "2–4"). */
+  count: string;
+  /** What the count counts ("engineer", "engineers"). */
+  unit: string;
+  chips: string[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  picker: string;
+  models: Model[];
+  control: string;
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, picker, models, control } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+---
+
+<section data-ac-sec="dark" data-ac-fan id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-fan-grid>
+    <div data-ac-fan-head>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-fan-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+    </div>
+    <p data-ac-fan-lede data-ac-sec-rise>{lede}</p>
+
+    <figure data-ac-fan-photo>
+      <Joints />
+      <div data-ac-fan-image>
+        <Image
+          src={media.image}
+          alt={media.alt}
+          widths={[400, 700, 1000]}
+          sizes="(max-width: 991px) 100vw, 48vw"
+          quality={78}
+          style={media.focus ? `object-position:${media.focus}` : undefined}
+        />
+      </div>
+      <figcaption data-ac-fan-control>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.4 3.4 8.3 8 9 4.6-.7 8-4.6 8-9V6l-8-3Z" /><path d="m8.5 12 2.5 2.5 4.5-5" /></svg>
+        <span>{control}</span>
+      </figcaption>
+    </figure>
+
+    <div data-ac-fan-stage>
+      <fieldset data-ac-fan-picker>
+        <legend class="mono-label-sm">{picker}</legend>
+        <div data-ac-fan-options>
+          {models.map((model, i) => (
+            <Fragment>
+              <input
+                type="radio"
+                name={`${id}-model`}
+                id={`${id}-model-${i}`}
+                value={i}
+                checked={i === 0}
+                data-ac-fan-radio
+              />
+              <label for={`${id}-model-${i}`} style={`--ac-i:${i}`}>
+                <i aria-hidden="true" />
+                <span class="mono-label-sm">{String(i + 1).padStart(2, "0")}</span>
+                <b>{model.kind}</b>
+              </label>
+            </Fragment>
+          ))}
+        </div>
+      </fieldset>
+
+      <ol data-ac-fan-deck>
+        {models.map((model, i) => (
+          <li data-ac-fan-card style={`--ac-i:${i}`} data-index={i}>
+            <div data-ac-fan-swatch>
+              <p data-ac-fan-kind class="mono-label-sm">
+                {model.kind}
+                <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+              </p>
+              <p data-ac-fan-size>
+                <b>{model.count}</b>
+                <span>{model.unit}</span>
+              </p>
+            </div>
+            <div data-ac-fan-text>
+              <h3 data-ac-fan-title>{model.title}</h3>
+              <p data-ac-fan-body>{model.body}</p>
+              <ul data-ac-fan-chips aria-label="Skills">
+                {model.chips.map((chip) => <li>{chip}</li>)}
+              </ul>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-fan]").forEach((section) => {
+    // The deck waits closed until the section arrives; without the script it
+    // simply stays open.
+    section.setAttribute("data-ac-armed", "");
+    toggleInView(section);
+
+    const radios = section.querySelectorAll<HTMLInputElement>("[data-ac-fan-radio]");
+    section.querySelectorAll<HTMLElement>("[data-ac-fan-card]").forEach((card) => {
+      card.addEventListener("click", () => {
+        const radio = radios[Number(card.dataset.index)];
+        if (radio && !radio.checked) radio.checked = true;
+      });
+    });
+  });
+</script>

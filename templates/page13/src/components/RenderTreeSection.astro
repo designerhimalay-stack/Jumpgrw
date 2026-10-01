@@ -1,0 +1,226 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* The render path, on a component tree. A drafting-frame diagram of a small
+   shop's components, App at the top, wired with elbow connectors. "Add to
+   cart" changes one piece of state in App: the components that re-render
+   flash in turn, level by level, and the connectors into them light, so the
+   path reads top to bottom. The memo switch wraps three components in
+   React.memo: the path shrinks to the four that need the new state, the rest
+   show as skipped, and the counts along the frame's foot say how many.
+   Each node keeps its own render count. Phones get the same nodes as an
+   indented outline, the way a component inspector lists them. Without the
+   script the memoised state shows. See docs/sections.md. */
+
+interface TreeNode {
+  name: string;
+  /** Index of the parent node; none for the root. */
+  parent?: number;
+  /** Centre across the frame, 0–1. */
+  x: number;
+  /** Depth, from 0. */
+  row: number;
+  /** Needs the changed state, so re-renders even with memo on. */
+  path?: boolean;
+  /** Wrapped in React.memo when the switch is on. */
+  memo?: boolean;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  nodes: TreeNode[];
+  action: { label: string; code: string };
+  memoLabel: string;
+  counts: { rendered: string; skipped: string };
+}
+
+const { id, eyebrow, headline, accent, lede, nodes, action, memoLabel, counts } = Astro.props;
+
+/* The diagram's coordinates: 1000 across, 100 per level. The SVG is
+   stretched to the frame, so strokes are non-scaling. */
+const ROW_H = 100;
+const HALF = 22;
+const rows = Math.max(...nodes.map((n) => n.row)) + 1;
+const wires = nodes
+  .map((node, i) => ({ node, i }))
+  .filter(({ node }) => node.parent !== undefined)
+  .map(({ node, i }) => {
+    const p = nodes[node.parent!];
+    const px = p.x * 1000;
+    const py = p.row * ROW_H + ROW_H / 2 + HALF;
+    const cx = node.x * 1000;
+    const cy = node.row * ROW_H + ROW_H / 2 - HALF;
+    const mid = (py + cy) / 2;
+    return { i, row: node.row, d: `M${px} ${py} V${mid} H${cx} V${cy}` };
+  });
+const pathCount = nodes.filter((n) => n.path).length;
+---
+
+<section data-ac-sec="light" data-ac-tree id={id} data-memo="on">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-tree-frame data-ac-sec-rise>
+      <Joints />
+
+      <div data-ac-tree-canvas style={`--ac-rows:${rows}`}>
+        <svg data-ac-tree-wires viewBox={`0 0 1000 ${rows * ROW_H}`} preserveAspectRatio="none" aria-hidden="true">
+          {wires.map((w) => <path data-ac-tree-wire d={w.d} />)}
+          {wires.map((w) => (
+            <path
+              data-ac-tree-glow
+              data-node={w.i}
+              data-lit={nodes[w.i].path || undefined}
+              d={w.d}
+              pathLength="1"
+              style={`--ac-row:${w.row}`}
+            />
+          ))}
+        </svg>
+
+        <ol data-ac-tree-nodes aria-label="Component tree">
+          {nodes.map((node, i) => (
+            <li
+              data-ac-tree-node
+              data-node={i}
+              data-path={node.path || undefined}
+              data-memoable={node.memo || undefined}
+              data-state={node.path ? "render" : "skip"}
+              style={`--ac-x:${node.x};--ac-row:${node.row}`}
+            >
+              <span data-ac-tree-box>
+                <code>&lt;{node.name} /&gt;</code>
+                {node.memo && <span data-ac-tree-memo class="mono-label-sm">memo</span>}
+                <span data-ac-tree-count class="mono-label-sm" aria-hidden="true">
+                  ×<b>1</b>
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div data-ac-tree-bar>
+        <div data-ac-tree-cell>
+          <button type="button" data-ac-tree-fire>
+            <span data-ac-tree-fire-label>{action.label}</span>
+            <code>{action.code}</code>
+          </button>
+        </div>
+        <div data-ac-tree-cell>
+          <button type="button" role="switch" aria-checked="true" data-ac-tree-switch>
+            <span data-ac-tree-track aria-hidden="true"><i /></span>
+            <span>{memoLabel}</span>
+          </button>
+        </div>
+        <div data-ac-tree-cell data-ac-tree-stat>
+          <span class="mono-label">{counts.rendered}</span>
+          <span data-ac-tree-num>
+            <b data-ac-tree-rendered>{pathCount}</b><small>/{nodes.length}</small>
+          </span>
+        </div>
+        <div data-ac-tree-cell data-ac-tree-stat data-saved>
+          <span class="mono-label">{counts.skipped}</span>
+          <span data-ac-tree-num>
+            <b data-ac-tree-skipped>{nodes.length - pathCount}</b>
+          </span>
+        </div>
+      </div>
+
+      <p class="sr-only" aria-live="polite" data-ac-tree-status>
+        {pathCount} of {nodes.length} components re-rendered.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-tree]").forEach((section) => {
+    const nodes = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-tree-node]"));
+    const glows = Array.from(section.querySelectorAll<SVGPathElement>("[data-ac-tree-glow]"));
+    const fire = section.querySelector<HTMLButtonElement>("[data-ac-tree-fire]")!;
+    const toggle = section.querySelector<HTMLButtonElement>("[data-ac-tree-switch]")!;
+    const rendered = section.querySelector<HTMLElement>("[data-ac-tree-rendered]")!;
+    const skipped = section.querySelector<HTMLElement>("[data-ac-tree-skipped]")!;
+    const status = section.querySelector<HTMLElement>("[data-ac-tree-status]")!;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const STEP_MS = reduced ? 0 : 220;
+    const renderCounts = nodes.map(() => 1);
+    let memo = true;
+    let timers: number[] = [];
+
+    const counter = (i: number) => nodes[i].querySelector<HTMLElement>("[data-ac-tree-count] b")!;
+
+    /* One state change in App: each level re-renders in turn, top down. */
+    const run = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      const renders = nodes.map((n) => !memo || n.dataset.path !== undefined);
+      const total = renders.filter(Boolean).length;
+      let done = 0;
+      nodes.forEach((n) => n.setAttribute("data-state", "idle"));
+      glows.forEach((g) => g.removeAttribute("data-lit"));
+      rendered.textContent = "0";
+      skipped.textContent = "0";
+
+      const depth = Math.max(...nodes.map((n) => Number(n.style.getPropertyValue("--ac-row"))));
+      for (let row = 0; row <= depth; row++) {
+        timers.push(
+          window.setTimeout(() => {
+            nodes.forEach((n, i) => {
+              if (Number(n.style.getPropertyValue("--ac-row")) !== row) return;
+              if (renders[i]) {
+                n.setAttribute("data-state", "render");
+                renderCounts[i] += 1;
+                counter(i).textContent = String(renderCounts[i]);
+                done += 1;
+              } else {
+                n.setAttribute("data-state", "skip");
+              }
+            });
+            glows.forEach((g) => g.toggleAttribute("data-lit", renders[Number(g.dataset.node)] && Number(g.style.getPropertyValue("--ac-row")) <= row));
+            rendered.textContent = String(done);
+            skipped.textContent = String(nodes.filter((n) => n.getAttribute("data-state") === "skip").length);
+          }, 120 + row * STEP_MS),
+        );
+      }
+      timers.push(
+        window.setTimeout(() => {
+          status.textContent = `${total} of ${nodes.length} components re-rendered${memo ? ", with memo" : ""}.`;
+        }, 200 + depth * STEP_MS),
+      );
+    };
+
+    fire.addEventListener("click", run);
+    toggle.addEventListener("click", () => {
+      memo = !memo;
+      toggle.setAttribute("aria-checked", String(memo));
+      section.setAttribute("data-memo", memo ? "on" : "off");
+      run();
+    });
+
+    /* On each arrival, the update plays once; the reverse entrance is the
+       header's. */
+    let seen = false;
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        if (entry.isIntersecting && !seen) {
+          seen = true;
+          timers.push(window.setTimeout(run, 500));
+        } else if (!entry.isIntersecting) {
+          seen = false;
+        }
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

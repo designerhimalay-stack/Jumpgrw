@@ -1,0 +1,235 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* Drift watch, on the dark tone. Columns 1–3: one input's distribution,
+   the training data as an outlined step over the live data's bars. While
+   the section is on screen the live data slowly wanders; the drift score
+   (population stability index) in column 4 climbs its meter, and when it
+   crosses the threshold the retraining steps run in turn (detect, retrain,
+   validate, deploy). The retrained model's reference then moves onto the
+   live data, the score falls back, and the next cycle drifts the other
+   way. The loop stops off screen. Bars move by transform only, so nothing
+   shifts. Without the script, or under reduced motion, the realigned
+   state shows. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  feature: string;
+  ticks: string[];
+  threshold: number;
+  steps: [string, string, string, string];
+  states: { stable: string; drift: string; retrain: string; done: string };
+  footnote: string;
+}
+
+const { id, eyebrow, headline, accent, lede, feature, ticks, threshold, steps, states, footnote } = Astro.props;
+
+/* The shape both distributions start from: a skewed bump over 24 bins. */
+const BINS = 24;
+const MU = 9;
+const SD = 3.2;
+const density = (mu: number) => {
+  const raw = Array.from({ length: BINS }, (_, b) => Math.exp(-Math.pow(b + 0.5 - mu, 2) / (2 * SD * SD)));
+  const sum = raw.reduce((a, v) => a + v, 0);
+  return raw.map((v) => v / sum);
+};
+const start = density(MU);
+const peak = Math.max(...start) * 1.25;
+const METER = 0.5;
+---
+
+<section data-ac-sec="dark" data-ac-drift id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div
+      data-ac-sec-frame
+      data-ac-drift-frame
+      data-state="done"
+      data-bins={BINS}
+      data-mu={MU}
+      data-sd={SD}
+      data-peak={peak.toFixed(4)}
+      data-threshold={threshold}
+      style={`--ac-meter:${METER};--ac-th:${threshold / METER}`}
+    >
+      <Joints />
+
+      <figure data-ac-drift-chart>
+        <p data-ac-drift-legend aria-hidden="true">
+          <span data-kind="ref"><i />Training data</span>
+          <span data-kind="live"><i />Live data</span>
+          <span class="mono-label-sm">{feature}</span>
+        </p>
+        <div data-ac-drift-plot role="img" aria-label={`${feature}: live data compared with the data the model was trained on. When they drift apart past a score of ${threshold}, the model is retrained.`}>
+          {start.map((p) => (
+            <span data-ac-drift-bin style={`--ac-r:${(p / peak).toFixed(3)};--ac-l:${(p / peak).toFixed(3)}`}>
+              <i data-live />
+              <i data-ref-fill />
+              <i data-ref-cap />
+            </span>
+          ))}
+        </div>
+        <p data-ac-drift-ticks aria-hidden="true">
+          {ticks.map((t) => <span class="mono-label-sm">{t}</span>)}
+        </p>
+      </figure>
+
+      <aside data-ac-drift-panel>
+        <p class="mono-label" data-ac-drift-label>Drift score · PSI</p>
+        <p data-ac-drift-score><b data-ac-drift-psi>0.02</b></p>
+        <span data-ac-drift-meter style="--ac-psi:0.04" aria-hidden="true">
+          <i data-fill />
+          <i data-mark />
+          <span class="mono-label-sm">Retrain at {threshold.toFixed(2)}</span>
+        </span>
+        <p data-ac-drift-state aria-live="polite">
+          <span data-when="stable">{states.stable}</span>
+          <span data-when="drift">{states.drift}</span>
+          <span data-when="retrain">{states.retrain}</span>
+          <span data-when="done">{states.done}</span>
+        </p>
+        <ol data-ac-drift-steps>
+          {steps.map((s, i) => (
+            <li data-step={i} data-run="done">
+              <i aria-hidden="true" />
+              {s}
+            </li>
+          ))}
+        </ol>
+        <p class="mono-label-sm" data-ac-drift-foot>{footnote}</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-drift]").forEach((section) => {
+    const frame = section.querySelector<HTMLElement>("[data-ac-drift-frame]")!;
+    const bins = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-drift-bin]"));
+    const psiEl = section.querySelector<HTMLElement>("[data-ac-drift-psi]")!;
+    const meter = section.querySelector<HTMLElement>("[data-ac-drift-meter]")!;
+    const steps = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-drift-steps] li"));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const BINS = Number(frame.dataset.bins);
+    const MU = Number(frame.dataset.mu);
+    const SD = Number(frame.dataset.sd);
+    const PEAK = Number(frame.dataset.peak);
+    const TH = Number(frame.dataset.threshold);
+    const TICK = 300;
+    const MAX_SHIFT = 6;
+
+    const density = (mu: number, sd: number) => {
+      const raw = Array.from({ length: BINS }, (_, b) => Math.exp(-Math.pow(b + 0.5 - mu, 2) / (2 * sd * sd)));
+      const sum = raw.reduce((a, v) => a + v, 0);
+      return raw.map((v) => v / sum);
+    };
+    const psi = (ref: number[], live: number[]) =>
+      ref.reduce((s, e, i) => {
+        const a = Math.max(live[i], 1e-4);
+        const x = Math.max(e, 1e-4);
+        return s + (a - x) * Math.log(a / x);
+      }, 0);
+
+    let refMu = MU;
+    let liveMu = MU;
+    let liveSd = SD;
+    let dir = 1;
+    let timers: number[] = [];
+    let running = false;
+
+    const later = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+    const stopAll = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      running = false;
+    };
+
+    const draw = () => {
+      const ref = density(refMu, SD);
+      const live = density(liveMu, liveSd);
+      bins.forEach((b, i) => {
+        b.style.setProperty("--ac-r", (ref[i] / PEAK).toFixed(3));
+        b.style.setProperty("--ac-l", (live[i] / PEAK).toFixed(3));
+      });
+      const score = psi(ref, live);
+      psiEl.textContent = score.toFixed(2);
+      meter.style.setProperty("--ac-psi", String(Math.min(score / 0.5, 1)));
+      return score;
+    };
+
+    const setSteps = (upto: number, runningAt = -1) =>
+      steps.forEach((s, i) => (s.dataset.run = i === runningAt ? "run" : i <= upto ? "done" : "wait"));
+
+    /* One cycle: drift until the score crosses the line, retrain, realign. */
+    const cycle = () => {
+      if (!running) return;
+      frame.dataset.state = "stable";
+      setSteps(-1);
+      const drift = () => {
+        if (!running) return;
+        liveMu += dir * 0.09;
+        liveSd = SD * (1 + Math.abs(liveMu - refMu) * 0.05);
+        const score = draw();
+        if (score >= TH) {
+          frame.dataset.state = "drift";
+          setSteps(0);
+          later(900, () => {
+            frame.dataset.state = "retrain";
+            setSteps(0, 1);
+          });
+          later(2100, () => setSteps(1, 2));
+          later(3000, () => setSteps(2, 3));
+          later(3700, () => {
+            setSteps(3);
+            refMu = liveMu;
+            liveSd = SD;
+            draw();
+            frame.dataset.state = "done";
+          });
+          later(6200, () => {
+            dir = refMu > MU ? -1 : 1;
+            cycle();
+          });
+          return;
+        }
+        /* A guard: the score always crosses well before this. */
+        if (Math.abs(liveMu - refMu) > MAX_SHIFT) return;
+        later(TICK, drift);
+      };
+      later(1200, drift);
+    };
+
+    const start = () => {
+      if (running || reduced) return;
+      running = true;
+      liveMu = refMu;
+      liveSd = SD;
+      draw();
+      cycle();
+    };
+
+    if (!reduced) {
+      draw();
+      frame.dataset.state = "stable";
+      setSteps(-1);
+    }
+
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        if (entry.isIntersecting) start();
+        else stopAll();
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

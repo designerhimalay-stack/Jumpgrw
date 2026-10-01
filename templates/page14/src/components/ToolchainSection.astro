@@ -1,0 +1,122 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import { TECH_LOGOS, type TechLogoSlug } from "@/lib/tech-logos";
+
+/* The toolchain as a periodic table, on the dark tone. Angular is the
+   first element, twice the size of the rest; the others fill a six-column
+   table in families (core, reactive, UI, tooling, testing), each element
+   numbered, with its logo on a white tile, a two-letter symbol, its name
+   and its job. The key sits in the gap at the top of the table, where a
+   periodic table keeps its own. The elements settle in on arrival, in
+   number order; pointing at or focusing a family in the key lights its
+   elements. See docs/sections.md. */
+
+interface Element {
+  slug: TechLogoSlug;
+  symbol: string;
+  role: string;
+  family: number;
+  /** Name shown instead of the logo's title, if it differs. */
+  name?: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  families: string[];
+  /** The first is the featured element, drawn large. */
+  elements: Element[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, families, elements } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="dark" data-ac-table id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <div data-ac-table-head>
+      <div>
+        <p data-ac-sec-eyebrow class="mono-label">
+          <span aria-hidden="true">+</span>
+          {eyebrow}
+        </p>
+        <h2 data-ac-table-headline aria-label={headline.join(" ")}>
+          {headline.map((line, i) => (
+            <Fragment>
+              {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+              <span data-ac-sec-line data-accent={i === accent || undefined}>
+                <RevealText text={line} offset={offsets[i]} />
+              </span>
+            </Fragment>
+          ))}
+        </h2>
+      </div>
+      <p data-ac-table-lede data-ac-sec-rise>{lede}</p>
+    </div>
+
+    <div data-ac-table-grid>
+      <ul data-ac-table-key aria-label="Families">
+        {families.map((family, f) => (
+          <li>
+            <button type="button" data-ac-table-family data-family={f} aria-pressed="false">
+              <i aria-hidden="true" data-fam={f} />
+              {family}
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <ol data-ac-table-elements>
+        {elements.map((el, i) => (
+          <li
+            data-ac-table-el
+            data-fam={el.family}
+            data-featured={i === 0 || undefined}
+            style={`--ac-i:${i}`}
+          >
+            <span data-ac-table-num class="mono-label-sm">{pad(i + 1)}</span>
+            <span data-ac-table-logo><TechLogo slug={el.slug} size={i === 0 ? 44 : 22} /></span>
+            <span data-ac-table-symbol aria-hidden="true">{el.symbol}</span>
+            <span data-ac-table-name>{el.name ?? TECH_LOGOS[el.slug].title}</span>
+            <span data-ac-table-role class="mono-label-sm">{el.role}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-table]").forEach((section) => {
+    toggleInView(section);
+
+    /* A family in the key lights its elements; press again to clear. */
+    const keys = Array.from(section.querySelectorAll<HTMLButtonElement>("[data-ac-table-family]"));
+    const els = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-table-el]"));
+    let pinned: string | null = null;
+    const light = (f: string | null) => {
+      section.toggleAttribute("data-family-lit", f !== null);
+      els.forEach((el) => el.toggleAttribute("data-lit", f !== null && el.dataset.fam === f));
+      keys.forEach((k) => k.toggleAttribute("data-lit", f !== null && k.dataset.family === f));
+    };
+    keys.forEach((k) => {
+      k.addEventListener("pointerenter", () => light(k.dataset.family ?? null));
+      k.addEventListener("pointerleave", () => light(pinned));
+      k.addEventListener("click", () => {
+        pinned = pinned === k.dataset.family ? null : (k.dataset.family ?? null);
+        keys.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.family === pinned)));
+        light(pinned);
+      });
+    });
+  });
+</script>

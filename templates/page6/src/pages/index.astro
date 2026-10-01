@@ -1,0 +1,162 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import FlowSection from "@/components/FlowSection.astro";
+import Footer from "@/components/Footer.astro";
+import IacSection from "@/components/IacSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import PageHero from "@/components/PageHero.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import StatusSection from "@/components/StatusSection.astro";
+import SunSection from "@/components/SunSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p6-hero.jpg";
+import pipelinePhoto from "@/assets/pages/p6-pipeline.jpg";
+import iacPhoto from "@/assets/pages/p6-iac.jpg";
+import oncallPhoto from "@/assets/pages/p6-oncall.jpg";
+import faqPhoto from "@/assets/pages/p6-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* DevOps pods. There was no brief for this page: the copy is written from
+   what the home page says about DevOps and cloud (environments,
+   deployment, observability, reliability, scale) and X-Shore's four
+   regions. The status history and the code are illustrative; the working
+   hours per region and the FAQ answers are drafts. Have them checked
+   before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Delivery", "DevOps pods"],
+  headline: ["DevOps", "pods."],
+  lede: "Environments, pipelines, observability and on-call, run by a dedicated pod so your engineers ship features, not infrastructure.",
+  ctas: [
+    { label: "Add a DevOps pod", href: "#contact", arrow: "diagonal" },
+    { label: "See the pipeline", href: "#pipeline", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "Two engineers with laptops walk a corridor of server racks lit in blue.",
+  specs: [
+    { label: "Runs", value: "CI/CD to production" },
+    { label: "Clouds", value: "AWS, GCP, Azure" },
+    { label: "Watches", value: "Around the clock" },
+    { label: "As code", value: "Every environment" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Can you work with our existing cloud setup?",
+    a: "Yes. We start by mapping what you run today, then move it into code one environment at a time, with no big-bang migration.",
+  },
+  {
+    q: "Who is on call?",
+    a: "The pod, across four time zones. Someone is always awake, so a night-time alert never waits for the morning.",
+  },
+  {
+    q: "Will we be locked in to you?",
+    a: "No. Everything lives in your accounts and your repositories, written as code your team can read, run and change.",
+  },
+  {
+    q: "How do you handle cloud costs?",
+    a: "Costs are watched like any other signal: budgets, alerts, and a monthly review of what can be right-sized.",
+  },
+];
+---
+
+<Layout
+  title={`DevOps pods · ${BRAND.name}`}
+  description="A dedicated pod that runs your environments, pipelines, observability and on-call, so your engineers ship features."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <FlowSection
+      id="pipeline"
+      eyebrow="Delivery, automated"
+      headline={["Every change,", "on a conveyor."]}
+      lede="From commit to production without a ticket or a late night: the pod builds the pipeline once and every change rides it."
+      media={{ image: pipelinePhoto, alt: "Engineers at work across rows of screens in a dimly lit operations room.", focus: "50% 45%" }}
+      stages={[
+        { name: "Commit", note: "Every change is reviewed and versioned.", tool: "Git" },
+        { name: "Build", note: "Artifacts built once, the same everywhere.", tool: "CI" },
+        { name: "Test", note: "Suites run in parallel, in minutes.", tool: "Automated" },
+        { name: "Deploy", note: "Rolled out gradually, rolled back in one step.", tool: "CD" },
+        { name: "Observe", note: "Metrics, logs and traces on every release.", tool: "Monitoring" },
+      ]}
+    />
+    <StatusSection
+      id="status"
+      eyebrow="Reliability"
+      headline={["Uptime you", "can see."]}
+      accent={1}
+      lede="The pod gives you a status board like this on day one, so reliability is something you watch, not something you hope for."
+      board="Your status board"
+      state="All systems operational"
+      days={60}
+      services={[
+        { name: "Web app", incidents: [{ day: 17, note: "Slow page loads, 14 minutes" }] },
+        { name: "API", incidents: [] },
+        { name: "Payments", incidents: [{ day: 41, note: "Provider timeout, 6 minutes" }] },
+        { name: "Background jobs", incidents: [] },
+      ]}
+      footnote="Illustrative history"
+    />
+    <IacSection
+      id="as-code"
+      eyebrow="Infrastructure as code"
+      headline={["Written down.", "Rebuilt in minutes."]}
+      accent={1}
+      lede="Every server, network and permission lives in code in your repository: reviewed like features, repeatable like tests."
+      media={{ image: iacPhoto, alt: "Engineers work at desks of large monitors in an open office.", focus: "50% 50%" }}
+      file="infra/production/main.tf"
+      lines={[
+        { text: "# Production, in one file", kind: "comment" },
+        { text: 'module "network" {', kind: "block", creates: "Network & subnets" },
+        { text: '  cidr = "10.20.0.0/16"', kind: "attr" },
+        { text: "}", kind: "block" },
+        { text: 'module "cluster" {', kind: "block", creates: "Container cluster" },
+        { text: "  nodes     = 6", kind: "attr" },
+        { text: "  autoscale = true", kind: "attr" },
+        { text: "}", kind: "block" },
+        { text: 'module "database" {', kind: "block", creates: "Managed database" },
+        { text: '  engine   = "postgres"', kind: "attr" },
+        { text: "  replicas = 2", kind: "attr" },
+        { text: "}", kind: "block" },
+        { text: 'module "observability" {', kind: "block", creates: "Metrics & alerts" },
+        { text: '  alerts = ["latency", "errors", "cost"]', kind: "attr" },
+        { text: "}", kind: "block" },
+      ]}
+      summary="Four resources, one reviewed change."
+    />
+    <SunSection
+      id="on-call"
+      eyebrow="On call"
+      headline={["The sun never", "sets on the pod."]}
+      lede="Four regions hand the pager round the world, so every hour has someone awake and every alert an owner."
+      media={{ image: oncallPhoto, alt: "An engineer works on a laptop beside hardware in a bright lab.", focus: "40% 50%" }}
+      regions={[
+        { name: "Onshore", city: "Dallas", zone: "America/Chicago", from: 13, to: 22 },
+        { name: "Nearshore", city: "Mexico City", zone: "America/Mexico_City", from: 20, to: 29 },
+        { name: "Nearshore", city: "Toronto", zone: "America/Toronto", from: 12, to: 21 },
+        { name: "Offshore", city: "Pune", zone: "Asia/Kolkata", from: 3.5, to: 12.5 },
+      ]}
+    />
+    <FaqSection
+      eyebrow="DevOps questions"
+      headline={["One question", "at a time."]}
+      accent={1}
+      cta="Talk to a platform lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "Engineers talk through their work across desks in a bright office.", focus: "50% 45%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to automate"
+      headline={["Ship features.", "We’ll run the rest."]}
+      body="Tell us what you run today and where it hurts. We’ll shape a DevOps pod and a plan to move it into code."
+      cta="Plan my DevOps pod"
+    />
+  </main>
+  <Footer />
+</Layout>

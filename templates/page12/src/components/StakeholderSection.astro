@@ -1,0 +1,128 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* Stakeholder map, on the light tone. Columns 1–2: a power / interest grid,
+   its four quadrants named in their corners. As the section arrives the
+   people start bunched in the middle, unsorted, and settle into their
+   quadrants; they bunch again when it leaves. Columns 3–4: a photo of two
+   analysts at a wall of notes, then the four engagement approaches, one per
+   quadrant, each with its cadence. Picking an approach (buttons with
+   aria-pressed) lights its quadrant and its people. Dots are placed in
+   container units on a plot of fixed shape, so nothing moves the page.
+   Without the script, or under reduced motion, the sorted map shows.
+   See docs/sections.md. */
+
+type Quad = "satisfy" | "manage" | "monitor" | "inform";
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  axes: { power: string; interest: string; low: string; high: string };
+  quadrants: { key: Quad; name: string; approach: string; cadence: string }[];
+  people: { name: string; power: number; interest: number }[];
+  pickLabel: string;
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, axes, quadrants, people, pickLabel } = Astro.props;
+
+const quadOf = (p: { power: number; interest: number }): Quad =>
+  p.power >= 50 ? (p.interest >= 50 ? "manage" : "satisfy") : p.interest >= 50 ? "inform" : "monitor";
+const count = (q: Quad) => people.filter((p) => quadOf(p) === q).length;
+const first = quadrants[0].key;
+---
+
+<section data-ac-sec="light" data-ac-stake id={id} data-q={first}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-stake-grid>
+      <div data-ac-sec-frame data-ac-stake-plotframe>
+        <Joints />
+        <div data-ac-stake-plot role="img" aria-label={`${axes.power} against ${axes.interest}: ${people.map((p) => `${p.name}, ${quadrants.find((q) => q.key === quadOf(p))?.name}`).join("; ")}.`}>
+          {(["satisfy", "manage", "monitor", "inform"] as Quad[]).map((q) => (
+            <div data-ac-stake-quad={q}>
+              <span class="mono-label-sm">{quadrants.find((x) => x.key === q)?.name}</span>
+            </div>
+          ))}
+          {people.map((p, i) => (
+            <span
+              data-ac-stake-dot
+              data-quad={quadOf(p)}
+              data-side={p.interest > 62 ? "l" : "r"}
+              style={`--x:${p.interest};--y:${100 - p.power};--ac-i:${i}`}
+            >
+              <i aria-hidden="true" />
+              <span>{p.name}</span>
+            </span>
+          ))}
+        </div>
+        <span data-ac-stake-axis="y" class="mono-label-sm" aria-hidden="true">{axes.power} →</span>
+        <span data-ac-stake-axis="x" class="mono-label-sm" aria-hidden="true">{axes.interest} →</span>
+      </div>
+
+      <div data-ac-stake-side>
+        <div data-ac-stake-photo>
+          <Joints />
+          <div data-ac-stake-image>
+            <Image
+              src={media.image}
+              alt={media.alt}
+              widths={[480, 800, 1200]}
+              sizes="(max-width: 991px) 100vw, 46vw"
+              quality={78}
+              style={media.focus ? `object-position:${media.focus}` : undefined}
+            />
+          </div>
+        </div>
+
+        <div data-ac-stake-list role="group" aria-label={pickLabel}>
+          {quadrants.map((q) => (
+            <button type="button" data-ac-stake-pick={q.key} aria-pressed={q.key === first ? "true" : "false"}>
+              <span data-ac-stake-key aria-hidden="true" />
+              <span data-ac-stake-name>{q.name}</span>
+              <span data-ac-stake-count class="mono-label-sm">{count(q.key)}</span>
+              <span data-ac-stake-approach>{q.approach}</span>
+              <span data-ac-stake-cadence class="mono-label-sm">{q.cadence}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.querySelectorAll<HTMLElement>("[data-ac-stake]").forEach((section) => {
+    if (!reduced) section.setAttribute("data-ac-armed", "");
+    toggleInView(section);
+    const buttons = Array.from(section.querySelectorAll<HTMLButtonElement>("[data-ac-stake-pick]"));
+    const pick = (b: HTMLButtonElement) => {
+      section.dataset.q = b.dataset.acStakePick;
+      buttons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    };
+    buttons.forEach((b, i) => {
+      b.addEventListener("click", () => pick(b));
+      b.addEventListener("mouseenter", () => pick(b));
+      b.addEventListener("keydown", (e) => {
+        if (!["ArrowDown", "ArrowUp"].includes(e.key)) return;
+        e.preventDefault();
+        const next = buttons[(i + (e.key === "ArrowDown" ? 1 : buttons.length - 1)) % buttons.length];
+        next.focus();
+        pick(next);
+      });
+    });
+  });
+</script>

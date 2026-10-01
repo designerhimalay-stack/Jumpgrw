@@ -1,0 +1,95 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import { TECH_LOGOS, type TechLogoSlug } from "@/lib/tech-logos";
+import type { SectionPhoto } from "@/types/page";
+
+/* The solution, opened. The header splits around a photo of two engineers
+   at a whiteboard. Under it, an IDE's solution explorer across the full
+   width: the solution, its folders and projects as a tree with indent
+   guides, what each node holds in the middle, and the tools it carries as
+   logos on the right. As the section arrives the tree expands from the top,
+   each node's chevron turning open and its children writing in beneath it.
+   Every row is laid out from the start and only fades in, so nothing
+   moves; leaving folds it again. See docs/sections.md. */
+
+interface Node {
+  name: string;
+  depth: number;
+  kind: "solution" | "folder" | "project" | "file";
+  note?: string;
+  logos?: TechLogoSlug[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  title: string;
+  meta: string;
+  nodes: Node[];
+}
+
+const { id, eyebrow, headline, accent, lede, media, title, meta, nodes } = Astro.props;
+/* A node opens when the next node sits deeper. */
+const opens = (i: number) => i + 1 < nodes.length && nodes[i + 1].depth > nodes[i].depth;
+---
+
+<section data-ac-sec="light" data-ac-sln id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div data-ac-sec-frame data-ac-sln-frame>
+      <Joints />
+      <p data-ac-sln-bar>
+        <TechLogo slug="rider" size={16} />
+        <span>{title}</span>
+        <span data-ac-sln-meta class="mono-label-sm">{meta}</span>
+      </p>
+
+      <ul data-ac-sln-tree aria-label={title}>
+        {nodes.map((node, i) => (
+          <li data-ac-sln-row data-kind={node.kind} style={`--ac-d:${node.depth};--ac-i:${i}`}>
+            <span data-ac-sln-node>
+              <span data-ac-sln-guides aria-hidden="true">
+                {Array.from({ length: node.depth }, () => <i />)}
+              </span>
+              <span data-ac-sln-chev data-open={opens(i) || undefined} aria-hidden="true">
+                {opens(i) && <svg viewBox="0 0 12 12"><path d="M4 2.5 7.5 6 4 9.5" /></svg>}
+              </span>
+              <span data-ac-sln-icon aria-hidden="true">
+                {node.kind === "solution" && <TechLogo slug="dotnet" size={16} />}
+                {node.kind === "folder" && <svg viewBox="0 0 16 16"><path d="M1.5 3.5h4.5l1.5 1.5h7v8h-13z" /></svg>}
+                {node.kind === "project" && <svg viewBox="0 0 16 16"><path d="M2.5 2.5h11v11h-11z M5 6h6 M5 8.5h6 M5 11h3.5" /></svg>}
+                {node.kind === "file" && <svg viewBox="0 0 16 16"><path d="M3.5 1.5h6l3 3v10h-9z M9.5 1.5v3h3" /></svg>}
+              </span>
+              <span data-ac-sln-name>{node.name}</span>
+            </span>
+            <span data-ac-sln-note>{node.note}</span>
+            <span data-ac-sln-logos>
+              {(node.logos ?? []).map((slug) => (
+                <span data-ac-sln-logo>
+                  <TechLogo slug={slug} size={16} />
+                  <span>{TECH_LOGOS[slug].title}</span>
+                </span>
+              ))}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-sln]").forEach(toggleInView);
+</script>

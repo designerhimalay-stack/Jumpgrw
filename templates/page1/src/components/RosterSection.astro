@@ -1,0 +1,175 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import { LINE_ICONS } from "@/lib/line-icons";
+import type { PageStat, RosterPod } from "@/types/page";
+
+/* The squad builder, as a roster, on the dark tone. A pill switch across the
+   top picks the launch constraint; the pod for it lines up underneath as one
+   card per role, each with a monogram, on the page's four columns. Every pod
+   sits in the same grid cell, so the roster keeps the tallest pod's height
+   and nothing below moves when the choice changes. The numbers close it on
+   the stats section's narrow / wide / narrow cards. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  label: string;
+  pods: RosterPod[];
+  stats: PageStat[];
+}
+
+const { id, eyebrow, headline, accent, lede, label, pods, stats } = Astro.props;
+const tabId = (i: number) => `${id}-tab-${i}`;
+const podId = (i: number) => `${id}-pod-${i}`;
+---
+
+<section data-ac-sec="dark" data-ac-roster id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-roster-switch data-ac-sec-rise>
+      <span class="mono-label">{label}</span>
+      <div role="tablist" aria-label={label} data-ac-roster-tabs>
+        {pods.map((pod, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={tabId(i)}
+            aria-controls={podId(i)}
+            aria-selected={i === 0 ? "true" : "false"}
+            tabindex={i === 0 ? 0 : -1}
+            data-ac-roster-tab
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={LINE_ICONS[pod.icon]} />
+            {pod.label}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div data-ac-roster-stage>
+      {pods.map((pod, i) => (
+        <div
+          role="tabpanel"
+          id={podId(i)}
+          aria-labelledby={tabId(i)}
+          data-ac-roster-pod
+          data-active={i === 0 || undefined}
+          inert={i !== 0}
+        >
+          <div data-ac-roster-intro>
+            <p data-ac-roster-name>{pod.name}</p>
+            <p data-ac-roster-summary>{pod.summary}</p>
+            <p data-ac-roster-size class="mono-label">{pod.size}</p>
+          </div>
+          <ul data-ac-roster-cards>
+            {pod.roles.map((role, r) => (
+              <li data-ac-roster-card style={`--ac-i:${r}`}>
+                <Joints />
+                <span data-ac-roster-mark aria-hidden="true">{role.mark}</span>
+                <span data-ac-roster-title>{role.title}</span>
+                <span data-ac-roster-note>{role.note}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+
+    <dl data-ac-composer-stats>
+      {stats.map((stat, i) => (
+        <div data-ac-composer-stat data-featured={stat.featured || undefined} style={`--ac-i:${i}`}>
+          <dt data-ac-composer-stat-caption>({stat.label})</dt>
+          <dd data-ac-composer-stat-number>
+            {typeof stat.value === "number" ? (
+              <span data-ac-count={stat.value} data-ac-count-suffix={stat.suffix}>{`${stat.value}${stat.suffix ?? ""}`}</span>
+            ) : (
+              stat.value
+            )}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  const DURATION_MS = 1400;
+  const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  document.querySelectorAll<HTMLElement>("[data-ac-roster]").forEach((section) => {
+    toggleInView(section);
+
+    /* -- the switch: arrows move and choose, Home / End jump to the ends -- */
+    const tabs = Array.from(section.querySelectorAll<HTMLButtonElement>("[data-ac-roster-tab]"));
+    const pods = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-roster-pod]"));
+
+    const choose = (index: number, focus = false) => {
+      tabs.forEach((tab, i) => {
+        const on = i === index;
+        tab.setAttribute("aria-selected", String(on));
+        tab.tabIndex = on ? 0 : -1;
+        pods[i].toggleAttribute("data-active", on);
+        pods[i].inert = !on;
+      });
+      if (focus) tabs[index].focus();
+    };
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => choose(i));
+      tab.addEventListener("keydown", (event) => {
+        const last = tabs.length - 1;
+        const next =
+          event.key === "ArrowRight" || event.key === "ArrowDown" ? (i === last ? 0 : i + 1)
+          : event.key === "ArrowLeft" || event.key === "ArrowUp" ? (i === 0 ? last : i - 1)
+          : event.key === "Home" ? 0
+          : event.key === "End" ? last
+          : -1;
+        if (next < 0) return;
+        event.preventDefault();
+        choose(next, true);
+      });
+    });
+
+    /* -- numbers: count up on arrival, back to zero on the way out -- */
+    if (reduced) return;
+    const stats = section.querySelector<HTMLElement>("[data-ac-composer-stats]")!;
+    const counters = Array.from(stats.querySelectorAll<HTMLElement>("[data-ac-count]"));
+    let frame = 0;
+    /* Number and suffix in one text node: a separate suffix would slide
+       sideways as the number widens, which counts as layout shift. */
+    const show = (t: number) =>
+      counters.forEach((el) => {
+        el.textContent = `${Math.round(easeOutCubic(t) * Number(el.dataset.acCount))}${el.dataset.acCountSuffix ?? ""}`;
+      });
+
+    show(0);
+    new IntersectionObserver(
+      ([entry]) => {
+        cancelAnimationFrame(frame);
+        if (!entry.isIntersecting) {
+          show(0);
+          return;
+        }
+        const start = performance.now();
+        const step = (now: number) => {
+          const t = Math.min(1, (now - start) / DURATION_MS);
+          show(t);
+          if (t < 1) frame = requestAnimationFrame(step);
+        };
+        frame = requestAnimationFrame(step);
+      },
+      { threshold: 0, rootMargin: "-12% 0px -12% 0px" },
+    ).observe(stats);
+  });
+</script>

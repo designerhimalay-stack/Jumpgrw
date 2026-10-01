@@ -1,0 +1,128 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* English and French, on one switch. Columns 1–2: a photo of the team and
+   what a bilingual pool brings. Columns 3–4: a small product screen, drawn
+   in CSS, with an EN / FR switch (two native radios) over it; flipping it
+   turns every string on the screen, each word turning over like a card.
+   Both languages sit in the same grid cell, so nothing moves, and it works
+   without a script. See docs/sections.md. */
+
+interface Pair {
+  en: string;
+  fr: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  points: { title: string; body: string }[];
+  screen: {
+    app: string;
+    title: Pair;
+    body: Pair;
+    fields: Pair[];
+    button: Pair;
+    note: Pair;
+  };
+}
+
+const { id, eyebrow, headline, accent, lede, media, points, screen } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-bi id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-bi-grid>
+      <div data-ac-bi-left>
+        <div data-ac-bi-photo>
+          <Joints />
+          <div data-ac-bi-image>
+            <Image
+              src={media.image}
+              alt={media.alt}
+              widths={[480, 800, 1200]}
+              sizes="(max-width: 991px) 100vw, 46vw"
+              quality={78}
+              style={media.focus ? `object-position:${media.focus}` : undefined}
+            />
+          </div>
+        </div>
+        <ul data-ac-bi-points>
+          {points.map((point) => (
+            <li>
+              <h3>{point.title}</h3>
+              <p>{point.body}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div data-ac-bi-stage>
+        <fieldset data-ac-bi-switch>
+          <legend class="sr-only">Language of the example screen</legend>
+          <label>
+            <input type="radio" name={`${id}-lang`} value="en" checked />
+            <span>EN</span>
+          </label>
+          <label>
+            <input type="radio" name={`${id}-lang`} value="fr" />
+            <span>FR</span>
+          </label>
+        </fieldset>
+
+        <div data-ac-bi-screen aria-label="An example product screen, in English or French">
+          <p data-ac-bi-bar>
+            <i aria-hidden="true" /><i aria-hidden="true" /><i aria-hidden="true" />
+            <span class="mono-label-sm">{screen.app}</span>
+          </p>
+          <div data-ac-bi-body>
+            {[
+              { pair: screen.title, tag: "title" },
+              { pair: screen.body, tag: "text" },
+            ].map(({ pair, tag }) => (
+              <p data-ac-bi-str data-kind={tag}>
+                <span lang="en">{pair.en}</span>
+                <span lang="fr">{pair.fr}</span>
+              </p>
+            ))}
+            {screen.fields.map((field, i) => (
+              <div data-ac-bi-field style={`--ac-i:${i}`}>
+                <p data-ac-bi-str data-kind="label">
+                  <span lang="en">{field.en}</span>
+                  <span lang="fr">{field.fr}</span>
+                </p>
+                <span data-ac-bi-input aria-hidden="true" />
+              </div>
+            ))}
+            <p data-ac-bi-str data-kind="button">
+              <span lang="en">{screen.button.en}</span>
+              <span lang="fr">{screen.button.fr}</span>
+            </p>
+            <p data-ac-bi-str data-kind="note">
+              <span lang="en">{screen.note.en}</span>
+              <span lang="fr">{screen.note.fr}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-bi]").forEach(toggleInView);
+</script>

@@ -1,0 +1,274 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* Retrieval-augmented generation, played out, on the dark tone. The header
+   splits around a photo of an engineer at work. Under it, one frame: the
+   question and its embedding (column 1), the knowledge base as eight chunks
+   (columns 2–3) and the answer (column 4). The three steps run in turn: the
+   query vector lights, the top chunks light and take a rank, then the
+   answer streams in word by word with citation chips that name those
+   ranks. Two questions to try, as toggle buttons. Every answer and every
+   question share one grid cell, so nothing moves. Without the script, or
+   under reduced motion, the finished first answer shows. See
+   docs/sections.md. */
+
+interface Chunk {
+  source: string;
+  text: string;
+}
+
+interface Question {
+  /** The toggle's label. */
+  label: string;
+  text: string;
+  /** One similarity score per chunk, in the chunks' order. */
+  scores: number[];
+  /** Sentences, each citing a retrieved chunk by its rank (1-based). */
+  answer: { text: string; cite?: number }[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  steps: [string, string, string];
+  embedLabel: string;
+  chunks: Chunk[];
+  questions: Question[];
+  topK: number;
+  /** Small facts about the index, under the query vector. */
+  stats: { label: string; value: string }[];
+  footnote: string;
+}
+
+const { id, eyebrow, headline, accent, lede, media, steps, embedLabel, chunks, questions, topK, stats, footnote } = Astro.props;
+
+/* Each question's ranks: 1..topK for its best chunks, 0 for the rest. */
+const ranks = questions.map((q) => {
+  const order = q.scores.map((s, i) => ({ s, i })).sort((a, b) => b.s - a.s);
+  const r = new Array(chunks.length).fill(0);
+  order.slice(0, topK).forEach((o, n) => (r[o.i] = n + 1));
+  return r;
+});
+
+/* A query vector per question: deterministic pseudo-random intensities. */
+const CELLS = 48;
+const vector = (seed: number) =>
+  Array.from({ length: CELLS }, (_, i) => {
+    const x = Math.sin((i + 1) * 12.9898 + seed * 78.233) * 43758.5453;
+    return 0.12 + (x - Math.floor(x)) * 0.88;
+  });
+const vectors = questions.map((_, q) => vector(q + 1));
+
+/* Each question's sources, in rank order. */
+const sources = ranks.map((r) =>
+  Array.from({ length: topK }, (_, n) => chunks[r.indexOf(n + 1)]?.source).filter(Boolean),
+);
+---
+
+<section data-ac-sec="dark" data-ac-rag id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div data-ac-sec-frame data-ac-rag-frame data-phase="done" data-q="0">
+      <Joints />
+
+      <header data-ac-rag-bar>
+        <div data-ac-rag-tabs role="group" aria-label="Try a question">
+          <span class="mono-label" aria-hidden="true">Ask</span>
+          {questions.map((q, i) => (
+            <button type="button" data-ac-rag-tab data-q={i} aria-pressed={i === 0 ? "true" : "false"}>
+              {q.label}
+            </button>
+          ))}
+        </div>
+        <ol data-ac-rag-steps aria-hidden="true">
+          {steps.map((step, i) => (
+            <li data-step={i}>
+              <span class="mono-label-sm">0{i + 1}</span>
+              {step}
+            </li>
+          ))}
+        </ol>
+      </header>
+
+      <div data-ac-rag-body>
+        <div data-ac-rag-ask>
+          <p class="mono-label" data-ac-rag-label>Question</p>
+          <div data-ac-rag-stack>
+            {questions.map((q, i) => (
+              <p data-ac-rag-q data-q={i} data-active={i === 0 || undefined}>{q.text}</p>
+            ))}
+          </div>
+          <p class="mono-label-sm" data-ac-rag-label>{embedLabel}</p>
+          <span data-ac-rag-vector aria-hidden="true">
+            {Array.from({ length: CELLS }, (_, c) => (
+              <i style={`--ac-i:${c};${vectors.map((v, q) => `--ac-v${q}:${v[c].toFixed(2)}`).join(";")}`} />
+            ))}
+          </span>
+          <dl data-ac-rag-stats>
+            {stats.map((st) => (
+              <div>
+                <dt class="mono-label-sm">{st.label}</dt>
+                <dd>{st.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <ol data-ac-rag-chunks aria-label="Knowledge base">
+          {chunks.map((chunk, i) => (
+            <li
+              data-ac-rag-chunk
+              data-rank={ranks[0][i]}
+              data-ranks={ranks.map((r) => r[i]).join(",")}
+              data-scores={questions.map((q) => q.scores[i].toFixed(2)).join(",")}
+              style={`--ac-s:${questions[0].scores[i]};--ac-i:${i}`}
+            >
+              <span data-ac-rag-src class="mono-label-sm">{chunk.source}</span>
+              <span data-ac-rag-rank aria-hidden="true">{ranks[0][i] || ""}</span>
+              <span data-ac-rag-text>{chunk.text}</span>
+              <span data-ac-rag-score aria-hidden="true">
+                <i />
+                <b>{questions[0].scores[i].toFixed(2)}</b>
+              </span>
+            </li>
+          ))}
+        </ol>
+
+        <div data-ac-rag-answer>
+          <p class="mono-label" data-ac-rag-label>Answer</p>
+          <div data-ac-rag-stack aria-live="polite">
+            {questions.map((q, i) => (
+              <div data-ac-rag-a data-q={i} data-active={i === 0 || undefined}>
+                <p>
+                {q.answer.map((sentence, s) => (
+                  <Fragment>
+                    {s > 0 && " "}
+                    {sentence.text.split(" ").map((word, w) => (
+                      <Fragment>
+                        {w > 0 && " "}
+                        <span data-ac-rag-tok>{word}</span>
+                      </Fragment>
+                    ))}
+                    {sentence.cite && (
+                      <Fragment>
+                        {" "}
+                        <span data-ac-rag-tok data-ac-rag-cite={sentence.cite}>
+                          <span class="sr-only">(source {sentence.cite})</span>
+                          <span aria-hidden="true">{sentence.cite}</span>
+                        </span>
+                      </Fragment>
+                    )}
+                  </Fragment>
+                ))}
+                </p>
+                <ol data-ac-rag-sources aria-label="Sources">
+                  {sources[i].map((src, n) => (
+                    <li>
+                      <span aria-hidden="true">{n + 1}</span>
+                      {src}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            ))}
+          </div>
+          <p class="mono-label-sm" data-ac-rag-foot>{footnote}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-rag]").forEach((section) => {
+    const frame = section.querySelector<HTMLElement>("[data-ac-rag-frame]")!;
+    const tabs = Array.from(section.querySelectorAll<HTMLButtonElement>("[data-ac-rag-tab]"));
+    const qs = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-rag-q]"));
+    const as = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-rag-a]"));
+    const chunks = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-rag-chunk]"));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let timers: number[] = [];
+    let current = 0;
+
+    const clear = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+    };
+    const later = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+
+    /* Show question q's text, scores and ranks. */
+    const select = (q: number) => {
+      current = q;
+      frame.dataset.q = String(q);
+      tabs.forEach((t, i) => t.setAttribute("aria-pressed", String(i === q)));
+      qs.forEach((el, i) => el.toggleAttribute("data-active", i === q));
+      as.forEach((el, i) => el.toggleAttribute("data-active", i === q));
+      chunks.forEach((c) => {
+        const score = (c.dataset.scores ?? "").split(",")[q];
+        const rank = (c.dataset.ranks ?? "").split(",")[q];
+        c.dataset.rank = rank;
+        c.style.setProperty("--ac-s", score);
+        c.querySelector("b")!.textContent = score;
+        c.querySelector("[data-ac-rag-rank]")!.textContent = rank === "0" ? "" : rank;
+      });
+    };
+
+    const tokens = (q: number) => Array.from(as[q].querySelectorAll<HTMLElement>("[data-ac-rag-tok]"));
+
+    const idle = () => {
+      clear();
+      frame.dataset.phase = "idle";
+      as.forEach((a) => a.setAttribute("data-streaming", ""));
+      as.forEach((a) => a.querySelectorAll("[data-on]").forEach((t) => t.removeAttribute("data-on")));
+    };
+
+    const finish = () => {
+      clear();
+      frame.dataset.phase = "done";
+      as.forEach((a) => a.removeAttribute("data-streaming"));
+    };
+
+    const play = (q: number) => {
+      idle();
+      select(q);
+      if (reduced) return finish();
+      later(60, () => (frame.dataset.phase = "embed"));
+      later(1100, () => (frame.dataset.phase = "retrieve"));
+      later(2300, () => {
+        frame.dataset.phase = "generate";
+        const toks = tokens(q);
+        toks.forEach((t, i) => later(i * 70, () => t.setAttribute("data-on", "")));
+        later(toks.length * 70 + 200, finish);
+      });
+    };
+
+    tabs.forEach((tab, i) => tab.addEventListener("click", () => play(i)));
+
+    /* A citation chip lights the chunk it names. */
+    section.querySelectorAll<HTMLElement>("[data-ac-rag-cite]").forEach((chip) => {
+      const light = (on: boolean) =>
+        chunks.forEach((c) => c.toggleAttribute("data-pointed", on && c.dataset.rank === chip.dataset.acRagCite));
+      chip.addEventListener("pointerenter", () => light(true));
+      chip.addEventListener("pointerleave", () => light(false));
+    });
+
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        if (entry.isIntersecting) play(current);
+        else if (!reduced) idle();
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

@@ -1,0 +1,84 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* A status board, the kind the pod sets up for you. One row per service,
+   one bar per day for the last sixty days, the bars rising in a wave from
+   the left as the section arrives; a lighter bar marks a day with an
+   incident, and pointing at one names it. The history is illustrative and
+   says so. See docs/sections.md. */
+
+interface Service {
+  name: string;
+  /** Days (0-based, oldest first) with an incident, and what it was. */
+  incidents: { day: number; note: string }[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  board: string;
+  state: string;
+  days: number;
+  services: Service[];
+  footnote: string;
+}
+
+const { id, eyebrow, headline, accent, lede, board, state, days, services, footnote } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-status id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-status-board style={`--ac-days:${days}`}>
+      <Joints />
+      <header data-ac-status-head>
+        <span class="mono-label">{board}</span>
+        <span data-ac-status-state>
+          <i aria-hidden="true" />
+          {state}
+        </span>
+      </header>
+      <ul data-ac-status-services>
+        {services.map((service, s) => (
+          <li data-ac-status-service>
+            <p data-ac-status-name>
+              <span>{service.name}</span>
+              <span class="mono-label-sm">{service.incidents.length ? `${service.incidents.length} incident${service.incidents.length > 1 ? "s" : ""}` : "No incidents"}</span>
+            </p>
+            <span data-ac-status-bars aria-hidden="true">
+              {Array.from({ length: days }, (_, d) => {
+                const incident = service.incidents.find((x) => x.day === d);
+                return (
+                  <i
+                    data-incident={incident ? "" : undefined}
+                    title={incident ? incident.note : undefined}
+                    style={`--ac-d:${d + s * 4}`}
+                  />
+                );
+              })}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <footer data-ac-status-foot class="mono-label-sm">
+        <span>{days} days ago</span>
+        <span>{footnote}</span>
+        <span>Today</span>
+      </footer>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-status]").forEach(toggleInView);
+</script>

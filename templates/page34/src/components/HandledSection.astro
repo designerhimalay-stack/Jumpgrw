@@ -1,0 +1,88 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import { TECH_LOGOS, type TechLogoSlug } from "@/lib/tech-logos";
+import type { SectionPhoto } from "@/types/page";
+
+/* What we handle, on the dark tone: the paperwork of a center as a set of
+   forms. The header splits around a photo of a director at her desk
+   in New Delhi. Under it, six paper forms in a three-by-two grid, each with a
+   form number, a title, what it covers in a line, ruled fill-in lines, and,
+   where tools are involved, their logos. As the section arrives a rubber
+   stamp ("Handled") comes down on each form in turn, from above and a
+   little too large, settling at a slight angle; leaving lifts them again.
+   The stamps are drawn in place from the start (the entrance only scales
+   and fades them), so nothing moves. A closing line says what stays with
+   you. Phones: two forms a row, no ruled lines, logos without names and
+   the stamp in the form number's place. See docs/sections.md. */
+
+interface Form {
+  code: string;
+  title: string;
+  line: string;
+  logos?: TechLogoSlug[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  stamp: string;
+  forms: Form[];
+  keep: { label: string; items: string[] };
+}
+
+const { id, eyebrow, headline, accent, lede, media, stamp, forms, keep } = Astro.props;
+---
+
+<section data-ac-sec="dark" data-ac-forms id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <ul data-ac-forms-grid>
+      {forms.map((f, i) => (
+        <li data-ac-form style={`--ac-i:${i}`}>
+          <p data-ac-form-code class="mono-label-sm">
+            <span>{f.code}</span>
+            <span aria-hidden="true">{String(i + 1).padStart(2, "0")} / {String(forms.length).padStart(2, "0")}</span>
+          </p>
+          <p data-ac-form-title>{f.title}</p>
+          <p data-ac-form-line>{f.line}</p>
+          <i data-ac-form-rules aria-hidden="true"></i>
+          {f.logos && f.logos.length > 0 && (
+            <ul data-ac-form-logos aria-label={`${f.title}: tools`}>
+              {f.logos.map((slug) => (
+                <li>
+                  <TechLogo slug={slug} size={20} />
+                  <span>{TECH_LOGOS[slug].title}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <span data-ac-form-stamp>{stamp}</span>
+        </li>
+      ))}
+    </ul>
+
+    <div data-ac-forms-keep>
+      <Joints />
+      <p class="mono-label-sm">{keep.label}</p>
+      <ul>
+        {keep.items.map((k) => <li>{k}</li>)}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-forms]").forEach(toggleInView);
+</script>

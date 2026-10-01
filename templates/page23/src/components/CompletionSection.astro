@@ -1,0 +1,117 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { TechLogoSlug } from "@/lib/tech-logos";
+import type { SectionPhoto } from "@/types/page";
+
+/* The toolchain as an editor's search palette, on the light tone. A framed
+   photo of an engineer at work fills columns 1–2; columns 3–4 hold the
+   palette: a search field and, under it, the matches, each tool's logo on
+   a tile with its name, its coordinate or use, and what it is for. The rows
+   arrive one after another, then the selection steps down the list while
+   the section is in view, the field showing the chosen name with a caret.
+   The field's names share one grid cell and every row keeps one size, so
+   nothing moves. See docs/sections.md. */
+
+interface Tool {
+  slug: TechLogoSlug;
+  name: string;
+  coordinate: string;
+  role: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  /** Where the search looks, shown at the end of the field. */
+  scope: string;
+  tools: Tool[];
+}
+
+const { id, eyebrow, headline, accent, lede, media, scope, tools } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-ide id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-ide-grid>
+      <div data-ac-ide-photo>
+        <Joints />
+        <div data-ac-ide-image>
+          <Image
+            src={media.image}
+            alt={media.alt}
+            widths={[480, 800, media.image.width]}
+            sizes="(max-width: 991px) 100vw, 46vw"
+            quality={78}
+            style={media.focus ? `object-position:${media.focus}` : undefined}
+          />
+        </div>
+      </div>
+
+      <div data-ac-sec-frame data-ac-ide-panel>
+        <Joints />
+        <p data-ac-ide-search aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5 21 21" /></svg>
+          <span data-ac-ide-typed>{tools.map((t, i) => (
+            <span data-i={i} data-on={i === 0 ? "" : undefined}>{t.name}<i data-ac-ide-caret /></span>
+          ))}</span>
+          <span data-ac-ide-scope class="mono-label-sm">{scope}</span>
+        </p>
+
+        <ul data-ac-ide-list aria-label="The toolchain">
+          {tools.map((t, i) => (
+            <li style={`--ac-i:${i}`} data-i={i} data-on={i === 0 ? "" : undefined}>
+              <span data-ac-ide-tile><TechLogo slug={t.slug} size={22} /></span>
+              <span data-ac-ide-name>{t.name}</span>
+              <code data-ac-ide-coord>{t.coordinate}</code>
+              <span data-ac-ide-role class="mono-label-sm">{t.role}</span>
+            </li>
+          ))}
+        </ul>
+        <p data-ac-ide-hint class="mono-label-sm" aria-hidden="true">
+          <span>↑↓ choose</span>
+          <span>⏎ insert</span>
+          <span>{tools.length} matches</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-ide]").forEach((section) => {
+    const rows = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-ide-list] li"));
+    const typed = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-ide-typed] span"));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let timer = 0;
+    let at = 0;
+
+    const select = (i: number) => {
+      at = i;
+      rows.forEach((r, j) => r.toggleAttribute("data-on", j === i));
+      typed.forEach((t, j) => t.toggleAttribute("data-on", j === i));
+    };
+
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        window.clearInterval(timer);
+        if (!entry.isIntersecting) return select(0);
+        if (reduced) return;
+        timer = window.setInterval(() => select((at + 1) % rows.length), 1500);
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

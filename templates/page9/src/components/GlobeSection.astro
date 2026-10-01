@@ -1,0 +1,120 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import type { Hub } from "@/lib/globe";
+
+/* One center, four time zones, on the dark tone. Columns 1–2: the claim
+   and the hubs, each with its role and local time, live. Columns 3–4: a
+   dotted globe turning slowly, the hubs pulsing and arcs of light running
+   between them; choosing a hub turns the globe to face it, and the globe
+   can be dragged. See src/lib/globe.ts and docs/sections.md. */
+
+interface HubRow extends Hub {
+  city: string;
+  role: string;
+  zone: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  hubs: HubRow[];
+  links: [number, number][];
+  caption: string;
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, hubs, links, caption } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section
+  data-ac-sec="dark"
+  data-ac-globe
+  id={id}
+  data-hubs={JSON.stringify(hubs.map(({ name, lat, lon }) => ({ name, lat, lon })))}
+  data-links={JSON.stringify(links)}
+>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-globe-grid>
+    <div data-ac-globe-copy>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-globe-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+      <p data-ac-globe-lede data-ac-sec-rise>{lede}</p>
+
+      <ul data-ac-globe-hubs>
+        {hubs.map((hub, i) => (
+          <li style={`--ac-i:${i}`}>
+            <button type="button" data-ac-globe-hub={i} aria-pressed="false">
+              <span data-ac-globe-num class="mono-label-sm">{pad(i + 1)}</span>
+              <span data-ac-globe-city>
+                <span>{hub.city}</span>
+                <span class="mono-label-sm">{hub.role}</span>
+              </span>
+              <span data-ac-globe-time data-zone={hub.zone}>--:--</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <figure data-ac-globe-figure>
+      <canvas data-ac-globe-canvas role="img" aria-label={caption}></canvas>
+      <figcaption class="mono-label-sm">Drag to turn</figcaption>
+    </figure>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+  import { mountGlobe, type Hub } from "@/lib/globe";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-globe]").forEach((section) => {
+    toggleInView(section);
+
+    const hubs: Hub[] = JSON.parse(section.dataset.hubs ?? "[]");
+    const links: [number, number][] = JSON.parse(section.dataset.links ?? "[]");
+    const canvas = section.querySelector<HTMLCanvasElement>("[data-ac-globe-canvas]")!;
+    const globe = mountGlobe(canvas, { hubs, links, startLon: -40 });
+
+    /* Choosing a hub turns the globe to it; choosing it again lets go. */
+    const buttons = Array.from(section.querySelectorAll<HTMLButtonElement>("[data-ac-globe-hub]"));
+    buttons.forEach((button, i) => {
+      button.addEventListener("click", () => {
+        const on = button.getAttribute("aria-pressed") !== "true";
+        buttons.forEach((b) => b.setAttribute("aria-pressed", "false"));
+        button.setAttribute("aria-pressed", String(on));
+        globe.faceHub(on ? i : -1);
+      });
+    });
+
+    /* Each hub's local time, kept current. */
+    const times = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-globe-time]"));
+    const tick = () =>
+      times.forEach((el) => {
+        el.textContent = new Intl.DateTimeFormat("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: el.dataset.zone,
+        }).format(new Date());
+      });
+    tick();
+    window.setInterval(tick, 30_000);
+  });
+</script>

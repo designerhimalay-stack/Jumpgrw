@@ -1,0 +1,91 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* Ways to work together, as nested frames. Columns 1–2: three square
+   frames one inside another, each with crosshair corners, the smallest one
+   engineer and the largest a full pod, drawn from the centre outwards as
+   the section arrives. Columns 3–4: the three models, one per frame.
+   Pointing at a model (or a frame) lights both; the pod lights by default.
+   See docs/sections.md. */
+
+interface Model {
+  kind: string;
+  title: string;
+  body: string;
+  size: string;
+  onsite: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  /** Smallest first. */
+  models: Model[];
+}
+
+const { id, eyebrow, headline, accent, lede, models } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-nest id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-nest-grid>
+      <div data-ac-nest-figure aria-hidden="true">
+        {models.map((model, i) => (
+          <div data-ac-nest-ring data-model={i} style={`--ac-i:${i};--ac-n:${models.length}`}>
+            <Joints />
+            <span data-ac-nest-tag class="mono-label-sm">{model.size}</span>
+          </div>
+        ))}
+        <span data-ac-nest-core />
+      </div>
+
+      <ol data-ac-nest-list>
+        {models.map((model, i) => (
+          <li data-ac-nest-item data-model={i} tabindex="0" data-lit={i === models.length - 1 ? "" : undefined}>
+            <p data-ac-nest-kind class="mono-label-sm">
+              <span>{String(i + 1).padStart(2, "0")}</span>
+              {model.kind}
+            </p>
+            <h3 data-ac-nest-title>{model.title}</h3>
+            <p data-ac-nest-body>{model.body}</p>
+            <p data-ac-nest-onsite>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
+              {model.onsite}
+            </p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-nest]").forEach((section) => {
+    toggleInView(section);
+
+    const items = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-nest-item]"));
+    const rings = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-nest-ring]"));
+    const fallback = String(items.length - 1);
+    const light = (model: string) => {
+      [...items, ...rings].forEach((el) => el.toggleAttribute("data-lit", el.dataset.model === model));
+    };
+    light(fallback);
+    items.forEach((el) => {
+      const model = el.dataset.model ?? fallback;
+      el.addEventListener("pointerenter", () => light(model));
+      el.addEventListener("focus", () => light(model));
+    });
+    section.querySelector("[data-ac-nest-list]")?.addEventListener("pointerleave", () => light(fallback));
+  });
+</script>

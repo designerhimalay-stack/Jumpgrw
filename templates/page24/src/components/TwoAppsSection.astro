@@ -1,0 +1,248 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* One codebase, two apps, on the light tone. One frame, three parts: an
+   iPhone on the left and an Android phone on the right, both turned in
+   towards the code between them, which is one React Native file. Two
+   switches over the code (theme, language) change the one prop each sets,
+   and both phones follow at once, each in its own platform's chrome
+   (large title and tab bar on iOS; app bar, FAB and navigation bar on
+   Android). The switches are native radio buttons and the state lives in
+   CSS (:has), so it works by keyboard and without the script; the script
+   only steps through the four states while the section is in view, and
+   stops for good the moment the reader takes over. Every state is drawn
+   in the same cell, so nothing moves. See docs/sections.md. */
+
+interface ScreenCopy {
+  title: string;
+  balanceLabel: string;
+  balance: string;
+  send: string;
+  request: string;
+  recent: string;
+  rows: { name: string; note: string; amount: string }[];
+  tabs: [string, string, string, string];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  file: string;
+  themeLabel: string;
+  langLabel: string;
+  iosLabel: string;
+  androidLabel: string;
+  screens: { en: ScreenCopy; es: ScreenCopy };
+}
+
+const { id, eyebrow, headline, accent, lede, file, themeLabel, langLabel, iosLabel, androidLabel, screens } = Astro.props;
+const LANGS = ["en", "es"] as const;
+const OSES = ["ios", "android"] as const;
+
+/* Tab icons: home, cards, activity, profile (24 × 24, stroked). */
+const TAB_ICONS = [
+  "M4 11 12 4l8 7v9h-5v-6H9v6H4z",
+  "M3 7h18v11H3zM3 11h18",
+  "M4 19V11M10 19V5M16 19v-6M22 19H2",
+  "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4.5-6 8-6s7 2 8 6",
+];
+/* Row icons: coffee cup, basket, arrow in. */
+const ROW_ICONS = ["M5 8h11v5a5 5 0 0 1-10 0zM16 9h2a2 2 0 0 1 0 4h-2", "M4 9h16l-2 10H6zM8 9l4-5 4 5", "M12 4v12M6 11l6 6 6-6M5 20h14"];
+---
+
+<section data-ac-sec="light" data-ac-twin id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-twin-frame>
+      <Joints />
+
+      {OSES.map((os) => (
+        <figure data-ac-twin-device data-os={os} style={os === "android" ? "order:3" : undefined}>
+          <div data-ac-twin-body role="img" aria-label={`${os === "ios" ? iosLabel : androidLabel}: the same wallet screen, drawn in this platform's own controls.`}>
+            <div data-ac-twin-screen aria-hidden="true">
+              <p data-ac-twin-status>
+                <span>9:41</span>
+                <i data-ac-twin-cam />
+                <span data-ac-twin-glyphs><b /><b /><b /><em /></span>
+              </p>
+
+              <div data-ac-twin-appbar>
+                <span data-ac-twin-swap data-ac-twin-title>
+                  {LANGS.map((l) => <span data-lang={l}>{screens[l].title}</span>)}
+                </span>
+                <i data-ac-twin-avatar>AR</i>
+              </div>
+
+              <div data-ac-twin-card>
+                <span data-ac-twin-swap data-ac-twin-card-label>
+                  {LANGS.map((l) => <span data-lang={l}>{screens[l].balanceLabel}</span>)}
+                </span>
+                <span data-ac-twin-swap data-ac-twin-amount>
+                  {LANGS.map((l) => <span data-lang={l}>{screens[l].balance}</span>)}
+                </span>
+                <span data-ac-twin-card-no>•••• 4821</span>
+              </div>
+
+              <div data-ac-twin-actions>
+                <span data-ac-twin-btn data-primary>
+                  <span data-ac-twin-swap>{LANGS.map((l) => <span data-lang={l}>{screens[l].send}</span>)}</span>
+                </span>
+                <span data-ac-twin-btn>
+                  <span data-ac-twin-swap>{LANGS.map((l) => <span data-lang={l}>{screens[l].request}</span>)}</span>
+                </span>
+              </div>
+
+              <p data-ac-twin-swap data-ac-twin-heading>
+                {LANGS.map((l) => <span data-lang={l}>{screens[l].recent}</span>)}
+              </p>
+
+              <ul data-ac-twin-list>
+                {screens.en.rows.map((_, r) => (
+                  <li>
+                    <i data-ac-twin-row-icon>
+                      <svg viewBox="0 0 24 24"><path d={ROW_ICONS[r % ROW_ICONS.length]} /></svg>
+                    </i>
+                    <span data-ac-twin-row-copy>
+                      <span data-ac-twin-swap>{LANGS.map((l) => <span data-lang={l}>{screens[l].rows[r].name}</span>)}</span>
+                      <span data-ac-twin-swap data-ac-twin-row-note>{LANGS.map((l) => <span data-lang={l}>{screens[l].rows[r].note}</span>)}</span>
+                    </span>
+                    <span data-ac-twin-swap data-ac-twin-row-amount>
+                      {LANGS.map((l) => <span data-lang={l}>{screens[l].rows[r].amount}</span>)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              {os === "android" && <i data-ac-twin-fab>+</i>}
+
+              <ul data-ac-twin-tabs>
+                {TAB_ICONS.map((d, t) => (
+                  <li data-active={t === 0 || undefined}>
+                    <i><svg viewBox="0 0 24 24"><path d={d} /></svg></i>
+                    <span data-ac-twin-swap>{LANGS.map((l) => <span data-lang={l}>{screens[l].tabs[t]}</span>)}</span>
+                  </li>
+                ))}
+              </ul>
+              <i data-ac-twin-home />
+            </div>
+          </div>
+          <figcaption data-ac-twin-caption>
+            <TechLogo slug={os === "ios" ? "apple" : "android"} size={18} tone={os === "ios" ? "ink" : "brand"} />
+            <span class="mono-label">{os === "ios" ? iosLabel : androidLabel}</span>
+          </figcaption>
+        </figure>
+      ))}
+
+      <div data-ac-twin-centre>
+        <div data-ac-twin-controls>
+          <fieldset data-ac-twin-switch>
+            <legend class="mono-label">{themeLabel}</legend>
+            <label><input type="radio" name={`${id}-theme`} value="light" data-ac-twin-opt="light" checked /><span>Light</span></label>
+            <label><input type="radio" name={`${id}-theme`} value="dark" data-ac-twin-opt="dark" /><span>Dark</span></label>
+          </fieldset>
+          <fieldset data-ac-twin-switch>
+            <legend class="mono-label">{langLabel}</legend>
+            <label><input type="radio" name={`${id}-lang`} value="en" data-ac-twin-opt="en" checked /><span>English</span></label>
+            <label><input type="radio" name={`${id}-lang`} value="es" data-ac-twin-opt="es" /><span>Español</span></label>
+          </fieldset>
+        </div>
+
+        <div data-ac-twin-editor>
+          <p data-ac-twin-tab>
+            <TechLogo slug="react" size={14} />
+            <span>{file}</span>
+            <span data-ac-twin-shared class="mono-label-sm">Shared</span>
+          </p>
+          <ol data-ac-twin-code aria-label={`${file}: one component tree, wrapped in a theme and a language that both apps read.`}>
+            <li data-ac-twin-trim><b data-k>import</b> {"{ ThemeProvider }"} <b data-k>from</b> <span data-s>"./theme"</span></li>
+            <li data-ac-twin-trim><b data-k>import</b> {"{ I18n }"} <b data-k>from</b> <span data-s>"./i18n"</span></li>
+            <li data-ac-twin-trim><b data-k>import</b> {"{ Wallet }"} <b data-k>from</b> <span data-s>"./screens/Wallet"</span></li>
+            <li data-ac-twin-trim>&nbsp;</li>
+            <li data-ac-twin-line="theme"><b data-k>const</b> mode = <span data-ac-twin-val><span data-s data-v="light">"light"</span><span data-s data-v="dark">"dark"</span></span></li>
+            <li data-ac-twin-line="lang"><b data-k>const</b> locale = <span data-ac-twin-val><span data-s data-v="en">"en"</span><span data-s data-v="es">"es"</span></span></li>
+            <li data-ac-twin-trim>&nbsp;</li>
+            <li data-ac-twin-trim><b data-k>export default function</b> <b data-f>App</b>() {"{"}</li>
+            <li data-ac-twin-trim>{"  "}<b data-k>return</b> (</li>
+            <li>{"    "}&lt;<b data-t>ThemeProvider</b> <b data-a>mode</b>={"{"}mode{"}"}&gt;</li>
+            <li>{"      "}&lt;<b data-t>I18n</b> <b data-a>locale</b>={"{"}locale{"}"}&gt;</li>
+            <li>{"        "}&lt;<b data-t>Wallet</b> /&gt;</li>
+            <li data-ac-twin-trim>{"      "}&lt;/<b data-t>I18n</b>&gt;</li>
+            <li data-ac-twin-trim>{"    "}&lt;/<b data-t>ThemeProvider</b>&gt;</li>
+            <li data-ac-twin-trim>{"  "})</li>
+            <li data-ac-twin-trim>{"}"}</li>
+          </ol>
+          <p data-ac-twin-out>
+            <span><TechLogo slug="apple" size={13} tone="current" /> main.jsbundle</span>
+            <span><TechLogo slug="android" size={13} tone="current" /> index.android.bundle</span>
+          </p>
+        </div>
+
+        <span data-ac-twin-wire data-side="ios" aria-hidden="true"><i /></span>
+        <span data-ac-twin-wire data-side="android" aria-hidden="true"><i /></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-twin]").forEach((section) => {
+    toggleInView(section);
+
+    const frame = section.querySelector<HTMLElement>("[data-ac-twin-frame]")!;
+    const opt = (v: string) => section.querySelector<HTMLInputElement>(`[data-ac-twin-opt="${v}"]`)!;
+    const STATES: [string, string][] = [
+      ["light", "en"],
+      ["dark", "en"],
+      ["dark", "es"],
+      ["light", "es"],
+    ];
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let step = 0;
+    let timer = 0;
+    let taken = false;
+
+    /* A change sends a pulse down both wires, code to phone. */
+    const pulse = () => {
+      frame.removeAttribute("data-pulse");
+      requestAnimationFrame(() => frame.setAttribute("data-pulse", ""));
+    };
+
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = 0;
+    };
+
+    const start = () => {
+      if (taken || reduced || timer) return;
+      timer = window.setInterval(() => {
+        step = (step + 1) % STATES.length;
+        const [theme, lang] = STATES[step];
+        opt(theme).checked = true;
+        opt(lang).checked = true;
+        pulse();
+      }, 2600);
+    };
+
+    /* The reader takes over: the tour stops for good. */
+    section.querySelectorAll("input").forEach((input) => {
+      input.addEventListener("change", () => {
+        taken = true;
+        stop();
+        pulse();
+      });
+    });
+
+    new IntersectionObserver(([entry]) => (entry.isIntersecting ? start() : stop()), { threshold: 0.35 }).observe(frame);
+  });
+</script>

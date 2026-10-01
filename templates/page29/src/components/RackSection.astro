@@ -1,0 +1,78 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import { TECH_LOGOS, type TechLogoSlug } from "@/lib/tech-logos";
+import type { SectionPhoto } from "@/types/page";
+
+/* The automation stack, on the dark tone, as a test rig. The header splits
+   around a photo of an engineer at work. Under it, a rack of four units,
+   one per layer (UI, API and unit, performance, CI), each a 1U panel with
+   rack ears, a status lamp, its layer's name and what it covers, and its
+   tools slotted in as modules: a light tile with the logo in its own colour
+   and the tool's name. As the section arrives the units slide in from the
+   top, their lamps come on, and an activity light on each module flickers
+   in turn; the flicker runs only while the section is on screen. Phones put
+   each unit's label over its modules, four to a row. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  units: { code: string; label: string; note: string; tools: { slug: TechLogoSlug; name?: string }[] }[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, units } = Astro.props;
+let k = 0;
+---
+
+<section data-ac-sec="dark" data-ac-rack id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div data-ac-rack-frame>
+      <Joints />
+      <ul data-ac-rack-units>
+        {units.map((u, i) => (
+          <li data-ac-rack-unit style={`--ac-i:${i}`}>
+            <span data-ac-rack-ear aria-hidden="true"><i /><i /></span>
+            <div data-ac-rack-label>
+              <span data-ac-rack-lamp aria-hidden="true" />
+              <span data-ac-rack-code class="mono-label-sm">{u.code}</span>
+              <b>{u.label}</b>
+              <span data-ac-rack-note>{u.note}</span>
+            </div>
+            <ul data-ac-rack-mods aria-label={`${u.label}: ${u.tools.map((t) => t.name ?? TECH_LOGOS[t.slug].title).join(", ")}`}>
+              {u.tools.map((t) => (
+                <li data-ac-rack-mod style={`--k:${k++}`}>
+                  <span data-ac-rack-tile>
+                    <TechLogo slug={t.slug} size={28} />
+                  </span>
+                  <span data-ac-rack-name>{t.name ?? TECH_LOGOS[t.slug].title}</span>
+                  <i data-ac-rack-led aria-hidden="true" />
+                </li>
+              ))}
+            </ul>
+            <span data-ac-rack-ear aria-hidden="true"><i /><i /></span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.querySelectorAll<HTMLElement>("[data-ac-rack]").forEach((section) => {
+    if (!reduced) section.setAttribute("data-ac-armed", "");
+    toggleInView(section);
+  });
+</script>

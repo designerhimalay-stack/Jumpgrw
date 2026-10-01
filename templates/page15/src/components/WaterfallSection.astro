@@ -1,0 +1,210 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { TechLogoSlug } from "@/lib/tech-logos";
+
+/* One request, timed across every layer, as a network waterfall. A frame on
+   the columns: the request line along the top with a "cache hit" switch and
+   the total; under it one row per phase (DNS, TLS, gateway, service, cache,
+   database, response, render), its name and layer in column 1 and its bar
+   on a millisecond scale across columns 2–4, the scale's ticks on the column
+   rules. Bars draw left to right in turn on arrival while the total counts
+   up. The switch replays the request warm: the cache hits, the database bar
+   drops out as skipped and everything after it slides earlier, so the total
+   falls. Bars are positioned in a fixed track (custom properties), so
+   nothing moves the page. Without the script the cold request shows, drawn.
+   See docs/sections.md. */
+
+type Layer = "network" | "edge" | "backend" | "data" | "frontend";
+
+interface Phase {
+  name: string;
+  layer: Layer;
+  logo?: TechLogoSlug;
+  /** Start and duration in ms, cold (cache miss) and warm (cache hit). */
+  cold: [number, number];
+  warm: [number, number];
+  /** Shown as skipped in the warm request. */
+  skippedWarm?: boolean;
+  note?: { cold: string; warm: string };
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  request: { method: string; path: string; status: string };
+  switchLabel: string;
+  totalLabel: string;
+  skippedLabel: string;
+  /** The scale's end, in ms. */
+  scale: number;
+  firstByte: { label: string; cold: number; warm: number };
+  layers: Record<Layer, string>;
+  phases: Phase[];
+}
+
+const {
+  id,
+  eyebrow,
+  headline,
+  accent,
+  lede,
+  request,
+  switchLabel,
+  totalLabel,
+  skippedLabel,
+  scale,
+  firstByte,
+  layers,
+  phases,
+} = Astro.props;
+
+const pct = (ms: number) => `${+((ms / scale) * 100).toFixed(3)}%`;
+const total = (k: "cold" | "warm") => Math.max(...phases.map((p) => p[k][0] + p[k][1]));
+const coldTotal = total("cold");
+const warmTotal = total("warm");
+const ticks = [0, 1, 2, 3].map((i) => Math.round((scale / 3) * i));
+---
+
+<section data-ac-sec="light" data-ac-wf id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div
+      data-ac-sec-frame
+      data-ac-wf-frame
+      style={`--ac-fb-cold:${+(firstByte.cold / scale).toFixed(4)};--ac-fb-warm:${+(firstByte.warm / scale).toFixed(4)}`}
+    >
+      <Joints />
+
+      <div data-ac-wf-bar>
+        <p data-ac-wf-request>
+          <span data-ac-wf-method>{request.method}</span>
+          <code>{request.path}</code>
+          <span data-ac-wf-status>{request.status}</span>
+        </p>
+        <button type="button" role="switch" aria-checked="false" data-ac-wf-switch>
+          <span data-ac-wf-track aria-hidden="true"><i /></span>
+          <span>{switchLabel}</span>
+        </button>
+        <p data-ac-wf-total>
+          <span class="mono-label">{totalLabel}</span>
+          <b data-ac-wf-total-num data-cold={coldTotal} data-warm={warmTotal}>{coldTotal}</b>
+          <span data-ac-wf-unit>ms</span>
+        </p>
+      </div>
+
+      <div data-ac-wf-chart>
+        <div data-ac-wf-scale aria-hidden="true">
+          {ticks.map((t) => (
+            <span style={`left:${pct(t)}`}>{t} ms</span>
+          ))}
+        </div>
+
+        <ol data-ac-wf-rows>
+          {phases.map((p, i) => (
+            <li
+              data-ac-wf-row
+              data-layer={p.layer}
+              data-skip-warm={p.skippedWarm || undefined}
+              style={`--ac-i:${i};--ac-s:${pct(p.cold[0])};--ac-d:${pct(p.cold[1])};--ac-s2:${pct(p.warm[0])};--ac-d2:${pct(p.warm[1])}`}
+            >
+              <span data-ac-wf-label>
+                <span data-ac-wf-icon aria-hidden="true">
+                  {p.logo ? <TechLogo slug={p.logo} size={16} /> : <i data-ac-wf-dot />}
+                </span>
+                <span data-ac-wf-name>{p.name}</span>
+                <span data-ac-wf-layer class="mono-label-sm">{layers[p.layer]}</span>
+              </span>
+              <span data-ac-wf-lane>
+                <i data-ac-wf-fill />
+                <span data-ac-wf-ms>
+                  <span data-cold>{p.note?.cold ?? `${p.cold[1]} ms`}</span>
+                  <span data-warm>{p.skippedWarm ? skippedLabel : (p.note?.warm ?? `${p.warm[1]} ms`)}</span>
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
+
+        <span data-ac-wf-fb aria-hidden="true">
+          <span class="mono-label-sm">{firstByte.label}</span>
+        </span>
+      </div>
+
+      <p data-ac-wf-legend aria-hidden="true">
+        {(Object.keys(layers) as Layer[]).map((k) => (
+          <span data-layer={k}><i />{layers[k]}</span>
+        ))}
+      </p>
+
+      <p class="sr-only" data-ac-wf-status-live aria-live="polite">
+        {`${totalLabel}: ${coldTotal} ms.`}
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-wf]").forEach((section) => {
+    const frame = section.querySelector<HTMLElement>("[data-ac-wf-frame]")!;
+    const toggle = section.querySelector<HTMLButtonElement>("[data-ac-wf-switch]")!;
+    const num = section.querySelector<HTMLElement>("[data-ac-wf-total-num]")!;
+    const live = section.querySelector<HTMLElement>("[data-ac-wf-status-live]")!;
+    const label = section.querySelector<HTMLElement>("[data-ac-wf-total] .mono-label")!;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let raf = 0;
+    let shown = Number(num.dataset.cold);
+
+    /* Bars wait for the entrance only once the script is here; without it
+       the drawn request shows. */
+    section.setAttribute("data-ac-armed", "");
+
+    const target = () => Number(toggle.getAttribute("aria-checked") === "true" ? num.dataset.warm : num.dataset.cold);
+
+    const countTo = (to: number, from: number, delay: number, dur: number) => {
+      cancelAnimationFrame(raf);
+      if (reduced) {
+        shown = to;
+        num.textContent = String(to);
+        return;
+      }
+      const start = performance.now() + delay;
+      const step = (now: number) => {
+        const t = Math.min(1, Math.max(0, (now - start) / dur));
+        shown = Math.round(from + (to - from) * (1 - Math.pow(1 - t, 3)));
+        num.textContent = String(shown);
+        if (t < 1) raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+    };
+
+    toggle.addEventListener("click", () => {
+      const warm = toggle.getAttribute("aria-checked") !== "true";
+      toggle.setAttribute("aria-checked", String(warm));
+      frame.toggleAttribute("data-warm", warm);
+      countTo(target(), shown, 0, 700);
+      live.textContent = `${label.textContent}: ${target()} ms.`;
+    });
+
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        if (entry.isIntersecting) countTo(target(), 0, 300, 1700);
+        else {
+          cancelAnimationFrame(raf);
+          shown = 0;
+          if (!reduced) num.textContent = "0";
+        }
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

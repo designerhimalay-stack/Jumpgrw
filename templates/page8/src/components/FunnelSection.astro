@@ -1,0 +1,55 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* Vetting, as a funnel. The header splits around a photo of an interview;
+   under it the stages stack as bars that narrow from the full width to a
+   single specialist, each drawn out from the centre in turn as the section
+   arrives, with what each stage checks beside it. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  stages: { name: string; checks: string }[];
+  result: string;
+}
+
+const { id, eyebrow, headline, accent, lede, media, stages, result } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+const n = stages.length;
+---
+
+<section data-ac-sec="light" data-ac-funnel id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <ol data-ac-funnel-stages>
+      {stages.map((stage, i) => (
+        <li data-ac-funnel-stage style={`--ac-i:${i};--ac-w:${100 - (i / n) * 72}%`}>
+          <span data-ac-funnel-bar>
+            <span class="mono-label">{pad(i + 1)}</span>
+            <span data-ac-funnel-name>{stage.name}</span>
+          </span>
+          <span data-ac-funnel-checks>{stage.checks}</span>
+        </li>
+      ))}
+      <li data-ac-funnel-result style={`--ac-i:${n}`}>
+        <span data-ac-funnel-dot aria-hidden="true" />
+        <span>{result}</span>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-funnel]").forEach(toggleInView);
+</script>

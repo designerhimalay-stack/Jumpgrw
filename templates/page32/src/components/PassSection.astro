@@ -1,0 +1,92 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* How it works, as a boarding pass, on the dark tone. One long ticket
+   across the page: a stub on the left with a photo of the team, the route
+   and the class of team, then five legs separated by perforations, one per
+   step, each stamped in turn as the section arrives. A barcode closes the
+   ticket. On phones the pass stands upright, the legs stacked. See
+   docs/sections.md. */
+
+interface Leg {
+  gate: string;
+  title: string;
+  body: string;
+  when: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  stub: { label: string; value: string }[];
+  legs: Leg[];
+  stamp: string;
+}
+
+const { id, eyebrow, headline, accent, lede, media, stub, legs, stamp } = Astro.props;
+/* A fixed barcode pattern, so every build draws the same bars. */
+const bars = [3, 1, 2, 1, 1, 3, 1, 2, 2, 1, 3, 1, 1, 2, 1, 3, 2, 1, 1, 2, 3, 1, 2, 1, 1, 3, 1, 1, 2, 2, 1, 3, 1, 2, 1, 1];
+---
+
+<section data-ac-sec="dark" data-ac-pass id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-pass-ticket>
+      <div data-ac-pass-stub>
+        <div data-ac-pass-photo>
+          <Image
+            src={media.image}
+            alt={media.alt}
+            widths={[400, 700, 1000]}
+            sizes="(max-width: 991px) 40vw, 22vw"
+            quality={78}
+            style={media.focus ? `object-position:${media.focus}` : undefined}
+          />
+        </div>
+        <dl data-ac-pass-meta>
+          {stub.map((row) => (
+            <div>
+              <dt class="mono-label-sm">{row.label}</dt>
+              <dd>{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      <ol data-ac-pass-legs>
+        {legs.map((leg, i) => (
+          <li data-ac-pass-leg style={`--ac-i:${i}`}>
+            <p data-ac-pass-gate class="mono-label-sm">
+              <span>{String(i + 1).padStart(2, "0")}</span>
+              {leg.gate}
+            </p>
+            <h3 data-ac-pass-title>{leg.title}</h3>
+            <p data-ac-pass-body>{leg.body}</p>
+            <p data-ac-pass-when class="mono-label-sm">{leg.when}</p>
+            <span data-ac-pass-stamp class="mono-label-sm" aria-hidden="true">{stamp}</span>
+          </li>
+        ))}
+      </ol>
+
+      <span data-ac-pass-code aria-hidden="true">
+        {bars.map((w) => <i style={`--ac-w:${w}`} />)}
+      </span>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-pass]").forEach(toggleInView);
+</script>

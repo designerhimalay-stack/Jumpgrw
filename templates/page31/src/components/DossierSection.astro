@@ -1,0 +1,79 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* How teams use us, as three dossiers, on the dark tone. The header splits
+   around a photo of an engineer at work (`media`, optional). Under it, one file per example: the
+   client's name blacked out by a redaction bar that draws across as the
+   section arrives (client details stay private), the sector, the team we
+   added and the result set large. Each file is stamped as an example, and
+   the footnote says results are not guarantees. See docs/sections.md. */
+
+interface Dossier {
+  sector: string;
+  team: string;
+  body: string;
+  roles: string[];
+  results: { value: string; label: string }[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media?: SectionPhoto;
+  files: Dossier[];
+  stamp: string;
+  footnote: string;
+}
+
+const { id, eyebrow, headline, accent, lede, media, files, stamp, footnote } = Astro.props;
+---
+
+<section data-ac-sec="dark" data-ac-dossier id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <ol data-ac-dossier-files>
+      {files.map((file, i) => (
+        <li data-ac-dossier-file style={`--ac-i:${i}`}>
+          <header data-ac-dossier-top>
+            <span class="mono-label-sm">File {String(i + 1).padStart(2, "0")}</span>
+            <span data-ac-dossier-stamp class="mono-label-sm">{stamp}</span>
+          </header>
+          <p data-ac-dossier-client>
+            <span class="mono-label-sm">Client</span>
+            <span data-ac-dossier-redact aria-label="Name withheld"><i aria-hidden="true" /></span>
+          </p>
+          <p data-ac-dossier-sector>{file.sector}</p>
+          <h3 data-ac-dossier-team>{file.team}</h3>
+          <p data-ac-dossier-body>{file.body}</p>
+          <ul data-ac-dossier-roles aria-label="Roles on the team">
+            {file.roles.map((role) => <li>{role}</li>)}
+          </ul>
+          <dl data-ac-dossier-results>
+            {file.results.map((r) => (
+              <div>
+                <dt>{r.label}</dt>
+                <dd data-word={r.value.length > 4 ? "" : undefined}>{r.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </li>
+      ))}
+    </ol>
+
+    <p data-ac-dossier-foot class="mono-label-sm">{footnote}</p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-dossier]").forEach(toggleInView);
+</script>

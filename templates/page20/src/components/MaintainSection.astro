@@ -1,0 +1,135 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import { TECH_LOGOS, type TechLogoSlug } from "@/lib/tech-logos";
+import type { SectionPhoto } from "@/types/page";
+
+/* Maintain and modernise, on the light tone, led by a photo. Columns 1–2:
+   a framed photo of an engineer at work. Columns 3–4: the header, then a
+   checklist of legacy work whose boxes tick on one after another as the
+   section arrives, a segmented bar under it filling a segment per tick,
+   and the toolbelt as a row of logo tiles. The ticks clear when the section
+   leaves. Only colour, opacity and the check's stroke change, so nothing
+   moves; without the script or under reduced motion every box shows
+   ticked. See docs/sections.md. */
+
+interface Task {
+  task: string;
+  when: string;
+}
+
+interface Tool {
+  slug: TechLogoSlug;
+  role: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  listLabel: string;
+  doneLabel: string;
+  tasks: Task[];
+  toolsLabel: string;
+  tools: Tool[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, listLabel, doneLabel, tasks, toolsLabel, tools } =
+  Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+
+const tone = (slug: TechLogoSlug) => {
+  const hex = TECH_LOGOS[slug].hex.slice(1);
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.72 ? "ink" : "brand";
+};
+---
+
+<section data-ac-sec="light" data-ac-mnt id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-mnt-grid>
+    <div data-ac-mnt-photo>
+      <Joints />
+      <div data-ac-mnt-image>
+        <Image
+          src={media.image}
+          alt={media.alt}
+          widths={[480, 800, 1200, media.image.width]}
+          sizes="(max-width: 991px) 100vw, 48vw"
+          quality={78}
+          style={media.focus ? `object-position:${media.focus}` : undefined}
+        />
+      </div>
+    </div>
+
+    <div data-ac-mnt-copy>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-mnt-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+      <p data-ac-mnt-lede data-ac-sec-rise>{lede}</p>
+
+      <div data-ac-mnt-list data-ac-sec-rise>
+        <p data-ac-mnt-listhead>
+          <span class="mono-label-sm">{listLabel}</span>
+          <span class="mono-label-sm" data-ac-mnt-done>{doneLabel}</span>
+        </p>
+        <ul>
+          {tasks.map((t, i) => (
+            <li data-ac-mnt-task style={`--ac-i:${i}`}>
+              <span data-ac-mnt-box aria-hidden="true">
+                <svg viewBox="0 0 12 12"><path d="M2.5 6.2 5 8.6 9.6 3.6" pathLength="1" /></svg>
+              </span>
+              <span data-ac-mnt-text>{t.task}</span>
+              <span data-ac-mnt-when class="mono-label-sm">{t.when}</span>
+            </li>
+          ))}
+        </ul>
+        <span data-ac-mnt-progress aria-hidden="true">
+          {tasks.map((_, i) => <i style={`--ac-i:${i}`} />)}
+        </span>
+      </div>
+
+      <div data-ac-mnt-tools data-ac-sec-rise>
+        <p class="mono-label-sm">{toolsLabel}</p>
+        <ul>
+          {tools.map((tool) => (
+            <li>
+              <span data-ac-mnt-tile><TechLogo slug={tool.slug} size={24} tone={tone(tool.slug)} /></span>
+              <span data-ac-mnt-toolname>{TECH_LOGOS[tool.slug].title}</span>
+              <span data-ac-mnt-role>{tool.role}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  /* The ticks are pure CSS on data-ac-in; the script only arms them, so a
+     reader without it sees every box ticked. */
+  document.querySelectorAll<HTMLElement>("[data-ac-mnt]").forEach((section) => {
+    section.setAttribute("data-armed", "");
+    toggleInView(section);
+  });
+</script>

@@ -1,0 +1,265 @@
+---
+/**
+ * Page scroll orchestration: wheel smoothing, where a load starts, releasing the
+ * on-load entrance, and playing the opening frame.
+ *
+ * `scroll-behavior: smooth` alone only covers anchor and programmatic jumps.
+ * Lenis is what gives wheel input the same weighted, slightly-trailing feel. It
+ * animates the real scroll position, so native `scroll` events still fire and
+ * the hero portal's scroll-driven camera keeps working untouched.
+ */
+---
+
+<script>
+  import Lenis from "lenis";
+
+  /** How long the word holds before the camera starts moving on its own. */
+  const HOLD_MS = 500;
+  /** Seconds the camera takes to run from the word to the revealed hero. */
+  const TRAVEL_S = 5;
+
+  /** Gentle at both ends, so it neither jerks off the hold nor stops dead. */
+  const travelEase = (t: number) =>
+    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  const root = document.documentElement;
+
+  /* Releases the entrance. `data-ac-intro="start"` is set on <html> by the
+     inline script in Layout.astro, before first paint, so the navbar and the
+     hero's opening frame are never shown settled for a frame before they
+     animate. Clearing it here is the change their transitions play from.
+
+     Two frames, not one: the first guarantees the held state has been painted,
+     so there is a value to transition away from. The head script also forces
+     this after six seconds, in case this script never runs. */
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      root.dataset.acIntro = "done";
+    });
+  });
+
+  /* A reload starts at the top. The hero is a scroll-driven camera and every
+     section's entrance is gated on arriving at it, so being dropped back into
+     the middle shows all of that already finished. `history.scrollRestoration`
+     is switched off in the document head, which is the only place early enough
+     to stop the browser restoring at all; this is the second half, for
+     anything that landed before that took effect. A hash link is the one case
+     where arriving deeper is intended, and only on arrival: the in-page links
+     below leave their hash in the address, so a refresh drops it and replays
+     the opening rather than jumping to wherever the reader last clicked. */
+  const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+  if (navigation?.type === "reload" && window.location.hash) {
+    history.replaceState(history.state, "", window.location.pathname + window.location.search);
+  }
+  const startAtTop = window.location.hash === "";
+
+  /* Where the camera comes to rest: the top of the revealed panel, which is
+     the whole runway the portal needed to get there. Measured rather than
+     recomputed from the portal's scrollLength, so the two cannot disagree. */
+  const heroLanding = () =>
+    document.querySelector<HTMLElement>(".ac-portal [data-gp-content]")?.offsetTop ?? 0;
+
+  /* Only the home page has the opening frame. A subpage has nothing to wait
+     for and no camera travel to play. The slot is in the markup from the
+     start; the portal itself mounts later. */
+  const hasHero = document.querySelector("[data-ac-hero-slot]") !== null;
+
+  /* The opening frame plays once per load. Once the camera has run through to
+     the next section the hero leaves the document, so scrolling back up stops
+     there rather than rewinding the intro. A refresh brings it back.
+
+     Hiding and jumping happen in the same synchronous block on purpose: the
+     document loses the hero's height at the same moment the scroll goes to
+     zero, so the pixels in the viewport are unchanged and there is nothing to
+     see. Split over two frames, the browser clamps the scroll to the shorter
+     document first and it reads as a jump. */
+  let retired = false;
+  const retire = (jump: () => void) => {
+    if (retired || !heroLanding()) return;
+    retired = true;
+    root.dataset.acHero = "done";
+    jump();
+  };
+
+  /* In-page links (the navbar, its menus, the footer) and a load that arrives
+     with one. The opening frame is in the way of both: a jump while it is still
+     in the document trips the retire-and-jump-home above and lands back at the
+     top. So the frame is retired first, without the jump, and the page then
+     travels to the section, clear of the fixed navbar. "#top" is the top. */
+  /* The navbar's layout height, not its on-screen box: on a load that arrives
+     with a hash the bar is still sliding down (a transform), and its box would
+     read as almost nothing, landing the section underneath it. The bar is
+     fixed at the top, so its height is where it ends. */
+  const navOffset = () => (document.querySelector<HTMLElement>(".ac-nav")?.offsetHeight ?? 0) + 12;
+  const destination = (hash: string): HTMLElement | 0 | null =>
+    hash === "#top" ? 0 : hash.length > 1 ? document.getElementById(decodeURIComponent(hash.slice(1))) : null;
+  const topOf = (target: HTMLElement | 0) =>
+    target === 0 ? 0 : Math.max(0, target.getBoundingClientRect().top + window.scrollY - navOffset());
+
+  let goTo: (target: HTMLElement | 0, instant?: boolean) => void;
+
+  const arrival = window.location.hash ? destination(window.location.hash) : null;
+
+  /* A load with a hash waits for the page to settle (the load event and the
+     fonts, which both still move sections above it) and for the portal to lay
+     out (until then there is no frame to retire), then goes straight there. The
+     portal wait gives up after about two seconds. */
+  const whenHeroReady = (run: () => void, frames = 120) => {
+    if (!hasHero || heroLanding() || frames === 0) run();
+    else requestAnimationFrame(() => whenHeroReady(run, frames - 1));
+  };
+  const whenSettled = (run: () => void) => {
+    const loaded =
+      document.readyState === "complete"
+        ? Promise.resolve()
+        : new Promise((resolve) => window.addEventListener("load", resolve, { once: true }));
+    loaded.then(() => document.fonts?.ready).then(() => whenHeroReady(run));
+  };
+
+  document.addEventListener("click", (event) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = (event.target as Element | null)?.closest<HTMLAnchorElement>("a[href*='#']");
+    if (!link) return;
+    const url = new URL(link.href, window.location.href);
+    if (url.origin !== window.location.origin || url.pathname !== window.location.pathname) return;
+    const target = destination(url.hash);
+    if (target === null) return;
+    event.preventDefault();
+    goTo(target);
+    history.pushState(null, "", target === 0 ? window.location.pathname : url.hash);
+  });
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    goTo = (target) => {
+      retire(() => {});
+      window.scrollTo(0, topOf(target));
+    };
+
+    // No camera move of our own here, but the hero still retires once passed.
+    if (startAtTop) window.scrollTo(0, 0);
+    if (arrival !== null) whenSettled(() => goTo(arrival));
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (window.scrollY >= heroLanding() - 1) retire(() => window.scrollTo(0, 0));
+      },
+      { passive: true },
+    );
+  } else {
+    const lenis = new Lenis({
+      // ~0.8s to settle.
+      duration: 0.9,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      wheelMultiplier: 1,
+      touchMultiplier: 1.6,
+      // Touch devices already have good native momentum; smoothing it fights the OS.
+      syncTouch: false,
+    });
+
+    /* Through Lenis rather than window.scrollTo: Lenis caches the position it
+       was constructed at and steers the page back to it on its next frame, so a
+       raw scroll here would simply be undone. */
+    if (startAtTop) lenis.scrollTo(0, { immediate: true, force: true });
+
+    const jumpTo = (y: number) => {
+      /* stop() first. `force` lets a scrollTo through, but it does not cancel
+         the travel already in flight: without this, Lenis finishes that travel
+         on its next frame and drags the page straight back down again. */
+      lenis.stop();
+      // Then resize, so Lenis has the shorter document before it is told where
+      // to sit in it.
+      lenis.resize();
+      lenis.scrollTo(y, { immediate: true, force: true });
+      lenis.start();
+    };
+    const jumpHome = () => jumpTo(0);
+
+    /* Touch screens scroll natively (syncTouch is off), which changes two
+       things. The camera travel is Lenis moving the page, and a finger on the
+       glass would fight it frame by frame, so the first touch hands the page
+       straight back. And retiring the frame mid-fling means a programmatic
+       jump during momentum, which iOS answers by stopping the page dead; so on
+       touch it waits until the scroll comes to rest, then drops the frame and
+       moves the page up by exactly the frame's height, which leaves every
+       pixel where it was. */
+    const touch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+
+    /* Only the reader's own scrolling is watched here. While the travel below
+       is running it would fire a frame early, at which point retiring would
+       fight the animation rather than follow it, so the travel reports its own
+       arrival through onComplete instead. */
+    let travelling = false;
+    let restTimer = 0;
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (travelling || retired) return;
+        if (!touch) {
+          if (window.scrollY >= heroLanding() - 1) retire(jumpHome);
+          return;
+        }
+        window.clearTimeout(restTimer);
+        restTimer = window.setTimeout(() => {
+          const landing = heroLanding();
+          if (landing && window.scrollY >= landing - 1) {
+            const y = window.scrollY - landing;
+            retire(() => jumpTo(y));
+          }
+        }, 160);
+      },
+      { passive: true },
+    );
+
+    let touched = false;
+    if (touch) {
+      const yieldToFinger = () => {
+        touched = true;
+        if (!travelling) return;
+        travelling = false;
+        lenis.stop();
+        lenis.start();
+      };
+      window.addEventListener("touchstart", yieldToFinger, { passive: true });
+    }
+
+    goTo = (target, instant = false) => {
+      // Cancels the camera travel if it is still running.
+      lenis.stop();
+      travelling = false;
+      retire(() => {});
+      lenis.resize();
+      // Re-sync Lenis with where the page actually is now the frame is gone.
+      lenis.scrollTo(window.scrollY, { immediate: true, force: true });
+      lenis.start();
+      lenis.scrollTo(topOf(target), { immediate: instant, force: true, duration: 1.2 });
+    };
+
+    if (arrival !== null) whenSettled(() => goTo(arrival, true));
+
+    /* The hold counts from the word being on screen. The hero mounts late in
+       a tab that loads in the background (Hero.astro waits for it to be seen),
+       and a travel started before then would run to a landing of zero and
+       skip the opening. Frames stop in a hidden tab, so this waits it out. */
+    whenHeroReady(() => window.setTimeout(() => {
+      // A finger that got there first keeps the page; the camera stays put.
+      if (!hasHero || retired || arrival !== null || touched) return;
+      travelling = true;
+      lenis.scrollTo(heroLanding(), {
+        duration: TRAVEL_S,
+        easing: travelEase,
+        onComplete: () => {
+          // Handed back to a finger mid-way: the scroll listener retires it.
+          if (!travelling) return;
+          travelling = false;
+          retire(jumpHome);
+        },
+      });
+    }, HOLD_MS));
+
+    const raf = (time: number) => {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    };
+    requestAnimationFrame(raf);
+  }
+</script>

@@ -1,0 +1,155 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import FramesSection from "@/components/FramesSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import PlatformsSection from "@/components/PlatformsSection.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import WidgetTreeSection from "@/components/WidgetTreeSection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p25-hero.jpg";
+import framesPhoto from "@/assets/pages/p25-frames.jpg";
+import faqPhoto from "@/assets/pages/p25-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* Flutter developers. The trips screen, the frame times and the build
+   outputs are illustrative, and the FAQ answers are drafts. Have them
+   checked before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "Mobile", "Flutter"],
+  headline: ["Flutter", "developers."],
+  accent: 1,
+  lede: "One Dart codebase, every screen: Flutter developers who ship smooth apps to phones, the browser and the desktop.",
+  ctas: [
+    { label: "Hire Flutter devs", href: "#contact", arrow: "diagonal" },
+    { label: "See the widget tree", href: "#widget-tree", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A developer checks an app on his phone beside a glowing monitor.",
+  specs: [
+    { label: "Ships to", value: "Six platforms" },
+    { label: "Written in", value: "Dart" },
+    { label: "Renders at", value: "60 to 120 fps" },
+    { label: "State", value: "Riverpod or Bloc" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Will a Flutter app look native?",
+    a: "It draws its own widgets, so it can look the same everywhere, or follow each platform with the Material and Cupertino sets.",
+  },
+  {
+    q: "Can Flutter join an app we already have?",
+    a: "Yes. Add-to-app puts Flutter screens inside an iOS or Android app, one feature at a time.",
+  },
+  {
+    q: "How do you keep it fast?",
+    a: "We profile in DevTools on real mid-range devices and keep frame times under budget before each release.",
+  },
+  {
+    q: "Riverpod, Bloc or something else?",
+    a: "Whatever your team knows. For new apps we usually start with Riverpod and keep state out of the widgets.",
+  },
+];
+---
+
+<Layout
+  title={`Flutter developers · ${BRAND.name}`}
+  description="Flutter developers who ship one Dart codebase to iOS, Android, the web and the desktop, smooth at 60 fps and beyond."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <WidgetTreeSection
+      id="widget-tree"
+      eyebrow="Widget tree"
+      headline={["Every pixel", "is a widget."]}
+      accent={1}
+      lede="Flutter builds the whole screen from one tree of widgets. Point at one and see exactly what it draws."
+      treeLabel="Widget tree"
+      tip="Pick a widget to see what it draws"
+      nodes={[
+        { id: "scaffold", name: "Scaffold", hint: "body: Column", depth: 0 },
+        { id: "appbar", name: "AppBar", hint: "title: Text", depth: 1 },
+        { id: "column", name: "Column", hint: "children: 3", depth: 1 },
+        { id: "card", name: "TripCard", hint: "trip: lisbon", depth: 2 },
+        { id: "row", name: "Row", hint: "children: 3", depth: 2 },
+        { id: "chip", name: "FilterChip", hint: "selected: true", depth: 3 },
+        { id: "listview", name: "ListView", hint: ".builder", depth: 2 },
+        { id: "tile", name: "ListTile", hint: "leading: Avatar", depth: 3 },
+        { id: "fab", name: "FloatingActionButton", hint: "onPressed", depth: 1 },
+        { id: "navbar", name: "NavigationBar", hint: "destinations: 4", depth: 1 },
+      ]}
+      screen={{
+        title: "Trips",
+        place: "Lisbon",
+        dates: "12–16 Oct · 4 nights",
+        badge: "Upcoming",
+        chips: ["All", "Upcoming", "Past"],
+        tiles: [
+          { title: "Kyoto", sub: "6–15 Mar", meta: "9 nights" },
+          { title: "Oslo", sub: "2–5 Jan", meta: "3 nights" },
+          { title: "Lima", sub: "18–25 Nov", meta: "7 nights" },
+        ],
+        nav: ["Explore", "Trips", "Saved", "Profile"],
+      }}
+    />
+    <FramesSection
+      id="frames"
+      eyebrow="Performance"
+      headline={["Smooth at", "60 fps."]}
+      lede="Every frame gets about 16 milliseconds. Our developers profile on real devices and keep both threads well under the line."
+      media={{ image: framesPhoto, alt: "A developer works through code across two monitors in a dim studio.", focus: "55% 40%" }}
+      chartLabel="Frame times"
+      switchLabel="Display"
+      rates={[
+        { hz: 60, label: "60 Hz" },
+        { hz: 120, label: "120 Hz" },
+      ]}
+      readings={{ rate: "Frame rate", jank: "Janky frames", worst: "Slowest frame" }}
+      legend={{ ui: "UI thread", raster: "Raster thread" }}
+    />
+    <PlatformsSection
+      id="platforms"
+      eyebrow="Six platforms"
+      headline={["One codebase.", "Six platforms."]}
+      accent={1}
+      lede="The same Dart code builds for phones, the browser and the desktop: a real build for each, shipped to its own store."
+      core={{ name: "Flutter + Dart", note: "One codebase" }}
+      sheetLabel="Build"
+      labels={{ command: "Command", output: "Output", ships: "Ships to" }}
+      platforms={[
+        { key: "ios", name: "iOS", slug: "apple", command: "flutter build ipa", output: "Runner.ipa", ships: "App Store and TestFlight" },
+        { key: "android", name: "Android", slug: "android", command: "flutter build appbundle", output: "app-release.aab", ships: "Google Play" },
+        { key: "web", name: "Web", slug: "webassembly", command: "flutter build web --wasm", output: "build/web", ships: "Any static host" },
+        { key: "macos", name: "macOS", slug: "apple", command: "flutter build macos", output: "Trips.app", ships: "Mac App Store or direct" },
+        { key: "windows", name: "Windows", command: "flutter build windows", output: "trips.exe", ships: "Microsoft Store or an installer" },
+        { key: "linux", name: "Linux", slug: "linux", command: "flutter build linux", output: "bundle/", ships: "Snap Store or Flathub" },
+      ]}
+      toolsLabel="Around the build"
+      tools={["firebase", "supabase", "codemagic", "androidstudio", "xcode"]}
+    />
+    <FaqSection
+      eyebrow="Flutter questions"
+      headline={["Questions,", "hot reloaded."]}
+      accent={1}
+      cta="Talk to a Flutter lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "Two developers work side by side at their desks in a bright office.", focus: "65% 45%" }}
+    />
+    <CtaSection
+      eyebrow="One codebase, six builds"
+      headline={["One tree.", "Every screen."]}
+      body="Tell us where your users are. We’ll staff Flutter developers who ship one codebase to every screen they use."
+      cta="Plan my Flutter team"
+    />
+  </main>
+  <Footer />
+</Layout>

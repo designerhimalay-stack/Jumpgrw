@@ -1,0 +1,205 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* Talent hubs, on a dotted map of India. Columns 1–2: the country drawn in
+   dots on a flat grid, with a pin on each hub city; the chosen hub's pin
+   rings and the dots around it light, the way talent gathers round a city.
+   Columns 3–4: the hubs as tabs, and under them the chosen hub's pool, what
+   it is strongest at and who we place from it. Tabs follow the ARIA tabs
+   pattern (arrow keys, Home, End); every panel shares one grid cell, so
+   switching moves nothing. Without the script the first hub shows. The map
+   is drawn here from a simplified outline, not from any map data.
+   See docs/sections.md. */
+
+interface Hub {
+  key: string;
+  city: string;
+  lat: number;
+  lon: number;
+  pool: string;
+  poolLabel: string;
+  strengths: string[];
+  line: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  hubs: Hub[];
+  note: string;
+}
+
+const { id, eyebrow, headline, accent, lede, hubs, note } = Astro.props;
+
+/* A simplified outline of India (longitude, latitude), drawn clockwise from
+   the north-west. Coarse on purpose: it only has to hold the dots. */
+const OUTLINE: [number, number][] = [
+  [73.9, 34.6], [74.8, 36.9], [77.0, 35.9], [78.1, 35.5], [79.5, 34.2], [79.0, 32.6],
+  [78.8, 31.2], [80.3, 30.3], [80.1, 28.8], [83.5, 27.3], [85.5, 26.7], [88.1, 26.4],
+  [88.8, 28.1], [89.0, 26.8], [92.0, 26.8], [92.1, 27.8], [94.0, 29.2], [96.1, 29.4],
+  [97.4, 28.2], [96.0, 27.0], [95.0, 26.0], [94.5, 24.5], [93.9, 23.4], [93.2, 22.2],
+  [92.6, 22.0], [92.3, 23.8], [91.4, 23.3], [91.7, 24.2], [92.4, 25.0], [90.0, 25.2],
+  [89.8, 26.0], [88.6, 26.2], [88.2, 25.6], [88.9, 25.0], [88.5, 24.3], [88.7, 23.2],
+  [89.0, 22.0], [88.9, 21.6], [87.0, 21.5], [86.5, 20.4], [85.5, 19.7], [84.8, 19.2],
+  [83.3, 17.6], [82.3, 16.6], [81.2, 15.9], [80.3, 15.5], [80.2, 13.5], [79.8, 11.8],
+  [79.9, 10.3], [79.2, 9.3], [78.2, 8.9], [77.5, 8.1], [76.6, 8.9], [76.2, 10.0],
+  [75.8, 11.5], [74.9, 12.9], [74.4, 14.5], [73.8, 15.8], [73.4, 16.8], [72.9, 18.9],
+  [72.8, 20.5], [72.6, 21.5], [72.6, 22.3], [72.3, 21.6], [71.0, 20.8], [69.8, 21.9],
+  [69.0, 22.4], [68.4, 23.6], [69.6, 24.3], [71.0, 24.4], [70.4, 25.7], [70.0, 27.2],
+  [71.9, 27.9], [73.4, 29.9], [74.6, 31.1], [74.6, 32.5], [74.0, 33.2],
+];
+
+const inside = (x: number, y: number) => {
+  let hit = false;
+  for (let i = 0, j = OUTLINE.length - 1; i < OUTLINE.length; j = i++) {
+    const [xi, yi] = OUTLINE[i];
+    const [xj, yj] = OUTLINE[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) hit = !hit;
+  }
+  return hit;
+};
+
+/* Flat projection, longitude squeezed for the latitude. */
+const LON0 = 67.8;
+const LAT0 = 37.4;
+const K = 20;
+const SQ = 0.93;
+const px = (lon: number) => (lon - LON0) * K * SQ;
+const py = (lat: number) => (LAT0 - lat) * K;
+const W = Math.ceil(px(97.8));
+const H = Math.ceil(py(7.6));
+
+const STEP = 0.5;
+const REACH = 2.3;
+const dots: { x: number; y: number; hub?: string; d?: number }[] = [];
+for (let lat = LAT0 - STEP / 2; lat > 7.6; lat -= STEP) {
+  for (let lon = LON0 + STEP / 2; lon < 97.8; lon += STEP / SQ) {
+    if (!inside(lon, lat)) continue;
+    let best: { key: string; d: number } | undefined;
+    for (const hub of hubs) {
+      const d = Math.hypot((lon - hub.lon) * SQ, lat - hub.lat);
+      if (d < REACH && (!best || d < best.d)) best = { key: hub.key, d };
+    }
+    dots.push({ x: px(lon), y: py(lat), hub: best?.key, d: best ? best.d / REACH : undefined });
+  }
+}
+---
+
+<section data-ac-sec="light" data-ac-hubs id={id} data-hub={hubs[0].key}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-hubs-grid>
+      <div data-ac-sec-frame data-ac-hubs-map>
+        <Joints />
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Map of India with ${hubs.length} talent hubs: ${hubs.map((h) => h.city).join(", ")}.`}>
+          <g data-ac-hubs-dots>
+            {dots.map((dot) =>
+              dot.hub ? (
+                <circle cx={dot.x.toFixed(1)} cy={dot.y.toFixed(1)} r="3.6" data-near={dot.hub} style={`--ac-d:${dot.d!.toFixed(2)}`} />
+              ) : (
+                <circle cx={dot.x.toFixed(1)} cy={dot.y.toFixed(1)} r="3.6" />
+              ),
+            )}
+          </g>
+          {hubs.map((hub, i) => (
+            <g data-ac-hubs-pin={hub.key} transform={`translate(${px(hub.lon).toFixed(1)} ${py(hub.lat).toFixed(1)})`} style={`--ac-i:${i}`}>
+              <circle data-ac-hubs-ring r="22" />
+              <circle data-ac-hubs-core r="9" />
+              <text x={hub.lon > 78 ? 20 : -20} y="7" text-anchor={hub.lon > 78 ? "start" : "end"}>{hub.city}</text>
+            </g>
+          ))}
+        </svg>
+      </div>
+
+      <div data-ac-hubs-side>
+        <div data-ac-hubs-tabs role="tablist" aria-label="Talent hubs">
+          {hubs.map((hub, i) => (
+            <button
+              type="button"
+              role="tab"
+              id={`${id}-tab-${hub.key}`}
+              aria-controls={`${id}-panel-${hub.key}`}
+              aria-selected={i === 0 ? "true" : "false"}
+              tabindex={i === 0 ? 0 : -1}
+              data-ac-hubs-tab={hub.key}
+            >
+              {hub.city}
+            </button>
+          ))}
+        </div>
+
+        <div data-ac-hubs-panels>
+          {hubs.map((hub, i) => (
+            <div
+              role="tabpanel"
+              id={`${id}-panel-${hub.key}`}
+              aria-labelledby={`${id}-tab-${hub.key}`}
+              data-ac-hubs-panel={hub.key}
+              hidden={i !== 0}
+            >
+              <p data-ac-hubs-pool>{hub.pool}</p>
+              <p data-ac-hubs-pool-label class="mono-label-sm">{hub.poolLabel}</p>
+              <p data-ac-hubs-line>{hub.line}</p>
+              <ul data-ac-hubs-strengths aria-label={`${hub.city}: strengths`}>
+                {hub.strengths.map((s) => <li>{s}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <p data-ac-hubs-note class="mono-label-sm">{note}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-hubs]").forEach((section) => {
+    toggleInView(section);
+
+    const tabs = Array.from(section.querySelectorAll<HTMLButtonElement>("[data-ac-hubs-tab]"));
+    const panels = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-hubs-panel]"));
+
+    const select = (key: string, focus = false) => {
+      section.dataset.hub = key;
+      tabs.forEach((tab) => {
+        const on = tab.dataset.acHubsTab === key;
+        tab.setAttribute("aria-selected", on ? "true" : "false");
+        tab.tabIndex = on ? 0 : -1;
+        if (on && focus) tab.focus();
+      });
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.acHubsPanel !== key;
+      });
+    };
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => select(tab.dataset.acHubsTab!));
+      tab.addEventListener("keydown", (e) => {
+        const to =
+          e.key === "ArrowRight" || e.key === "ArrowDown" ? (i + 1) % tabs.length
+          : e.key === "ArrowLeft" || e.key === "ArrowUp" ? (i - 1 + tabs.length) % tabs.length
+          : e.key === "Home" ? 0
+          : e.key === "End" ? tabs.length - 1
+          : -1;
+        if (to < 0) return;
+        e.preventDefault();
+        select(tabs[to].dataset.acHubsTab!, true);
+      });
+    });
+
+    /* The pins choose too, for a pointer. */
+    section.querySelectorAll<SVGGElement>("[data-ac-hubs-pin]").forEach((pin) => {
+      pin.addEventListener("click", () => select(pin.dataset.acHubsPin!));
+    });
+  });
+</script>

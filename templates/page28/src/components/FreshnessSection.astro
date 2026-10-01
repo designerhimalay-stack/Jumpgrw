@@ -1,0 +1,231 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* Freshness, on the dark tone. Column 1: how many tables are inside their
+   promise, the month's record, and what just happened. Columns 2–4: one
+   card per table, each a freshness tank that drains as the data ages
+   toward its SLA and refills when a load lands, with the table's age, its
+   status and a sparkline of rows per load. While the section is on screen
+   the clock runs: tables reload on their schedules, and one load runs late,
+   so its tank empties, the card turns amber, the count drops, and the late
+   load then lands and it recovers. The clock stops off screen and resets
+   on the way back. Text changes in fixed cells and the tanks move by
+   transform, so nothing shifts. Without the script, or under reduced
+   motion, every table shows inside its SLA. See docs/sections.md. */
+
+interface Table {
+  name: string;
+  layer: "bronze" | "silver" | "gold";
+  /** Minutes. */
+  sla: number;
+  every: number;
+  age: number;
+  /** Its next load lands this many minutes late, once. */
+  late?: number;
+  rows: number[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  tables: Table[];
+  /** Simulated minutes per real second. */
+  speed: number;
+  record: { label: string; value: string };
+  notes: { calm: string; stale: string; back: string };
+  status: { fresh: string; stale: string; back: string };
+  footnote: string;
+}
+
+const { id, eyebrow, headline, accent, lede, tables, speed, record, notes, status, footnote } = Astro.props;
+
+const age = (m: number) => {
+  const r = Math.round(m);
+  return r < 60 ? `${r}m` : `${Math.floor(r / 60)}h ${String(r % 60).padStart(2, "0")}m`;
+};
+const sla = (m: number) => (m < 60 ? `${m}m` : `${m / 60}h`);
+const k = (n: number) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(1)}k` : String(n));
+const spark = (rows: number[]) => {
+  const lo = Math.min(...rows);
+  const hi = Math.max(...rows);
+  return rows
+    .map((v, i) => `${i === 0 ? "M" : "L"}${((i / (rows.length - 1)) * 100).toFixed(1)} ${(26 - ((v - lo) / (hi - lo || 1)) * 22).toFixed(1)}`)
+    .join(" ");
+};
+---
+
+<section data-ac-sec="dark" data-ac-fresh id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-fresh-frame data-speed={speed}>
+      <Joints />
+
+      <aside data-ac-fresh-sum>
+        <p data-ac-fresh-count>
+          <span class="mono-label-sm">On SLA</span>
+          <b><span data-read="ok">{tables.length}</span><span>/ {tables.length}</span></b>
+        </p>
+        <p data-ac-fresh-record>
+          <span class="mono-label-sm">{record.label}</span>
+          <b>{record.value}</b>
+        </p>
+        <p data-ac-fresh-note data-note="calm" aria-live="polite">
+          <span data-n="calm">{notes.calm}</span>
+          <span data-n="stale">{notes.stale}</span>
+          <span data-n="back">{notes.back}</span>
+        </p>
+        <p class="mono-label-sm" data-ac-fresh-foot>{footnote}</p>
+      </aside>
+
+      <ul data-ac-fresh-cards>
+        {tables.map((t) => (
+          <li
+            data-ac-fresh-card
+            data-state="fresh"
+            data-layer={t.layer}
+            data-sla={t.sla}
+            data-every={t.every}
+            data-age={t.age}
+            data-late={t.late}
+            data-rows={t.rows.join(",")}
+            style={`--ac-fill:${Math.max(0, 1 - t.age / t.sla).toFixed(3)}`}
+          >
+            <p data-ac-fresh-name>
+              <b>{t.name}</b>
+              <span class="mono-label-sm">{t.layer}</span>
+            </p>
+            <div data-ac-fresh-body>
+              <p data-ac-fresh-status>
+                <i aria-hidden="true" />
+                <span data-s="fresh">{status.fresh}</span>
+                <span data-s="stale">{status.stale}</span>
+                <span data-s="back">{status.back}</span>
+              </p>
+              <p data-ac-fresh-age>
+                <span class="mono-label-sm">Age · SLA {sla(t.sla)}</span>
+                <b data-read="age">{age(t.age)}</b>
+              </p>
+              <span data-ac-fresh-tank aria-hidden="true"><i /></span>
+            </div>
+            <p data-ac-fresh-spark>
+              <svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true">
+                <path d={spark(t.rows)} />
+              </svg>
+              <span class="mono-label-sm"><span data-read="rows">{k(t.rows[t.rows.length - 1])}</span> rows</span>
+            </p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-fresh]").forEach((section) => {
+    const frame = section.querySelector<HTMLElement>("[data-ac-fresh-frame]")!;
+    const cards = [...section.querySelectorAll<HTMLElement>("[data-ac-fresh-card]")];
+    const okEl = section.querySelector<HTMLElement>('[data-read="ok"]')!;
+    const note = section.querySelector<HTMLElement>("[data-ac-fresh-note]")!;
+    const speed = Number(frame.dataset.speed);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const fmtAge = (m: number) => {
+      const r = Math.floor(m);
+      return r < 60 ? `${r}m` : `${Math.floor(r / 60)}h ${String(r % 60).padStart(2, "0")}m`;
+    };
+    const fmtRows = (n: number) =>
+      n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(1)}k` : String(n);
+    const sparkPath = (rows: number[]) => {
+      const lo = Math.min(...rows);
+      const hi = Math.max(...rows);
+      return rows
+        .map((v, i) => `${i === 0 ? "M" : "L"}${((i / (rows.length - 1)) * 100).toFixed(1)} ${(26 - ((v - lo) / (hi - lo || 1)) * 22).toFixed(1)}`)
+        .join(" ");
+    };
+
+    type Live = { el: HTMLElement; sla: number; every: number; age: number; late: number; rows: number[]; backUntil: number };
+    let live: Live[] = [];
+    let raf = 0;
+    let last = 0;
+    let clock = 0;
+
+    const reset = () => {
+      clock = 0;
+      live = cards.map((el) => ({
+        el,
+        sla: Number(el.dataset.sla),
+        every: Number(el.dataset.every),
+        age: Number(el.dataset.age),
+        late: Number(el.dataset.late ?? 0),
+        rows: (el.dataset.rows ?? "").split(",").map(Number),
+        backUntil: 0,
+      }));
+    };
+
+    const paint = () => {
+      let ok = 0;
+      let anyStale = false;
+      let anyBack = false;
+      live.forEach((t) => {
+        const stale = t.age >= t.sla;
+        const back = !stale && clock < t.backUntil;
+        t.el.dataset.state = stale ? "stale" : back ? "back" : "fresh";
+        t.el.style.setProperty("--ac-fill", Math.max(0, 1 - t.age / t.sla).toFixed(3));
+        t.el.querySelector<HTMLElement>('[data-read="age"]')!.textContent = fmtAge(t.age);
+        if (!stale) ok += 1;
+        anyStale ||= stale;
+        anyBack ||= back;
+      });
+      okEl.textContent = String(ok);
+      note.dataset.note = anyStale ? "stale" : anyBack ? "back" : "calm";
+    };
+
+    const load = (t: Live) => {
+      const wasStale = t.age >= t.sla;
+      t.age = 0;
+      t.late = 0;
+      if (wasStale) t.backUntil = clock + speed * 3.5;
+      t.rows.push(t.rows.shift()!);
+      t.el.querySelector("svg path")!.setAttribute("d", sparkPath(t.rows));
+      t.el.querySelector<HTMLElement>('[data-read="rows"]')!.textContent = fmtRows(t.rows[t.rows.length - 1]);
+    };
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.1, (now - last) / 1000) * speed;
+      last = now;
+      clock += dt;
+      live.forEach((t) => {
+        t.age += dt;
+        if (t.age >= t.every + t.late) load(t);
+      });
+      paint();
+      raf = requestAnimationFrame(tick);
+    };
+
+    const start = () => {
+      cancelAnimationFrame(raf);
+      reset();
+      paint();
+      last = performance.now();
+      raf = requestAnimationFrame(tick);
+    };
+
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        if (reduced) return;
+        if (entry.isIntersecting) start();
+        else cancelAnimationFrame(raf);
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

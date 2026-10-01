@@ -1,0 +1,144 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* What drives the prediction. The header splits around a photo of an
+   engineer at a chalkboard. Under it, one frame in two halves. Columns
+   1–2: feature importance across the model, a horizontal bar per feature,
+   growing in turn as the section arrives. Columns 3–4: one prediction
+   explained as a waterfall on a 0–1 score axis: from the average
+   customer's score, each input pushes it up (blue) or down (ink), segment
+   by segment, to the final score, with the flagging threshold ruled
+   through it. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  globalTitle: string;
+  globalCaption: string;
+  /** How the importances were measured, under the bars. */
+  globalNote: string;
+  features: { name: string; value: number }[];
+  localTitle: string;
+  base: number;
+  baseLabel: string;
+  contributions: { name: string; value: number }[];
+  threshold: number;
+  resultLabel: string;
+  verdict: string;
+}
+
+const {
+  id,
+  eyebrow,
+  headline,
+  accent,
+  lede,
+  media,
+  globalTitle,
+  globalCaption,
+  globalNote,
+  features,
+  localTitle,
+  base,
+  baseLabel,
+  contributions,
+  threshold,
+  resultLabel,
+  verdict,
+} = Astro.props;
+
+const top = Math.max(...features.map((x) => x.value));
+let running = base;
+const steps = contributions.map((c) => {
+  const from = running;
+  running += c.value;
+  return { ...c, from, to: running };
+});
+const result = running;
+const sign = (v: number) => (v >= 0 ? `+${v.toFixed(2)}` : `−${Math.abs(v).toFixed(2)}`);
+const axis = [0, 0.25, 0.5, 0.75, 1];
+---
+
+<section data-ac-sec="light" data-ac-explain id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div data-ac-sec-frame data-ac-explain-frame>
+      <Joints />
+
+      <div data-ac-explain-global>
+        <p data-ac-explain-head>
+          <span>{globalTitle}</span>
+          <span class="mono-label-sm">{globalCaption}</span>
+        </p>
+        <ol data-ac-explain-bars>
+          {features.map((x, i) => (
+            <li style={`--ac-v:${x.value / top};--ac-i:${i}`}>
+              <span data-ac-explain-name>{x.name}</span>
+              <span data-ac-explain-track aria-hidden="true"><i /></span>
+              <span data-ac-explain-num>{x.value.toFixed(3)}</span>
+            </li>
+          ))}
+        </ol>
+        <p class="mono-label-sm" data-ac-explain-note>{globalNote}</p>
+      </div>
+
+      <div data-ac-explain-local>
+        <p data-ac-explain-head>
+          <span>{localTitle}</span>
+          <span class="mono-label-sm">Flag at {threshold.toFixed(2)}</span>
+        </p>
+        <ol data-ac-explain-fall style={`--ac-th:${threshold}`}>
+          <li data-kind="base" style={`--ac-i:0;--ac-end:${base}`}>
+            <span data-ac-explain-name>{baseLabel}</span>
+            <span data-ac-explain-lane>
+              <i style={`--ac-from:0;--ac-to:${base}`} />
+              <b style={`--ac-at:${base}`}>{base.toFixed(2)}</b>
+            </span>
+          </li>
+          {steps.map((s, i) => (
+            <li data-kind={s.value >= 0 ? "up" : "down"} style={`--ac-i:${i + 1};--ac-end:${s.to}`}>
+              <span data-ac-explain-name>{s.name}</span>
+              <span data-ac-explain-lane>
+                <i style={`--ac-from:${Math.min(s.from, s.to)};--ac-to:${Math.max(s.from, s.to)}`} />
+                <b style={`--ac-at:${Math.max(s.from, s.to)}`}>{sign(s.value)}</b>
+              </span>
+            </li>
+          ))}
+          <li data-kind="result" style={`--ac-i:${steps.length + 1}`}>
+            <span data-ac-explain-name>{resultLabel}</span>
+            <span data-ac-explain-lane>
+              <i style={`--ac-from:0;--ac-to:${result}`} />
+              <b style={`--ac-at:${result}`}>{result.toFixed(2)}</b>
+            </span>
+          </li>
+        </ol>
+        <p data-ac-explain-axis aria-hidden="true">
+          <span />
+          <span data-ac-explain-scale>
+            {axis.map((a) => <span class="mono-label-sm" style={`--ac-at:${a}`}>{a}</span>)}
+          </span>
+        </p>
+        <p data-ac-explain-verdict>
+          <i aria-hidden="true" />
+          {verdict}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-explain]").forEach(toggleInView);
+</script>

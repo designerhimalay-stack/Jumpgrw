@@ -1,0 +1,191 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import MetroSection from "@/components/MetroSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import OtaSection from "@/components/OtaSection.astro";
+import PageHero from "@/components/PageHero.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import TwoAppsSection from "@/components/TwoAppsSection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p24-hero.jpg";
+import otaPhoto from "@/assets/pages/p24-ota.jpg";
+import faqPhoto from "@/assets/pages/p24-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* React Native developers. The wallet screens, the update fleet and its
+   timings are illustrative, and the FAQ answers are drafts. Have them
+   checked before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "Mobile", "React Native"],
+  headline: ["React Native", "developers."],
+  accent: 1,
+  lede: "One team, one codebase, two native apps: developers who ship to iOS and Android together, and fix in hours, not store cycles.",
+  ctas: [
+    { label: "Hire React Native devs", href: "#contact", arrow: "diagonal" },
+    { label: "See one codebase", href: "#two-apps", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A developer tries a build on his phone, holding it in both hands.",
+  specs: [
+    { label: "Ships to", value: "iOS and Android" },
+    { label: "Written in", value: "TypeScript" },
+    { label: "Toolchain", value: "Expo or bare" },
+    { label: "Fixes", value: "Over the air" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Does a React Native app feel native?",
+    a: "Yes. It draws each platform’s own controls, and our developers drop into Swift or Kotlin when a screen needs it.",
+  },
+  {
+    q: "What can an over-the-air update change?",
+    a: "JavaScript and assets: fixes, copy, layouts. Anything that touches native code still goes through the stores.",
+  },
+  {
+    q: "Expo or a bare project?",
+    a: "Expo for most new apps; bare, or a mix, when you need custom native modules. We work in either.",
+  },
+  {
+    q: "Can you take over an app we already have?",
+    a: "Yes. We audit it, upgrade React Native a version at a time, and add tests before we change features.",
+  },
+];
+---
+
+<Layout
+  title={`React Native developers · ${BRAND.name}`}
+  description="React Native developers who ship one codebase to iOS and Android, with over-the-air fixes and the full ecosystem behind them."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <TwoAppsSection
+      id="two-apps"
+      eyebrow="One codebase"
+      headline={["Write it once.", "Ship it twice."]}
+      accent={1}
+      lede="One React Native codebase draws real native controls on both platforms. Flip a switch: one prop changes, both apps follow."
+      file="App.tsx"
+      themeLabel="Theme"
+      langLabel="Language"
+      iosLabel="iOS"
+      androidLabel="Android"
+      screens={{
+        en: {
+          title: "Wallet",
+          balanceLabel: "Balance",
+          balance: "$4,280.50",
+          send: "Send",
+          request: "Request",
+          recent: "Recent",
+          rows: [
+            { name: "Coffee", note: "Today, 8:12", amount: "−$4.80" },
+            { name: "Groceries", note: "Yesterday", amount: "−$62.15" },
+            { name: "Salary", note: "Sep 30", amount: "+$3,200" },
+          ],
+          tabs: ["Home", "Cards", "Activity", "Profile"],
+        },
+        es: {
+          title: "Cartera",
+          balanceLabel: "Saldo",
+          balance: "4.280,50 US$",
+          send: "Enviar",
+          request: "Pedir",
+          recent: "Recientes",
+          rows: [
+            { name: "Café", note: "Hoy, 8:12", amount: "−4,80 US$" },
+            { name: "Compras", note: "Ayer", amount: "−62,15 US$" },
+            { name: "Nómina", note: "30 sept.", amount: "+3.200 US$" },
+          ],
+          tabs: ["Inicio", "Tarjetas", "Actividad", "Perfil"],
+        },
+      }}
+    />
+    <OtaSection
+      id="ota"
+      eyebrow="Over the air"
+      headline={["A fix in hours,", "not store days."]}
+      lede="JavaScript fixes ship as over-the-air updates: each phone picks up the new bundle the next time the app opens. No store review."
+      media={{ image: otaPhoto, alt: "Two developers lean in over a laptop, reviewing code together.", focus: "60% 40%" }}
+      channel="Production channel"
+      from="2.3.0"
+      to="2.3.1"
+      devices={120}
+      holdouts={7}
+      shareLabel="on 2.3.1 within a day"
+      routes={[
+        { label: "Store release", value: "1–3 days", note: "Build, review, then users update" },
+        { label: "Over the air", value: "Next launch", note: "For JavaScript and asset changes", featured: true },
+      ]}
+    />
+    <MetroSection
+      id="ecosystem"
+      eyebrow="The ecosystem"
+      headline={["Every stop,", "both stores."]}
+      accent={1}
+      lede="The tools our developers ship with, as one network: from the first type to the App Store and Google Play."
+      lines={[
+        {
+          key: "app",
+          name: "App line",
+          note: "Code to both stores",
+          stations: [
+            { slug: "typescript", name: "TypeScript", role: "Types", x: 80, y: 260 },
+            { slug: "react", name: "React", role: "UI", x: 240, y: 260, label: "ne" },
+            { slug: "expo", name: "Expo", role: "Toolchain", x: 400, y: 260 },
+            { slug: "jest", name: "Jest", role: "Unit tests", x: 560, y: 260 },
+            { slug: "testinglibrary", name: "Testing Library", role: "UI tests", x: 720, y: 260 },
+            { slug: "fastlane", name: "Fastlane", role: "Release", x: 880, y: 260, label: "nw" },
+            { slug: "apple", name: "iOS app", role: "App Store", x: 1120, y: 140, terminus: true },
+            { slug: "android", name: "Android app", role: "Google Play", x: 1120, y: 380, terminus: true },
+          ],
+        },
+        {
+          key: "data",
+          name: "Data line",
+          note: "State and services",
+          stations: [
+            { slug: "redux", name: "Redux", role: "App state", x: 240, y: 96, label: "right" },
+            { slug: "react", name: "React", role: "Change here", x: 240, y: 260, echo: true },
+            { slug: "reactquery", name: "React Query", role: "Server state", x: 400, y: 400 },
+            { slug: "graphql", name: "GraphQL", role: "APIs", x: 550, y: 400 },
+            { slug: "firebase", name: "Firebase", role: "Push and auth", x: 700, y: 400 },
+          ],
+        },
+        {
+          key: "ops",
+          name: "Ops line",
+          note: "Build and watch",
+          stations: [
+            { slug: "githubactions", name: "GitHub Actions", role: "CI builds", x: 880, y: 96, label: "right" },
+            { slug: "fastlane", name: "Fastlane", role: "Change here", x: 880, y: 260, echo: true },
+            { slug: "sentry", name: "Sentry", role: "Crash reports", x: 880, y: 424 },
+          ],
+        },
+      ]}
+    />
+    <FaqSection
+      eyebrow="React Native questions"
+      headline={["Questions,", "before you ship."]}
+      accent={1}
+      cta="Talk to a mobile lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "A developer writes code at a desk with two screens in a busy studio.", focus: "40% 45%" }}
+    />
+    <CtaSection
+      eyebrow="Two stores, one team"
+      headline={["Two apps.", "One team."]}
+      body="Tell us about your app and how often you release. We’ll staff React Native developers who ship to iOS and Android together."
+      cta="Plan my mobile team"
+    />
+  </main>
+  <Footer />
+</Layout>

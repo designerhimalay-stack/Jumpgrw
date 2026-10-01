@@ -1,0 +1,183 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* Ramp to scale. One frame: a headcount counter over a stepped line of
+   headcount against months, 0 to 18, with the gridlines at the headcounts
+   that matter (25, 80, 150); under the plot, a rail of milestones, each at
+   its month, from the entity to the transfer option. As the frame arrives
+   the line is uncovered left to right (a clip, so nothing moves), the
+   milestone dots light as the line passes them, and the counter runs from
+   0 to 150 in step with it; leaving resets it. Without the script, or under
+   reduced motion, the finished ramp shows. Phones: a shorter plot and the
+   milestones as a two-column list. See docs/sections.md. */
+
+interface Step {
+  /** Month, 0–`months`. */
+  m: number;
+  /** Headcount from this month on. */
+  n: number;
+}
+
+interface Milestone {
+  m: number;
+  title: string;
+  note: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  months: number;
+  steps: Step[];
+  ticks: number[];
+  milestones: Milestone[];
+  counterLabel: string;
+  monthLabel: string;
+  note: string;
+}
+
+const { id, eyebrow, headline, accent, lede, months, steps, ticks, milestones, counterLabel, monthLabel, note } =
+  Astro.props;
+
+const top = Math.max(...steps.map((s) => s.n));
+const W = 1000;
+const H = 360;
+const x = (m: number) => (m / months) * W;
+const y = (n: number) => H - (n / top) * (H - 12);
+const headAt = (m: number) => steps.filter((s) => s.m <= m).reduce((_, s) => s.n, 0);
+
+let d = `M0 ${H}`;
+steps.forEach((s) => {
+  d += ` H${x(s.m).toFixed(1)} V${y(s.n).toFixed(1)}`;
+});
+d += ` H${W}`;
+const area = `${d} V${H} H0 Z`;
+const xTicks = Array.from({ length: Math.floor(months / 3) + 1 }, (_, i) => i * 3);
+const final = steps[steps.length - 1].n;
+---
+
+<section data-ac-sec="light" data-ac-ramp id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <figure
+      data-ac-sec-frame
+      data-ac-ramp-frame
+      data-steps={JSON.stringify(steps)}
+      data-months={months}
+      aria-label={`Headcount plan: ${steps.map((s) => `${s.n} by month ${s.m}`).join(", ")}.`}
+    >
+      <Joints />
+
+      <div data-ac-ramp-top>
+        <p data-ac-ramp-count aria-hidden="true">
+          <b data-ac-ramp-n>{final}</b>
+          <span class="mono-label-sm">{counterLabel}</span>
+        </p>
+        <p data-ac-ramp-month class="mono-label-sm" aria-hidden="true">
+          {monthLabel} <b data-ac-ramp-m>{months}</b> / {months}
+        </p>
+      </div>
+
+      <div data-ac-ramp-plot aria-hidden="true">
+        <div data-ac-ramp-y>
+          {ticks.map((t) => (
+            <span style={`bottom:${((t / top) * (H - 12) / H) * 100}%`}>
+              <b>{t}</b>
+            </span>
+          ))}
+        </div>
+        <div data-ac-ramp-canvas>
+          {xTicks.map((m) => <i data-ac-ramp-vx style={`left:${(m / months) * 100}%`}></i>)}
+          {ticks.map((t) => <i data-ac-ramp-hy style={`bottom:${((t / top) * (H - 12) / H) * 100}%`}></i>)}
+          <div data-ac-ramp-reveal>
+            <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+              <path d={area} data-ac-ramp-area />
+              <path d={d} data-ac-ramp-line vector-effect="non-scaling-stroke" />
+            </svg>
+          </div>
+          {milestones.map((ms, i) => (
+            <i
+              data-ac-ramp-dot
+              style={`left:${(ms.m / months) * 100}%;bottom:${((headAt(ms.m) / top) * (H - 12) / H) * 100}%;--ac-t:${ms.m / months}`}
+            >
+              <b>{i + 1}</b>
+            </i>
+          ))}
+        </div>
+        <div data-ac-ramp-x>
+          {xTicks.map((m) => (
+            <span style={`left:${(m / months) * 100}%`}>M{m}</span>
+          ))}
+        </div>
+      </div>
+
+      <ol data-ac-ramp-rail>
+        {milestones.map((ms, i) => (
+          <li style={`--ac-x:${(ms.m / months) * 100}%;--ac-t:${ms.m / months}`} data-row={i % 2}>
+            <span data-ac-ramp-badge aria-hidden="true">{i + 1}</span>
+            <span class="mono-label-sm" data-ac-ramp-when>Month {ms.m}</span>
+            <b>{ms.title}</b>
+            <span data-ac-ramp-note>{ms.note}</span>
+          </li>
+        ))}
+      </ol>
+
+      <figcaption data-ac-ramp-caption class="mono-label-sm">{note}</figcaption>
+    </figure>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  const DURATION = 2600;
+
+  document.querySelectorAll<HTMLElement>("[data-ac-ramp]").forEach((section) => {
+    toggleInView(section);
+
+    const frame = section.querySelector<HTMLElement>("[data-ac-ramp-frame]")!;
+    const nEl = section.querySelector<HTMLElement>("[data-ac-ramp-n]")!;
+    const mEl = section.querySelector<HTMLElement>("[data-ac-ramp-m]")!;
+    const steps = JSON.parse(frame.dataset.steps!) as { m: number; n: number }[];
+    const months = Number(frame.dataset.months);
+    const final = steps[steps.length - 1].n;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let raf = 0;
+
+    const show = (t: number) => {
+      const m = t * months;
+      nEl.textContent = String(steps.filter((s) => s.m <= m).reduce((_, s) => s.n, 0));
+      mEl.textContent = String(Math.floor(m));
+    };
+
+    new MutationObserver(() => {
+      cancelAnimationFrame(raf);
+      if (reduce.matches) {
+        show(1);
+        return;
+      }
+      if (!section.hasAttribute("data-ac-in")) {
+        show(0);
+        return;
+      }
+      const start = performance.now();
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - start) / DURATION);
+        show(t);
+        if (t < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    }).observe(section, { attributes: true, attributeFilter: ["data-ac-in"] });
+
+    if (!reduce.matches && !section.hasAttribute("data-ac-in")) show(0);
+    else nEl.textContent = String(final);
+  });
+</script>

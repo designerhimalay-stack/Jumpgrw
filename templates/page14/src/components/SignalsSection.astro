@@ -1,0 +1,254 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* A signals graph, live. Along the top of the frame, the one source you
+   can change, written as code: seats.set(n), with a slider and − / +
+   buttons. Under it, the reactive graph on the page's four columns:
+   signals, then two layers of computed values, then the view (an effect).
+   Changing seats pulses every node that depends on it, layer by layer, the
+   edges into them flowing, and each shows its new value; the nodes that
+   don't depend on it (currency and its label) stay still. Desktop reads
+   left to right; phones turn the graph to read top down. Every value is
+   worked out on the server for the starting count, so without the script
+   the graph shows a consistent state. See docs/sections.md. */
+
+type Kind = "signal" | "computed" | "effect";
+
+interface GraphNode {
+  key: string;
+  kind: Kind;
+  name: string;
+  /** Short formula under the name. */
+  expr?: string;
+  /** Column, left to right: 0 signals … 3 the view. */
+  layer: number;
+  reads: string[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  nodes: GraphNode[];
+  seats: { start: number; min: number; max: number; price: number; bulkFrom: number; bulkOff: number };
+  currency: string;
+  labels: { updated: string; untouched: string; view: string };
+}
+
+const { id, eyebrow, headline, accent, lede, nodes, seats, currency, labels } = Astro.props;
+
+/* Values for the starting count; the script recomputes the same formulas. */
+const money = (n: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+const valuesFor = (s: number): Record<string, string> => {
+  const subtotal = s * seats.price;
+  const discount = s >= seats.bulkFrom ? seats.bulkOff : 0;
+  const total = subtotal * (1 - discount);
+  return {
+    seats: String(s),
+    currency: `"${currency}"`,
+    subtotal: money(subtotal),
+    discount: `${Math.round(discount * 100)}%`,
+    total: money(total),
+    perSeat: money(total / s),
+    label: `"in ${currency}"`,
+    view: labels.view,
+  };
+};
+const start = valuesFor(seats.start);
+
+/* Which nodes depend on seats, directly or not. */
+const byKey = Object.fromEntries(nodes.map((n) => [n.key, n]));
+const dependsOnSeats = (key: string): boolean =>
+  key === "seats" || byKey[key].reads.some((r) => dependsOnSeats(r));
+
+/* Positions in two orientations. Across: layer is the column, the nodes of
+   a layer share its height. Down (phones): layer is the row. */
+const layers = [0, 1, 2, 3].map((l) => nodes.filter((n) => n.layer === l));
+const place = nodes.map((n) => {
+  const group = layers[n.layer];
+  const slot = group.indexOf(n);
+  return { key: n.key, a: (n.layer + 0.5) / 4, b: (slot + 0.5) / group.length };
+});
+const at = Object.fromEntries(place.map((p) => [p.key, p]));
+
+/* Edges in a 1000 × 1000 box, stretched to the canvas; cards are 19% wide
+   and 22% tall across, 30% wide and 17% tall down. */
+const edges = nodes.flatMap((n) =>
+  n.reads.map((from) => {
+    const f = at[from];
+    const t = at[n.key];
+    const x1 = f.a * 1000 + 95;
+    const x2 = t.a * 1000 - 95;
+    const y1 = f.b * 1000;
+    const y2 = t.b * 1000;
+    const mx = (x1 + x2) / 2;
+    const across = `M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`;
+    const dx1 = f.b * 1000;
+    const dx2 = t.b * 1000;
+    const dy1 = f.a * 1000 + 85;
+    const dy2 = t.a * 1000 - 85;
+    const my = (dy1 + dy2) / 2;
+    const down = `M${dx1} ${dy1} C${dx1} ${my} ${dx2} ${my} ${dx2} ${dy2}`;
+    return { from, to: n.key, across, down, live: dependsOnSeats(n.key) && dependsOnSeats(from) };
+  }),
+);
+---
+
+<section data-ac-sec="light" data-ac-signals id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div
+      data-ac-sec-frame
+      data-ac-signals-frame
+      data-ac-sec-rise
+      data-price={seats.price}
+      data-bulk-from={seats.bulkFrom}
+      data-bulk-off={seats.bulkOff}
+      data-currency={currency}
+    >
+      <Joints />
+
+      <div data-ac-signals-set>
+        <label for={`${id}-seats`}>
+          <code><span data-tok="name">seats</span>.<span data-tok="fn">set</span>(</code>
+        </label>
+        <button type="button" data-ac-signals-step="-1" aria-label="One seat fewer">−</button>
+        <input
+          id={`${id}-seats`}
+          type="range"
+          min={seats.min}
+          max={seats.max}
+          value={seats.start}
+          data-ac-signals-range
+        />
+        <button type="button" data-ac-signals-step="1" aria-label="One seat more">+</button>
+        <code data-ac-signals-out><output for={`${id}-seats`} data-ac-signals-value>{seats.start}</output>)</code>
+      </div>
+
+      <div data-ac-signals-canvas>
+        {(["across", "down"] as const).map((dir) => (
+          <svg data-ac-signals-edges data-dir={dir} viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+            {edges.map((e) => (
+              <path d={e[dir]} data-from={e.from} data-to={e.to} data-live={e.live || undefined} />
+            ))}
+          </svg>
+        ))}
+
+        <ol data-ac-signals-nodes>
+          {nodes.map((n) => (
+            <li
+              data-ac-signals-node
+              data-key={n.key}
+              data-kind={n.kind}
+              data-depth={n.layer}
+              data-live={dependsOnSeats(n.key) || undefined}
+              style={`--ac-a:${at[n.key].a};--ac-b:${at[n.key].b}`}
+            >
+              <span data-ac-signals-kind class="mono-label-sm">{n.kind}</span>
+              <code data-ac-signals-name>{n.name}</code>
+              {n.expr && <code data-ac-signals-expr>{n.expr}</code>}
+              <b data-ac-signals-val>{start[n.key]}</b>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <p data-ac-signals-foot class="mono-label-sm">
+        <span><i data-swatch="live" aria-hidden="true" />{labels.updated}</span>
+        <span><i data-swatch="still" aria-hidden="true" />{labels.untouched}</span>
+      </p>
+      <p class="sr-only" aria-live="polite" data-ac-signals-status></p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-signals]").forEach((section) => {
+    toggleInView(section);
+
+    const frame = section.querySelector<HTMLElement>("[data-ac-signals-frame]")!;
+    const range = section.querySelector<HTMLInputElement>("[data-ac-signals-range]")!;
+    const out = section.querySelector<HTMLElement>("[data-ac-signals-value]")!;
+    const status = section.querySelector<HTMLElement>("[data-ac-signals-status]")!;
+    const nodes = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-signals-node]"));
+    const edges = Array.from(section.querySelectorAll<SVGPathElement>("[data-ac-signals-edges] path[data-live]"));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const price = Number(frame.dataset.price);
+    const bulkFrom = Number(frame.dataset.bulkFrom);
+    const bulkOff = Number(frame.dataset.bulkOff);
+    const money = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: frame.dataset.currency,
+      maximumFractionDigits: 0,
+    });
+    const STEP = reduced ? 0 : 150;
+    let timers: number[] = [];
+
+    const values = (s: number): Record<string, string> => {
+      const subtotal = s * price;
+      const discount = s >= bulkFrom ? bulkOff : 0;
+      const total = subtotal * (1 - discount);
+      return {
+        seats: String(s),
+        subtotal: money.format(subtotal),
+        discount: `${Math.round(discount * 100)}%`,
+        total: money.format(total),
+        perSeat: money.format(total / s),
+      };
+    };
+
+    /* seats.set(n): the live nodes pulse in turn, layer by layer. */
+    const set = (s: number, announce = true) => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      const next = values(s);
+      out.textContent = String(s);
+      const live = nodes.filter((n) => n.dataset.live !== undefined);
+      live.forEach((n) => n.removeAttribute("data-pulse"));
+      edges.forEach((e) => e.removeAttribute("data-flow"));
+      void frame.offsetWidth;
+
+      live.forEach((n) => {
+        const depth = Number(n.dataset.depth);
+        timers.push(
+          window.setTimeout(() => {
+            const val = n.querySelector<HTMLElement>("[data-ac-signals-val]")!;
+            const key = n.dataset.key ?? "";
+            if (key in next) val.textContent = next[key];
+            if (!reduced) n.setAttribute("data-pulse", "");
+            edges.filter((e) => e.dataset.to === key).forEach((e) => !reduced && e.setAttribute("data-flow", ""));
+          }, depth * STEP),
+        );
+      });
+      if (announce) status.textContent = `seats set to ${s}. Total ${next.total}, ${next.perSeat} per seat.`;
+    };
+
+    range.addEventListener("input", () => set(Number(range.value)));
+
+    /* On each arrival, the current value propagates once, so the graph
+       shows how it works before anyone touches it. */
+    new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) timers.push(window.setTimeout(() => set(Number(range.value), false), 700));
+      },
+      { threshold: 0, rootMargin: "-20% 0px -20% 0px" },
+    ).observe(frame);
+    section.querySelectorAll<HTMLButtonElement>("[data-ac-signals-step]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const v = Math.min(Number(range.max), Math.max(Number(range.min), Number(range.value) + Number(b.dataset.acSignalsStep)));
+        range.value = String(v);
+        set(v);
+      }),
+    );
+  });
+</script>

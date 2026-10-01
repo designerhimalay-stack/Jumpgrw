@@ -1,0 +1,194 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* A short flight away, on the dark tone. Columns 1–3: a map drawn from
+   rough coordinates, the Canadian hubs along the top and US cities below;
+   choose a hub and its routes arc out to the cities, each marked with its
+   flight time, and a plane runs the arcs. Every hub's routes are always in
+   the drawing (only one set shows), so nothing moves. Column 4: a photo and
+   the chosen hub's routes as text. The plane pauses off screen and under
+   reduced motion. See docs/sections.md. */
+
+interface Place {
+  name: string;
+  lon: number;
+  lat: number;
+  /** Set the label to the right of the dot rather than under it. */
+  side?: "right";
+}
+
+interface Hub extends Place {
+  routes: { to: string; time: string }[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  hubs: Hub[];
+  cities: Place[];
+  footnote: string;
+}
+
+const { id, eyebrow, headline, accent, lede, media, hubs, cities, footnote } = Astro.props;
+
+/* A plain equirectangular sketch on an 820 × 400 plane. */
+const W = 820;
+const px = (p: Place) => ({ x: 60 + ((p.lon + 126) / 58) * 700, y: 34 + ((51 - p.lat) / 22) * 340 });
+const cityAt = Object.fromEntries(cities.map((c) => [c.name, px(c)]));
+/* Where a city's name and, under it, its flight time go. */
+const labelAt = Object.fromEntries(
+  cities.map((c) => {
+    const p = px(c);
+    return [c.name, c.side === "right" ? { x: p.x + 10, y: p.y + 5, t: p.y + 22, anchor: "start" } : { x: p.x, y: p.y + 20, t: p.y + 38, anchor: "middle" }];
+  }),
+);
+const arc = (a: { x: number; y: number }, b: { x: number; y: number }) => {
+  const c = { x: (a.x + b.x) / 2, y: Math.min(a.y, b.y) - 40 - Math.abs(a.x - b.x) * 0.12 };
+  return { d: `M${a.x.toFixed(1)} ${a.y.toFixed(1)} Q${c.x.toFixed(1)} ${c.y.toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}` };
+};
+const slug = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\W+/g, "-");
+---
+
+<section data-ac-sec="dark" data-ac-flights id={id} data-hub={slug(hubs[0].name)}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-flights-frame>
+      <div data-ac-sec-frame data-ac-flights-map>
+        <Joints />
+        <div data-ac-flights-pick role="group" aria-label="Choose a Canadian hub">
+          {hubs.map((hub, i) => (
+            <button type="button" data-ac-flights-btn={slug(hub.name)} aria-pressed={i === 0 ? "true" : "false"}>
+              {hub.name}
+            </button>
+          ))}
+        </div>
+        <svg viewBox={`0 0 ${W} 400`} aria-hidden="true" data-ac-flights-svg>
+          {hubs.map((hub) => {
+            const from = px(hub);
+            return (
+              <g data-ac-flights-set={slug(hub.name)}>
+                {hub.routes.map((route, r) => {
+                  const to = cityAt[route.to];
+                  const a = arc(from, to);
+                  return (
+                    <g style={`--ac-r:${r}`}>
+                      <path data-ac-flights-arc d={a.d} pathLength="1" />
+                      <text data-ac-flights-time x={labelAt[route.to].x} y={labelAt[route.to].t} text-anchor={labelAt[route.to].anchor}>{route.time}</text>
+                    </g>
+                  );
+                })}
+                <circle data-ac-flights-plane r="5">
+                  <animateMotion dur={`${hub.routes.length * 2.2}s`} repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" path={arc(from, cityAt[hub.routes[0].to]).d} />
+                </circle>
+              </g>
+            );
+          })}
+          {cities.map((c) => {
+            const p = cityAt[c.name];
+            return (
+              <g data-ac-flights-city>
+                <circle cx={p.x} cy={p.y} r="4" />
+                <text x={labelAt[c.name].x} y={labelAt[c.name].y} text-anchor={labelAt[c.name].anchor}>{c.name}</text>
+              </g>
+            );
+          })}
+          {hubs.map((hub) => {
+            const p = px(hub);
+            return (
+              <g data-ac-flights-hub={slug(hub.name)}>
+                <circle cx={p.x} cy={p.y} r="8" />
+                <text x={p.x} y={p.y - 16}>{hub.name}</text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      <div data-ac-flights-side>
+        <div data-ac-flights-photo>
+          <Image
+            src={media.image}
+            alt={media.alt}
+            widths={[400, 700, 1000]}
+            sizes="(max-width: 991px) 100vw, 24vw"
+            quality={78}
+            style={media.focus ? `object-position:${media.focus}` : undefined}
+          />
+        </div>
+        <div data-ac-flights-lists>
+          {hubs.map((hub) => (
+            <div data-ac-flights-list={slug(hub.name)}>
+              <p class="mono-label-sm">From {hub.name}</p>
+              <ul>
+                {hub.routes.map((route) => (
+                  <li>
+                    <span>{route.to}</span>
+                    <b>{route.time}</b>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <p data-ac-flights-foot class="mono-label-sm">{footnote}</p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-flights]").forEach((section) => {
+    toggleInView(section);
+
+    const svg = section.querySelector<SVGSVGElement>("[data-ac-flights-svg]")!;
+    const buttons = Array.from(section.querySelectorAll<HTMLButtonElement>("[data-ac-flights-btn]"));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* The plane flies each of the chosen hub's routes in turn. */
+    const fly = (hub: string) => {
+      const set = svg.querySelector<SVGGElement>(`[data-ac-flights-set="${hub}"]`);
+      const motion = set?.querySelector("animateMotion");
+      const arcs = set ? Array.from(set.querySelectorAll<SVGPathElement>("[data-ac-flights-arc]")) : [];
+      if (!motion || !arcs.length) return;
+      let i = 0;
+      const dur = 2.2;
+      motion.setAttribute("dur", `${dur}s`);
+      motion.setAttribute("path", arcs[0].getAttribute("d") ?? "");
+      motion.addEventListener("repeatEvent", () => {
+        i = (i + 1) % arcs.length;
+        motion.setAttribute("path", arcs[i].getAttribute("d") ?? "");
+      });
+    };
+
+    buttons.forEach((b) =>
+      b.addEventListener("click", () => {
+        const hub = b.dataset.acFlightsBtn ?? "";
+        section.dataset.hub = hub;
+        buttons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      }),
+    );
+    buttons.forEach((b) => fly(b.dataset.acFlightsBtn ?? ""));
+
+    /* The planes only fly while the map is on screen. */
+    const sync = (on: boolean) => {
+      if (reduced || !on) svg.pauseAnimations();
+      else svg.unpauseAnimations();
+    };
+    sync(false);
+    new IntersectionObserver(([entry]) => sync(entry.isIntersecting)).observe(svg);
+  });
+</script>

@@ -1,0 +1,91 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* The roles, as a portrait strip, on the dark tone. The headline and lede
+   run across the top; under them one tall portrait per column of the page,
+   an engineer at work, the role set on the photo's foot. Pointing at a
+   portrait (or tabbing to it) slides its tools up over the photo; the
+   panel is always there, only its position changes, so nothing moves. The
+   portraits open upward in turn as the section arrives. See
+   docs/sections.md. */
+
+interface Role {
+  title: string;
+  line: string;
+  tools: string[];
+  media: SectionPhoto;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  roles: Role[];
+  footnote: string;
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, roles, footnote } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+---
+
+<section data-ac-sec="dark" data-ac-portraits id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <div data-ac-portraits-head>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-portraits-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+      <p data-ac-portraits-lede data-ac-sec-rise>{lede}</p>
+    </div>
+
+    <ul data-ac-portraits-strip>
+      {roles.map((role, i) => (
+        <li data-ac-portraits-card tabindex="0" style={`--ac-i:${i}`}>
+          <div data-ac-portraits-photo>
+            <Image
+              src={role.media.image}
+              alt={role.media.alt}
+              widths={[360, 600, 900]}
+              sizes="(max-width: 599px) 50vw, 25vw"
+              quality={76}
+              style={role.media.focus ? `object-position:${role.media.focus}` : undefined}
+            />
+          </div>
+          <div data-ac-portraits-caption>
+            <span data-ac-portraits-num class="mono-label-sm">{String(i + 1).padStart(2, "0")}</span>
+            <h3 data-ac-portraits-title>{role.title}</h3>
+            <p data-ac-portraits-line>{role.line}</p>
+            <ul data-ac-portraits-tools aria-label={`${role.title}: tools`}>
+              {role.tools.map((tool) => <li>{tool}</li>)}
+            </ul>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <p data-ac-portraits-foot class="mono-label-sm">{footnote}</p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-portraits]").forEach(toggleInView);
+</script>

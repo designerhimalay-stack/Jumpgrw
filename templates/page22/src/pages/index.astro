@@ -1,0 +1,135 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import ScreensSection from "@/components/ScreensSection.astro";
+import RolloutSection from "@/components/RolloutSection.astro";
+import DependencySection from "@/components/DependencySection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p22-hero.jpg";
+import screensPhoto from "@/assets/pages/p22-screens.jpg";
+import rolloutPhoto from "@/assets/pages/p22-rollout.jpg";
+import faqPhoto from "@/assets/pages/p22-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* Android developers. The device sizes are typical, the rollout's figures
+   (users, crash-free rate, ANR rate) are illustrative, and the FAQ answers
+   are drafts; have them checked before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "Mobile", "Android"],
+  headline: ["Android,", "done right."],
+  accent: 1,
+  lede: "Kotlin and Jetpack Compose engineers who build Android apps that feel right on every phone, foldable, tablet and watch your users own.",
+  ctas: [
+    { label: "Add Android developers", href: "#contact", arrow: "diagonal" },
+    { label: "See every screen", href: "#screens", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "An engineer checks her phone at a desk with two laptops open in a bright studio.",
+  specs: [
+    { label: "Language", value: "Kotlin & Compose" },
+    { label: "Devices", value: "Phone to Wear OS" },
+    { label: "Ships via", value: "Staged Play rollouts" },
+    { label: "Joins", value: "Your sprint, week one" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Kotlin only, or Java too?",
+    a: "Kotlin first. They maintain Java where it lives and migrate it when the change pays for itself.",
+  },
+  {
+    q: "Which devices do you test on?",
+    a: "A matrix of real phones, foldables and tablets across Android versions, plus a device lab in the cloud for the long tail.",
+  },
+  {
+    q: "Can they run our Play Console releases?",
+    a: "Yes: signing, tracks, staged rollouts, pre-launch reports and the policy updates that come with them.",
+  },
+  {
+    q: "Compose or Views?",
+    a: "New screens in Compose. Existing Views stay and interoperate until moving them is worth it.",
+  },
+];
+---
+
+<Layout
+  title={`Android developers · ${BRAND.name}`}
+  description="Kotlin and Jetpack Compose engineers who build Android apps for every phone, foldable, tablet and watch."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <ScreensSection
+      id="screens"
+      eyebrow="Every screen"
+      headline={["One app.", "Five shapes."]}
+      accent={1}
+      lede="The same Compose layout adapts to the window it gets: a list on a phone, list and detail on a foldable or tablet, one card on a watch."
+      media={{ image: screensPhoto, alt: "A developer in glasses tests an app on his phone at a desk with a laptop.", focus: "50% 35%" }}
+      devices={[
+        { kind: "phone", size: "6.1″", label: "Compact" },
+        { kind: "large", size: "6.7″", label: "Compact" },
+        { kind: "fold", size: "7.6″ open", label: "Medium" },
+        { kind: "tablet", size: "11″", label: "Expanded" },
+        { kind: "watch", size: "1.4″", label: "Wear OS" },
+      ]}
+    />
+    <RolloutSection
+      id="rollout"
+      eyebrow="Staged rollout"
+      headline={["Released slowly.", "Watched closely."]}
+      accent={1}
+      lede="Every release goes out in stages. The team promotes it only while crash and ANR rates stay well inside the line."
+      media={{ image: rolloutPhoto, alt: "An engineer in glasses tests an app on a phone in front of his monitors.", focus: "50% 45%" }}
+      release="Version 4.8.0 · production track"
+      installs={2400000}
+      stages={[
+        { share: 1, crash: 99.84, anr: 0.16 },
+        { share: 5, crash: 99.81, anr: 0.19 },
+        { share: 20, crash: 99.83, anr: 0.18 },
+        { share: 50, crash: 99.8, anr: 0.21 },
+        { share: 100, crash: 99.82, anr: 0.19 },
+      ]}
+      crashLine={99.5}
+      anrLine={0.47}
+    />
+    <DependencySection
+      id="stack"
+      eyebrow="The Android stack"
+      headline={["Resolved,", "branch by branch."]}
+      accent={1}
+      lede="The tools the team works in every day, from the language to the store."
+      root={{ slug: "android", label: ":app" }}
+      branches={[
+        { name: "ui", tools: [{ slug: "kotlin", label: "Kotlin" }, { slug: "jetpackcompose", label: "Jetpack Compose" }, { slug: "materialdesign", label: "Material Design" }] },
+        { name: "build", tools: [{ slug: "androidstudio", label: "Android Studio" }, { slug: "gradle", label: "Gradle" }, { slug: "githubactions", label: "GitHub Actions" }] },
+        { name: "data", tools: [{ slug: "firebase", label: "Firebase" }, { slug: "sqlite", label: "SQLite" }, { slug: "googlecloud", label: "Google Cloud" }] },
+        { name: "ship", tools: [{ slug: "junit5", label: "JUnit 5" }, { slug: "sentry", label: "Sentry" }, { slug: "googleplay", label: "Google Play" }] },
+      ]}
+    />
+    <FaqSection
+      eyebrow="Android questions"
+      headline={["Questions,", "rolled out."]}
+      accent={1}
+      cta="Talk to an Android lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "A developer holds an Android phone in front of a desk of monitors.", focus: "50% 55%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to roll out"
+      headline={["Start at 1%.", "End with everyone."]}
+      body="Tell us about your app and the devices it runs on, and we’ll match Android engineers who fit your team."
+      cta="Find Android developers"
+    />
+  </main>
+  <Footer />
+</Layout>

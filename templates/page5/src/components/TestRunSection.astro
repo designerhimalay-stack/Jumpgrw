@@ -1,0 +1,133 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* A test run, live, on the dark tone. The headline spans the top; under it
+   a photo of the team reviewing a build holds columns 1–2, and a test
+   runner fills columns 3–4: the suite runs line by line as the section
+   arrives, each test ticking as it passes, the totals counting up, and it
+   runs again each time the section comes back into view. Every line is in
+   the markup from the start and the window is a fixed height, so nothing
+   moves. Without the script, or under reduced motion, the finished run
+   shows. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  suite: string;
+  tests: { name: string; ms: number }[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, suite, tests } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+const total = tests.reduce((n, t) => n + t.ms, 0);
+---
+
+<section data-ac-sec="dark" data-ac-run id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-run-grid>
+    <div data-ac-run-head>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-run-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+    </div>
+    <p data-ac-run-lede data-ac-sec-rise>{lede}</p>
+
+    <div data-ac-run-photo>
+      <Joints />
+      <div data-ac-run-image>
+        <Image
+          src={media.image}
+          alt={media.alt}
+          widths={[480, 800, 1200, media.image.width]}
+          sizes="(max-width: 991px) 100vw, 46vw"
+          quality={78}
+          style={media.focus ? `object-position:${media.focus}` : undefined}
+        />
+      </div>
+    </div>
+
+    <div data-ac-run-console role="img" aria-label={`A test run: ${tests.length} tests in ${suite}, all passing.`}>
+      <p data-ac-run-bar aria-hidden="true">
+        <i /><i /><i />
+        <span class="mono-label-sm">{suite}</span>
+      </p>
+      <ol data-ac-run-lines aria-hidden="true">
+        {tests.map((test, i) => (
+          <li data-ac-run-line data-done style={`--ac-i:${i}`}>
+            <span data-ac-run-tick>
+              <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+            </span>
+            <span data-ac-run-name>{test.name}</span>
+            <span data-ac-run-ms>{test.ms}ms</span>
+          </li>
+        ))}
+      </ol>
+      <p data-ac-run-summary aria-hidden="true">
+        <span>Tests</span>
+        <span data-ac-run-pass><b data-ac-run-count>{tests.length}</b> passed</span>
+        <span data-ac-run-time>{(total / 1000).toFixed(2)}s</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-run]").forEach((section) => {
+    const lines = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-run-line]"));
+    const count = section.querySelector<HTMLElement>("[data-ac-run-count]")!;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const STEP_MS = 260;
+    let timers: number[] = [];
+
+    const reset = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      lines.forEach((line) => line.removeAttribute("data-done"));
+      count.textContent = "0";
+    };
+
+    const play = () => {
+      reset();
+      lines.forEach((line, i) => {
+        timers.push(
+          window.setTimeout(() => {
+            line.setAttribute("data-done", "");
+            count.textContent = String(i + 1);
+          }, 700 + i * STEP_MS),
+        );
+      });
+    };
+
+    /* Reversible like every entrance on the page: plays on arrival, resets
+       when it leaves. */
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        if (reduced) return;
+        if (entry.isIntersecting) play();
+        else reset();
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

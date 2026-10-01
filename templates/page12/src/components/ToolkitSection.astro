@@ -1,0 +1,100 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import { TECH_LOGOS, type TechLogoSlug } from "@/lib/tech-logos";
+
+/* Analyst toolkit, on the dark tone. The tools are set as the contents page
+   of a specification: a paper sheet on the dark band, its margin column
+   carrying the document's details and revision history, its body the
+   contents in four chapters (elicit, model, specify, validate). Each entry
+   is a logo tile, the tool's name, a dotted leader and what the analyst uses
+   it for, with its clause number. As the section arrives the entries set in
+   order, the leaders draw across, and an "approved" stamp lands on the
+   sheet; it runs back when the section leaves. Phones drop the leaders and
+   set each chapter's entries two to a row. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  doc: { code: string; title: string; owner: string; status: string; stamp: string };
+  metaLabels: { code: string; owner: string; status: string; history: string };
+  history: { rev: string; note: string }[];
+  chapters: { title: string; entries: { slug: TechLogoSlug; role: string }[] }[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, doc, metaLabels, history, chapters } = Astro.props;
+
+let n = 0;
+const indexed = chapters.map((ch, c) => ({
+  ...ch,
+  num: c + 1,
+  entries: ch.entries.map((e, k) => ({ ...e, clause: `${c + 1}.${k + 1}`, order: n++ })),
+}));
+---
+
+<section data-ac-sec="dark" data-ac-kit id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-kit-sheet>
+      <Joints />
+
+      <aside data-ac-kit-margin>
+        <p data-ac-kit-title>{doc.title}</p>
+        <dl data-ac-kit-meta>
+          <div><dt class="mono-label-sm">{metaLabels.code}</dt><dd>{doc.code}</dd></div>
+          <div><dt class="mono-label-sm">{metaLabels.owner}</dt><dd>{doc.owner}</dd></div>
+          <div><dt class="mono-label-sm">{metaLabels.status}</dt><dd>{doc.status}</dd></div>
+        </dl>
+        <p data-ac-kit-hist-label class="mono-label-sm">{metaLabels.history}</p>
+        <ol data-ac-kit-hist>
+          {history.map((h) => (
+            <li><span class="mono-label-sm">{h.rev}</span>{h.note}</li>
+          ))}
+        </ol>
+        <span data-ac-kit-stamp aria-hidden="true">{doc.stamp}</span>
+      </aside>
+
+      <div data-ac-kit-body>
+        {indexed.map((ch) => (
+          <section data-ac-kit-chapter aria-labelledby={`${id}-ch${ch.num}`}>
+            <h3 id={`${id}-ch${ch.num}`}>
+              <span class="mono-label-sm">{String(ch.num).padStart(2, "0")}</span>
+              {ch.title}
+            </h3>
+            <ul>
+              {ch.entries.map((e) => (
+                <li data-ac-kit-entry style={`--ac-i:${e.order}`}>
+                  <span data-ac-kit-tile>
+                    <TechLogo slug={e.slug} size={22} />
+                  </span>
+                  <span data-ac-kit-name>{TECH_LOGOS[e.slug].title}</span>
+                  <span data-ac-kit-leader aria-hidden="true" />
+                  <span data-ac-kit-role>{e.role}</span>
+                  <span data-ac-kit-clause class="mono-label-sm" aria-hidden="true">§{e.clause}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.querySelectorAll<HTMLElement>("[data-ac-kit]").forEach((section) => {
+    if (!reduced) section.setAttribute("data-ac-armed", "");
+    toggleInView(section);
+  });
+</script>

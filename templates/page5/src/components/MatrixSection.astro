@@ -1,0 +1,68 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* Coverage, as a matrix. The header splits around a photo of someone
+   testing on a tablet; under it, browsers down the side and screens across
+   the top, every cell filling with a tick in a diagonal wave from the top
+   left as the section arrives, the way a coverage run fills in. See
+   docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  rows: string[];
+  columns: string[];
+  caption: string;
+}
+
+const { id, eyebrow, headline, accent, lede, media, rows, columns, caption } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-matrix id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div data-ac-sec-frame data-ac-matrix-frame>
+      <Joints />
+      <table data-ac-matrix-table style={`--ac-cols:${columns.length}`}>
+        <caption class="sr-only">{caption}</caption>
+        <thead>
+          <tr>
+            <td data-ac-matrix-corner class="mono-label">{caption}</td>
+            {columns.map((col) => <th scope="col" class="mono-label">{col}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, r) => (
+            <tr>
+              <th scope="row">{row}</th>
+              {columns.map((col, c) => (
+                <td style={`--ac-d:${r + c}`}>
+                  <span data-ac-matrix-cell>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+                    <span class="sr-only">{row} on {col}: tested</span>
+                  </span>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-matrix]").forEach(toggleInView);
+</script>

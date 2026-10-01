@@ -1,0 +1,127 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import { TECH_LOGOS, type TechLogoSlug } from "@/lib/tech-logos";
+
+/* The stack, seen through a winter window. A four-pane window drawn in
+   elevation (a double frame, glazing bars, the architect's glass hatch, a
+   sill), one area of the stack in each pane, its four logos behind the
+   glass. As the section arrives, the frost on each pane melts from the
+   middle out, pane by pane, and stays feathered in the corners; it comes
+   back when the section leaves. The frost only goes on once the script
+   runs, so without one the logos are simply clear. Decoration only: the
+   panes are plain lists. See docs/sections.md. */
+
+interface Pane {
+  name: string;
+  leaves: { slug: TechLogoSlug; note: string }[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  /** The small note over the frame (a place, an hour, the cold). */
+  label: string;
+  panes: Pane[];
+  footnote: string;
+}
+
+const { id, eyebrow, headline, accent, lede, label, panes, footnote } = Astro.props;
+
+/* Frost ferns: stems from a corner with barbs either side, growing
+   shorter towards the tip. Fixed numbers, so every build draws the same
+   ice. Drawn once for the top-left corner (a 120 x 120 box); CSS mirrors
+   it into the other three. */
+function fern(deg: number, len: number): string {
+  const a = (deg * Math.PI) / 180;
+  const ex = Math.cos(a) * len;
+  const ey = Math.sin(a) * len;
+  let d = `M0 0L${ex.toFixed(1)} ${ey.toFixed(1)}`;
+  const barbs = Math.floor(len / 7);
+  for (let i = 1; i < barbs; i++) {
+    const t = i / barbs;
+    const bx = ex * t;
+    const by = ey * t;
+    const bl = (1 - t) * len * 0.32 + 3;
+    for (const side of [-1, 1]) {
+      const ba = a + side * 0.95;
+      d += `M${bx.toFixed(1)} ${by.toFixed(1)}l${(Math.cos(ba) * bl).toFixed(1)} ${(Math.sin(ba) * bl).toFixed(1)}`;
+    }
+  }
+  return d;
+}
+
+const frostPath = [
+  fern(18, 92),
+  fern(45, 62),
+  fern(72, 104),
+  fern(6, 44),
+  fern(86, 40),
+].join("");
+const FROST_CORNERS = ["tl", "tr", "bl", "br"] as const;
+---
+
+<section data-ac-sec="light" data-ac-frost id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-frost-window>
+      <p data-ac-frost-label class="mono-label-sm">
+        {label}
+      </p>
+      <div data-ac-frost-frame>
+        <Joints />
+        <ul data-ac-frost-panes>
+          {panes.map((pane, p) => (
+            <li data-ac-frost-pane style={`--ac-p:${p}`}>
+              <h3 data-ac-frost-name>
+                <span>{pane.name}</span>
+                <span data-ac-frost-count class="mono-label-sm" aria-hidden="true">
+                  {String(pane.leaves.length).padStart(2, "0")}
+                </span>
+              </h3>
+              <ul data-ac-frost-logos>
+                {pane.leaves.map((leaf) => (
+                  <li data-ac-frost-logo>
+                    <span data-ac-frost-tile>
+                      <TechLogo slug={leaf.slug} size={26} />
+                    </span>
+                    <span data-ac-frost-text>
+                      <span data-ac-frost-tool>{TECH_LOGOS[leaf.slug].title}</span>
+                      <span data-ac-frost-note>{leaf.note}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <span data-ac-frost-hatch aria-hidden="true"><i /><i /><i /></span>
+              <span data-ac-frost-veil aria-hidden="true">
+                {FROST_CORNERS.map((corner) => (
+                  <svg data-ac-frost-fern={corner} viewBox="0 0 120 120">
+                    <path d={frostPath} />
+                  </svg>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <p data-ac-frost-sill class="mono-label-sm">{footnote}</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-frost]").forEach((section) => {
+    section.setAttribute("data-ac-armed", "");
+    toggleInView(section);
+  });
+</script>

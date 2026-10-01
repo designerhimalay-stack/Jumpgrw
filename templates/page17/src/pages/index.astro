@@ -1,0 +1,192 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import FrameworkSection from "@/components/FrameworkSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import NotebookSection from "@/components/NotebookSection.astro";
+import PageHero from "@/components/PageHero.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import ToolkitSection from "@/components/ToolkitSection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p17-hero.jpg";
+import notebookPhoto from "@/assets/pages/p17-notebook.jpg";
+import toolkitPhoto from "@/assets/pages/p17-toolkit.jpg";
+import faqPhoto from "@/assets/pages/p17-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* Python developers. The notebook's data, the framework verdicts and the FAQ
+   answers are illustrative drafts; have them checked before launch. See
+   docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "Backend", "Python"],
+  headline: ["Python", "developers."],
+  accent: 1,
+  lede: "Engineers fluent in Django, FastAPI and the data stack, who take work from notebook to production and keep it typed and tested.",
+  ctas: [
+    { label: "Hire Python developers", href: "#contact", arrow: "diagonal" },
+    { label: "Run the notebook", href: "#notebook", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A developer writes Python on a laptop at a desk.",
+  specs: [
+    { label: "Web", value: "Django, FastAPI, Flask" },
+    { label: "Data", value: "pandas to PyTorch" },
+    { label: "Quality", value: "Typed and tested" },
+    { label: "Starts", value: "Within two weeks" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Do your developers do data work as well as web backends?",
+    a: "Yes. Most of the team works on both sides: APIs and services, and the pipelines and models behind them.",
+  },
+  {
+    q: "Can you take our notebooks into production?",
+    a: "Yes. We turn exploratory notebooks into tested, packaged code with scheduled jobs and monitoring around it.",
+  },
+  {
+    q: "Which Python versions do you work with?",
+    a: "Current releases by default. On older code we plan the upgrade in steps, with tests in place first.",
+  },
+  {
+    q: "Will they fit our tooling?",
+    a: "They work in your repository, your CI and your conventions, whether that is Poetry, uv or plain pip.",
+  },
+];
+---
+
+<Layout
+  title={`Python developers · ${BRAND.name}`}
+  description="Python engineers for Django, FastAPI and the data stack, who take work from notebook to production."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <NotebookSection
+      id="notebook"
+      eyebrow="Notebook to production"
+      headline={["Every cell runs.", "Every result holds."]}
+      accent={1}
+      lede="Exploration and engineering in one team: the same developers who read the data write the service that serves it."
+      media={{ image: notebookPhoto, alt: "An engineer works at a desktop computer in a bright office.", focus: "68% 50%" }}
+      file="orders.ipynb"
+      kernel="Python 3.12"
+      summary="A notebook runs four cells: it loads 1.2 million orders, totals revenue by region in a table, and plots it as a bar chart."
+      cells={[
+        { code: ["import pandas as pd", 'df = pd.read_parquet("orders.pq")'] },
+        { code: ["df.shape"], out: { kind: "text", text: "(1204311, 7)" } },
+        {
+          code: ['rev = df.groupby("region").revenue', "(rev.sum() / 1e3).round(1)"],
+          out: {
+            kind: "table",
+            head: ["region", "revenue (k)"],
+            rows: [
+              ["East", "276.9"],
+              ["North", "412.6"],
+              ["South", "318.2"],
+              ["West", "351.4"],
+            ],
+          },
+        },
+        {
+          code: ["rev.sum().plot.bar()"],
+          out: {
+            kind: "chart",
+            bars: [
+              { label: "East", value: 276.9 },
+              { label: "North", value: 412.6 },
+              { label: "South", value: 318.2 },
+              { label: "West", value: 351.4 },
+            ],
+          },
+        },
+      ]}
+    />
+    <FrameworkSection
+      id="frameworks"
+      eyebrow="Pick the framework"
+      headline={["Three frameworks.", "One right fit."]}
+      accent={1}
+      lede="The team works in all three, so the choice follows your product, not our habits. Pick a use case."
+      pickLabel="Your use case"
+      uses={[
+        { id: "admin", label: "Admin-heavy product", fit: "django", why: "The admin, ORM and auth come built in, so back-office screens take days." },
+        { id: "api", label: "High-traffic API", fit: "fastapi", why: "Async from the ground up, typed with Pydantic, docs generated for free." },
+        { id: "ml", label: "Serving ML models", fit: "fastapi", why: "Validated inputs and async endpoints sit neatly in front of a model." },
+        { id: "cms", label: "Content and accounts", fit: "django", why: "Users, permissions and migrations are solved problems out of the box." },
+        { id: "micro", label: "Small service", fit: "flask", why: "A few files, no opinions to fight, easy to read a year from now." },
+        { id: "tool", label: "Internal tool", fit: "flask", why: "Light enough to ship in a sprint, with only the extensions it needs." },
+      ]}
+      frameworks={[
+        {
+          slug: "django",
+          name: "Django",
+          tagline: "Batteries included.",
+          traits: [
+            { label: "Shape", value: "Full stack" },
+            { label: "Async", value: "Where it counts" },
+            { label: "Brings", value: "ORM, admin, auth" },
+          ],
+        },
+        {
+          slug: "fastapi",
+          name: "FastAPI",
+          tagline: "Async, typed, fast.",
+          traits: [
+            { label: "Shape", value: "API first" },
+            { label: "Async", value: "Throughout" },
+            { label: "Brings", value: "Pydantic, OpenAPI" },
+          ],
+        },
+        {
+          slug: "flask",
+          name: "Flask",
+          tagline: "Small and flexible.",
+          traits: [
+            { label: "Shape", value: "Micro" },
+            { label: "Async", value: "Optional" },
+            { label: "Brings", value: "Only what you add" },
+          ],
+        },
+      ]}
+    />
+    <ToolkitSection
+      id="toolkit"
+      eyebrow="Engineers at work"
+      headline={["Beyond the web.", "The whole toolkit."]}
+      lede="Data, models, queues and tests: the libraries a production Python team reaches for every week."
+      media={{ image: toolkitPhoto, alt: "A developer works late across three monitors of code.", focus: "60% 50%" }}
+      name="toolkit"
+      comment="what the team reaches for"
+      groups={[
+        { key: "data", tools: ["pandas", "numpy", "polars", "jupyter"] },
+        { key: "ml", tools: ["scikitlearn", "pytorch"] },
+        { key: "models", tools: ["pydantic", "sqlalchemy", "postgresql"] },
+        { key: "tasks", tools: ["celery", "redis", "apacheairflow"] },
+        { key: "quality", tools: ["pytest", "ruff"] },
+        { key: "ship", tools: ["poetry", "uv", "docker"] },
+      ]}
+    />
+    <FaqSection
+      eyebrow="Python questions"
+      headline={["import", "answers."]}
+      accent={1}
+      cta="Talk to a Python lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "Four colleagues discuss work on a monitor in a studio office.", focus: "50% 45%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to run"
+      headline={["Run all cells.", "Ship the result."]}
+      body="Tell us what you are building in Python and where it is stuck. We will shape the team to move it."
+      cta="Plan my Python team"
+    />
+  </main>
+  <Footer />
+</Layout>

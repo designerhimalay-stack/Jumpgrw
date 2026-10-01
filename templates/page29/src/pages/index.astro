@@ -1,0 +1,192 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import FlakySection from "@/components/FlakySection.astro";
+import Footer from "@/components/Footer.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import RackSection from "@/components/RackSection.astro";
+import ShardSection from "@/components/ShardSection.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import SyncSection from "@/components/SyncSection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p29-hero.jpg";
+import shardsPhoto from "@/assets/pages/p29-shards.jpg";
+import rackPhoto from "@/assets/pages/p29-rack.jpg";
+import faqPhoto from "@/assets/pages/p29-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* Automation QA engineers. The test script, the run times, the flaky-test
+   history and the FAQ answers are illustrative drafts; have them checked
+   before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "Delivery", "Automation QA"],
+  headline: ["Automation", "QA."],
+  accent: 1,
+  lede: "Engineers who automate the checks your team repeats, keep the suite fast and stable, and make every merge safe to ship.",
+  ctas: [
+    { label: "Add an automation engineer", href: "#contact", arrow: "diagonal" },
+    { label: "Watch a test run", href: "#sync", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "An automation engineer reads test code across two monitors.",
+  specs: [
+    { label: "Automates", value: "UI, API and load" },
+    { label: "Runs", value: "On every merge" },
+    { label: "Keeps", value: "Suites under 10 min" },
+    { label: "Fixes", value: "Flakes at the root" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Which framework will they use?",
+    a: "Yours, if it works. If there isn’t one, they pick with your team and write the first suite in week one.",
+  },
+  {
+    q: "How long until tests run in CI?",
+    a: "Usually the first sprint: a smoke suite on every merge, then wider coverage as it proves stable.",
+  },
+  {
+    q: "Do they replace manual testing?",
+    a: "They take the repeatable checks off your testers, who can then spend their time exploring.",
+  },
+  {
+    q: "What happens to flaky tests?",
+    a: "They’re quarantined the day they flake, fixed at the cause, and only then trusted again.",
+  },
+];
+---
+
+<Layout
+  title={`Automation QA engineers · ${BRAND.name}`}
+  description="Automation QA engineers who script UI, API and load tests, run them in parallel on every merge, and fix flaky tests at the root."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <SyncSection
+      id="sync"
+      eyebrow="Script and browser in sync"
+      headline={["Written once.", "Run every merge."]}
+      lede="Each line of the test drives the browser. Watch a checkout run itself, step by step, and pass."
+      file="checkout.spec.ts"
+      lines={[
+        { code: 'test("guest checkout", async ({ page }) => {' },
+        { code: '  await page.goto("/trail-runner");', step: 0 },
+        { code: '  await page.click("text=Add to cart");', step: 1 },
+        { code: '  await page.click("text=Checkout");', step: 2 },
+        { code: '  await page.fill("#email", "sam@mail.test");', step: 3 },
+        { code: '  await page.fill("#card", "4242 4242 4242");', step: 4 },
+        { code: '  await page.click("text=Pay $89");', step: 5 },
+        { code: '  await expect(page.locator(".done"))', step: 6 },
+        { code: "    .toBeVisible();" },
+        { code: "});" },
+      ]}
+      summary={{ passed: "1 passed", time: "4.2s" }}
+      browser={{
+        url: "shop.test/trail-runner",
+        shop: "Trailhead",
+        cart: "Cart",
+        checkout: "Checkout",
+        product: { name: "Trail runner", note: "Grippy, light, waterproof.", price: "$89", add: "Add to cart" },
+        form: { title: "Checkout", email: "Email", emailValue: "sam@mail.test", card: "Card", cardValue: "4242 4242 4242", pay: "Pay $89" },
+        done: { title: "Order confirmed", note: "Receipt sent to sam@mail.test" },
+      }}
+    />
+    <ShardSection
+      id="shards"
+      eyebrow="Shard it"
+      headline={["One suite.", "Eight lanes."]}
+      lede="The same tests, split across parallel runners. Feedback lands while the change is still fresh."
+      media={{ image: shardsPhoto, alt: "Two engineers work through test code at their monitors in a bright office.", focus: "50% 45%" }}
+      chunks={[5.8, 5.2, 5.6, 4.9, 5.4, 5.1, 5.3, 4.7]}
+      before={{ label: "One runner", note: "Every test in a row." }}
+      after={{ label: "Eight shards", note: "Split by past run time." }}
+      doneLabel="All shards done"
+      unit="min"
+      stats={[
+        { value: "1,240", label: "Same tests" },
+        { value: "7×", label: "Faster feedback" },
+        { value: "< 6 min", label: "Per merge" },
+      ]}
+    />
+    <FlakySection
+      id="flaky"
+      eyebrow="Flaky tests, tamed"
+      headline={["Red, then amber.", "Then green."]}
+      lede="Twenty runs of six tests. Find the cause, fix it once, and the history stays green."
+      fixAt={11}
+      fixLabel="Fix merged"
+      runsLabel="Last 20 runs"
+      legend={{ p: "Passed", r: "Passed on retry", f: "Failed" }}
+      rateLabel="Unstable, before → after"
+      tests={[
+        { name: "checkout › pays by card", runs: "prpppfpprppprpppfppr" },
+        { name: "search › filters by size", runs: "pppfppprpppppfpprppp" },
+        { name: "cart › keeps items", runs: "pppppppppppppppppppp" },
+        { name: "login › remembers device", runs: "rppprpfpprpppprppfpp" },
+        { name: "orders › lists history", runs: "pppppprppppppprppppp" },
+        { name: "account › updates email", runs: "pfpppppppppfpppppppp" },
+      ]}
+      fixesLabel="What fixed it"
+      fixes={[
+        { title: "Wait on events, not timers", note: "No more sleep(2000)." },
+        { title: "Fresh data per test", note: "Each run seeds its own." },
+        { title: "Quarantine, then fix", note: "Flakes never block a merge." },
+      ]}
+    />
+    <RackSection
+      id="stack"
+      eyebrow="Automation stack"
+      headline={["Every layer,", "racked and running."]}
+      lede="UI, API, load and CI, wired into one pipeline that runs on every merge."
+      media={{ image: rackPhoto, alt: "An engineer weighs up a test run at his desk.", focus: "50% 40%" }}
+      units={[
+        {
+          code: "U1",
+          label: "UI",
+          note: "Browsers and devices",
+          tools: [{ slug: "selenium" }, { slug: "cypress" }, { slug: "webdriverio" }, { slug: "appium" }, { slug: "cucumber" }],
+        },
+        {
+          code: "U2",
+          label: "API and unit",
+          note: "Contracts and logic",
+          tools: [{ slug: "postman" }, { slug: "jest" }, { slug: "vitest" }, { slug: "testinglibrary" }],
+        },
+        {
+          code: "U3",
+          label: "Performance",
+          note: "Load and soak",
+          tools: [{ slug: "k6" }, { slug: "apachejmeter", name: "JMeter" }, { slug: "gatling" }],
+        },
+        {
+          code: "U4",
+          label: "CI",
+          note: "On every merge",
+          tools: [{ slug: "githubactions" }, { slug: "jenkins" }, { slug: "gitlab" }, { slug: "circleci" }, { slug: "docker" }],
+        },
+      ]}
+    />
+    <FaqSection
+      eyebrow="Automation questions"
+      headline={["Questions,", "automated."]}
+      accent={1}
+      cta="Talk to a QA lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "Two engineers review a test run together on a laptop.", focus: "50% 45%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to automate"
+      headline={["Green builds.", "Calm releases."]}
+      body="Tell us which checks your team repeats. We’ll match an engineer who can automate them this sprint."
+      cta="Find my engineer"
+    />
+  </main>
+  <Footer />
+</Layout>

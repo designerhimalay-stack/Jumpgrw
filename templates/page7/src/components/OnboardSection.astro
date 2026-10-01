@@ -1,0 +1,137 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* Onboarding, day by day. Columns 1–2 hold the headline and a photo of the
+   team that stay pinned while columns 3–4 scroll past the days; a progress
+   line down the days fills with the reader's scroll, and each day lights as
+   the line reaches it. On a phone nothing pins and the line still fills.
+   See docs/sections.md. */
+
+interface Day {
+  day: string;
+  title: string;
+  note: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  days: Day[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, days } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+---
+
+<section data-ac-sec="light" data-ac-onboard id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-onboard-grid>
+    <div data-ac-onboard-pin>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-onboard-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+      <p data-ac-onboard-lede data-ac-sec-rise>{lede}</p>
+      <div data-ac-onboard-photo>
+        <Joints />
+        <div data-ac-onboard-image>
+          <Image
+            src={media.image}
+            alt={media.alt}
+            widths={[480, 800, 1200]}
+            sizes="(max-width: 991px) 100vw, 46vw"
+            quality={78}
+            style={media.focus ? `object-position:${media.focus}` : undefined}
+          />
+        </div>
+      </div>
+    </div>
+
+    <ol data-ac-onboard-days>
+      <span data-ac-onboard-line aria-hidden="true"><i /></span>
+      {days.map((day) => (
+        <li data-ac-onboard-day>
+          <span data-ac-onboard-dot aria-hidden="true" />
+          <span data-ac-onboard-when class="mono-label">{day.day}</span>
+          <span data-ac-onboard-title>{day.title}</span>
+          <span data-ac-onboard-note>{day.note}</span>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-onboard]").forEach((section) => {
+    toggleInView(section);
+
+    const list = section.querySelector<HTMLElement>("[data-ac-onboard-days]")!;
+    const fill = section.querySelector<HTMLElement>("[data-ac-onboard-line] i")!;
+    const days = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-onboard-day]"));
+
+    const line = section.querySelector<HTMLElement>("[data-ac-onboard-line]")!;
+    const dots = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-onboard-dot]"));
+
+    /* The line runs from the first dot's centre to the last dot's, never
+       past it. Measured, since the days' heights follow their text. */
+    const centre = (el: HTMLElement) => {
+      const r = el.getBoundingClientRect();
+      return r.top + r.height / 2;
+    };
+    const fit = () => {
+      const top = centre(dots[0]) - list.getBoundingClientRect().top;
+      const height = centre(dots[dots.length - 1]) - centre(dots[0]);
+      line.style.top = `${top}px`;
+      line.style.height = `${height}px`;
+    };
+
+    /* How far the reader has scrolled between the first and last dots, 0–1.
+       Only written when it changes. */
+    let frame = 0;
+    let last = -1;
+    const apply = () => {
+      frame = 0;
+      const mid = window.innerHeight * 0.55;
+      const first = centre(dots[0]);
+      const end = centre(dots[dots.length - 1]);
+      const p = Math.min(1, Math.max(0, (mid - first) / (end - first)));
+      const rounded = Math.round(p * 400) / 400;
+      if (rounded === last) return;
+      last = rounded;
+      fill.style.transform = `scaleY(${rounded})`;
+      days.forEach((day, i) => day.toggleAttribute("data-reached", centre(dots[i]) <= mid + 1));
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(apply);
+    };
+    fit();
+    apply();
+    new ResizeObserver(() => {
+      fit();
+      last = -1;
+      schedule();
+    }).observe(list);
+    window.addEventListener("scroll", schedule, { passive: true });
+  });
+</script>

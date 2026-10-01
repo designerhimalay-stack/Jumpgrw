@@ -1,0 +1,228 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* A monorepo, mapped. The header splits around a photo of the team at a
+   review. Under it, one workspace frame: apps and libraries as tiles,
+   grouped by domain (two product domains side by side, the shared
+   libraries along the foot), with a line from each project to every
+   library it imports. Pick a library and its blast radius lights: every
+   project that depends on it, directly or through another, with the lines
+   between them, and the readout counts the projects and apps a change
+   would touch. The starting pick and its radius are worked out on the
+   server, so the map reads without the script; the lines are drawn from
+   the tiles' positions and redrawn when the frame resizes. See
+   docs/sections.md. */
+
+interface Project {
+  key: string;
+  name: string;
+  kind: "app" | "lib";
+  /** Keys of the libraries it imports. */
+  deps: string[];
+}
+
+interface Domain {
+  name: string;
+  projects: Project[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  domains: Domain[];
+  /** Key of the library picked at the start. */
+  start: string;
+  command: string;
+  labels: { projects: string; apps: string; pick: string };
+}
+
+const { id, eyebrow, headline, accent, lede, media, domains, start, command, labels } = Astro.props;
+const all = domains.flatMap((d) => d.projects);
+
+/* Everything that depends on `key`, through any number of imports. */
+const radius = (key: string): Set<string> => {
+  const hit = new Set<string>();
+  const walk = (k: string) =>
+    all.filter((p) => p.deps.includes(k) && !hit.has(p.key)).forEach((p) => {
+      hit.add(p.key);
+      walk(p.key);
+    });
+  walk(key);
+  return hit;
+};
+const hit = radius(start);
+const appsHit = all.filter((p) => p.kind === "app" && hit.has(p.key)).length;
+const deps = Object.fromEntries(all.map((p) => [p.key, p.deps.join(" ")]));
+---
+
+<section data-ac-sec="light" data-ac-mono id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div data-ac-sec-frame data-ac-mono-frame>
+      <Joints />
+
+      <div data-ac-mono-bar>
+        <code data-ac-mono-cmd>
+          <span aria-hidden="true">$</span>
+          {command}
+          <span data-ac-mono-target>{all.find((p) => p.key === start)?.name}</span>
+        </code>
+        <p data-ac-mono-read aria-live="polite">
+          <span><b data-ac-mono-count>{hit.size}</b> {labels.projects}</span>
+          <span><b data-ac-mono-apps>{appsHit}</b> {labels.apps}</span>
+        </p>
+      </div>
+
+      <div data-ac-mono-map>
+        <svg data-ac-mono-lines aria-hidden="true" />
+        <p class="sr-only">{labels.pick}</p>
+        {domains.map((domain, d) => (
+          <div data-ac-mono-domain data-d={d}>
+            <p data-ac-mono-domain-name class="mono-label">{domain.name}</p>
+            <ul>
+              {domain.projects.map((p) => (
+                <li>
+                  {p.kind === "lib" ? (
+                    <button
+                      type="button"
+                      data-ac-mono-tile
+                      data-key={p.key}
+                      data-kind={p.kind}
+                      data-deps={deps[p.key]}
+                      aria-pressed={p.key === start ? "true" : "false"}
+                      data-state={p.key === start ? "source" : hit.has(p.key) ? "hit" : undefined}
+                    >
+                      <span data-ac-mono-kind class="mono-label-sm">lib</span>
+                      <span data-ac-mono-name>{p.name}</span>
+                    </button>
+                  ) : (
+                    <span
+                      data-ac-mono-tile
+                      data-key={p.key}
+                      data-kind={p.kind}
+                      data-deps={deps[p.key]}
+                      data-state={hit.has(p.key) ? "hit" : undefined}
+                    >
+                      <span data-ac-mono-kind class="mono-label-sm">app</span>
+                      <span data-ac-mono-name>{p.name}</span>
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-mono]").forEach((section) => {
+    toggleInView(section);
+
+    const map = section.querySelector<HTMLElement>("[data-ac-mono-map]")!;
+    const svg = section.querySelector<SVGSVGElement>("[data-ac-mono-lines]")!;
+    const tiles = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-mono-tile]"));
+    const byKey = new Map(tiles.map((t) => [t.dataset.key ?? "", t]));
+    const target = section.querySelector<HTMLElement>("[data-ac-mono-target]")!;
+    const count = section.querySelector<HTMLElement>("[data-ac-mono-count]")!;
+    const apps = section.querySelector<HTMLElement>("[data-ac-mono-apps]")!;
+    const NS = "http://www.w3.org/2000/svg";
+    const depsOf = (t: HTMLElement) => (t.dataset.deps ?? "").split(" ").filter(Boolean);
+
+    /* One line per import, from the importer's edge to the library's. Drawn
+       as a square elbow, like a drafting leader. */
+    const draw = () => {
+      const box = map.getBoundingClientRect();
+      svg.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
+      svg.replaceChildren();
+      tiles.forEach((t) =>
+        depsOf(t).forEach((dep) => {
+          const lib = byKey.get(dep);
+          if (!lib) return;
+          const a = t.getBoundingClientRect();
+          const b = lib.getBoundingClientRect();
+          const x1 = a.left + a.width / 2 - box.left;
+          const x2 = b.left + b.width / 2 - box.left;
+          const down = b.top > a.bottom - 1;
+          const y1 = (down ? a.bottom : a.top) - box.top;
+          const y2 = (down ? b.top : b.bottom) - box.top;
+          let d: string;
+          if (Math.abs(b.top - a.top) < 2) {
+            /* Same row: over the top between them. */
+            const top = a.top - box.top - 10;
+            d = `M${x1} ${a.top - box.top} V${top} H${x2} V${b.top - box.top}`;
+          } else {
+            /* The run sits just above (or below) the library, so imports
+               into one library share a bus in the gap beside it. */
+            const lane = 10 + (tiles.indexOf(lib) % 3) * 6;
+            const run = down ? y2 - lane : y2 + lane;
+            d = `M${x1} ${y1} V${run} H${x2} V${y2}`;
+          }
+          const path = document.createElementNS(NS, "path");
+          path.setAttribute("d", d);
+          path.dataset.from = t.dataset.key;
+          path.dataset.to = dep;
+          svg.append(path);
+        }),
+      );
+      paint();
+    };
+
+    let picked = tiles.find((t) => t.getAttribute("aria-pressed") === "true")?.dataset.key ?? "";
+
+    const radius = (key: string) => {
+      const hit = new Set<string>();
+      const walk = (k: string) =>
+        tiles.filter((t) => depsOf(t).includes(k) && !hit.has(t.dataset.key ?? "")).forEach((t) => {
+          hit.add(t.dataset.key ?? "");
+          walk(t.dataset.key ?? "");
+        });
+      walk(key);
+      return hit;
+    };
+
+    /* The pick, its radius, and the lines between them. */
+    const paint = () => {
+      const hit = radius(picked);
+      tiles.forEach((t) => {
+        const k = t.dataset.key ?? "";
+        t.dataset.state = k === picked ? "source" : hit.has(k) ? "hit" : "";
+        if (t.dataset.kind === "lib") t.setAttribute("aria-pressed", String(k === picked));
+      });
+      svg.querySelectorAll<SVGPathElement>("path").forEach((p) => {
+        const on = (hit.has(p.dataset.from ?? "") && (p.dataset.to === picked || hit.has(p.dataset.to ?? "")));
+        p.toggleAttribute("data-lit", on);
+        if (on) svg.append(p);
+      });
+      target.textContent = byKey.get(picked)?.querySelector("[data-ac-mono-name]")?.textContent ?? "";
+      count.textContent = String(hit.size);
+      apps.textContent = String(tiles.filter((t) => t.dataset.kind === "app" && hit.has(t.dataset.key ?? "")).length);
+    };
+
+    tiles
+      .filter((t) => t.dataset.kind === "lib")
+      .forEach((t) =>
+        t.addEventListener("click", () => {
+          picked = t.dataset.key ?? "";
+          paint();
+        }),
+      );
+
+    draw();
+    new ResizeObserver(draw).observe(map);
+  });
+</script>

@@ -1,0 +1,118 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* Every screen, on the light tone. The header splits around a photo of a
+   developer testing on a phone. Under it, five devices drawn as ink
+   outlines stand on one baseline, each with a dimension line over it: two
+   phones, a foldable opened flat, a tablet and a watch. Inside each, the
+   same app, in wireframe: a list with a bottom bar on the phones; a rail,
+   list and detail pane on the foldable and the tablet; one card on the
+   watch. The outlines draw up from the baseline as the section arrives,
+   then a selection steps down the list on every device at once, the detail
+   panes following. See docs/sections.md. */
+
+interface Device {
+  kind: "phone" | "large" | "fold" | "tablet" | "watch";
+  size: string;
+  label: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  devices: Device[];
+}
+
+const { id, eyebrow, headline, accent, lede, media, devices } = Astro.props;
+const ROWS = [0, 1, 2, 3, 4];
+---
+
+<section data-ac-sec="light" data-ac-fit data-sel="0" id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div
+      data-ac-sec-frame
+      data-ac-fit-frame
+      role="img"
+      aria-label={`The same app on ${devices.map((d) => `a ${d.size} ${d.label.toLowerCase()} ${d.kind === "large" ? "phone" : d.kind}`).join(", ")}: a list on the phones, list and detail on the foldable and the tablet, one card on the watch.`}
+    >
+      <Joints />
+      <ol data-ac-fit-row aria-hidden="true">
+        {devices.map((d, i) => (
+          <li data-ac-fit-device data-kind={d.kind} style={`--ac-i:${i}`}>
+            <span data-ac-fit-dim><span class="mono-label-sm">{d.size}</span></span>
+            <span data-ac-fit-shell>
+              {d.kind === "watch" ? (
+                <span data-ac-fit-watch>
+                  <b data-ac-fit-time />
+                  <span data-ac-fit-card><i /><b /><b /></span>
+                  <i data-ac-fit-pill />
+                </span>
+              ) : (
+                <span data-ac-fit-app>
+                  <span data-ac-fit-bar><i /><b /></span>
+                  <span data-ac-fit-rail><i /><i /><i /></span>
+                  <span data-ac-fit-list>
+                    {ROWS.map((r) => (
+                      <span data-ac-fit-item data-row={r}><i /><b /><b /></span>
+                    ))}
+                  </span>
+                  <span data-ac-fit-detail>
+                    <i data-ac-fit-hero />
+                    <b /><b /><b />
+                    <i data-ac-fit-cta />
+                  </span>
+                  <span data-ac-fit-nav><i /><i /><i /></span>
+                  <i data-ac-fit-fab />
+                </span>
+              )}
+              {d.kind === "fold" && <i data-ac-fit-hinge />}
+            </span>
+            <span data-ac-fit-label class="mono-label-sm">{d.label}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-fit]").forEach((section) => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let timer = 0;
+    let row = 0;
+
+    const select = (r: number) => (section.dataset.sel = String(r));
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = 0;
+    };
+
+    /* The selection steps through the first three rows while the section is
+       in view, and stops when it leaves. */
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        stop();
+        if (!entry.isIntersecting || reduced) return;
+        row = 0;
+        select(row);
+        timer = window.setInterval(() => {
+          row = (row + 1) % 3;
+          select(row);
+        }, 2200);
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

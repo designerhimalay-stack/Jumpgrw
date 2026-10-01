@@ -1,0 +1,190 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* Code to preview, on the dark tone. One frame split in two: a SwiftUI file
+   on the left, a preview canvas on the right with an iPhone drawn flat on a
+   dotted ground. As the section arrives, the code's blocks light in turn
+   and the matching piece of the screen appears in the phone, outlined
+   while it is the live one; the chips under the phone name each piece.
+   Every piece holds its place from the start (only its opacity changes),
+   so nothing moves. Without the script, or under reduced motion, the whole
+   screen shows. See docs/sections.md. */
+
+interface Line {
+  /** Tabs for indentation; the editor sets their width. */
+  code: string;
+  /** The preview piece this line builds, by index into `pieces`. */
+  step?: number;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  file: string;
+  device: string;
+  pieces: string[];
+  lines: Line[];
+  screen: {
+    title: string;
+    initials: string;
+    name: string;
+    role: string;
+    stats: { label: string; value: string }[];
+    toggle: string;
+    button: string;
+  };
+}
+
+const { id, eyebrow, headline, accent, lede, file, device, pieces, lines, screen } = Astro.props;
+
+/* A small Swift highlighter: enough colour to read as an editor. */
+const ENTITIES: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;" };
+const escape = (s: string) => Array.from(s, (c) => ENTITIES[c] ?? c).join("");
+const TOKEN = new RegExp(
+  [
+    String.raw`("[^"]*")`,
+    String.raw`(//.*$)`,
+    String.raw`(@\w+)`,
+    String.raw`\b(struct|var|let|some|private|func|true|false)\b`,
+    String.raw`\b([A-Z]\w*)\b`,
+    String.raw`(\.\w+)`,
+    String.raw`\b(\d+(?:\.\d+)?)\b`,
+  ].join("|"),
+  "g",
+);
+const highlight = (code: string) =>
+  escape(code).replace(TOKEN, (m, str, com, attr, kw, type, member, num) => {
+    const kind = str ? "str" : com ? "com" : attr ? "attr" : kw ? "kw" : type ? "type" : member ? "mem" : num ? "num" : "";
+    return kind ? `<span data-t="${kind}">${m}</span>` : m;
+  });
+---
+
+<section data-ac-sec="dark" data-ac-xp id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-xp-frame data-ac-sec-rise>
+      <Joints />
+
+      <div data-ac-xp-editor aria-hidden="true">
+        <p data-ac-xp-tabs>
+          <span data-ac-xp-tab>
+            <svg viewBox="0 0 24 24"><path d="M5 4h9l5 5v11H5z M14 4v5h5" /></svg>
+            {file}
+          </span>
+        </p>
+        <ol data-ac-xp-code>
+          {lines.map((line, i) => (
+            <li data-step={line.step}>
+              <span data-ac-xp-num>{i + 1}</span>
+              <code set:html={highlight(line.code) || " "} />
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div data-ac-xp-canvas>
+        <p data-ac-xp-canvas-bar class="mono-label-sm" aria-hidden="true">
+          <i data-ac-xp-live />
+          Preview
+          <span>{device}</span>
+        </p>
+
+        <div
+          data-ac-xp-phone
+          role="img"
+          aria-label={`A preview of the ${screen.title} screen: ${screen.name}, ${screen.role}; ${screen.stats.map((s) => `${s.label} ${s.value}`).join(", ")}; a “${screen.toggle}” switch and a “${screen.button}” button.`}
+        >
+          <div data-ac-xp-screen aria-hidden="true">
+            <p data-ac-xp-status>
+              <span>9:41</span>
+              <i data-ac-xp-island />
+              <span data-ac-xp-glyphs><b /><b /><b /></span>
+            </p>
+            <p data-ac-xp-title>{screen.title}</p>
+
+            <div data-ac-xp-piece data-step="0" data-ac-xp-avatar>{screen.initials}</div>
+            <div data-ac-xp-piece data-step="1" data-ac-xp-name>
+              <b>{screen.name}</b>
+              <span>{screen.role}</span>
+            </div>
+            <div data-ac-xp-piece data-step="2" data-ac-xp-stats>
+              {screen.stats.map((s) => (
+                <span>
+                  <b>{s.value}</b>
+                  {s.label}
+                </span>
+              ))}
+            </div>
+            <div data-ac-xp-piece data-step="3" data-ac-xp-toggle>
+              <span>{screen.toggle}</span>
+              <i />
+            </div>
+            <div data-ac-xp-piece data-step="4" data-ac-xp-button>{screen.button}</div>
+            <i data-ac-xp-home />
+          </div>
+        </div>
+
+        <ol data-ac-xp-chips aria-hidden="true">
+          {pieces.map((piece, i) => (
+            <li data-step={i} class="mono-label-sm">{piece}</li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-xp]").forEach((section) => {
+    const lines = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-xp-code] li[data-step]"));
+    const pieces = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-xp-piece], [data-ac-xp-chips] li"));
+    const last = Math.max(...pieces.map((p) => Number(p.dataset.step)));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const STEP_MS = 950;
+    let timers: number[] = [];
+
+    /* `live` is the piece being written now; everything up to `shown` is on
+       screen. */
+    const set = (shown: number, live: number) => {
+      lines.forEach((l) => l.toggleAttribute("data-live", Number(l.dataset.step) === live));
+      pieces.forEach((p) => {
+        const s = Number(p.dataset.step);
+        p.toggleAttribute("data-shown", s <= shown);
+        p.toggleAttribute("data-live", s === live);
+      });
+    };
+
+    const reset = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      set(-1, -1);
+    };
+
+    if (reduced) {
+      set(last, -1);
+    } else {
+      section.setAttribute("data-ac-xp-ready", "");
+      reset();
+    }
+
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        if (reduced) return;
+        if (!entry.isIntersecting) return reset();
+        reset();
+        for (let i = 0; i <= last; i++) timers.push(window.setTimeout(() => set(i, i), 800 + i * STEP_MS));
+        timers.push(window.setTimeout(() => set(last, -1), 800 + (last + 1) * STEP_MS + 400));
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

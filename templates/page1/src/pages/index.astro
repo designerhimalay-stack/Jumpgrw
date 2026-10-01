@@ -1,0 +1,204 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import GanttSection from "@/components/GanttSection.astro";
+import LanesSection from "@/components/LanesSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import RosterSection from "@/components/RosterSection.astro";
+import LoadSection from "@/components/LoadSection.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import type { PageHeroContent, PageStat, RosterPod } from "@/types/page";
+import launchPhoto from "@/assets/pages/mvp-launch.jpg";
+import momentumPhoto from "@/assets/pages/p1-momentum.jpg";
+import blueprintPhoto from "@/assets/pages/p1-blueprint.jpg";
+import faqPhoto from "@/assets/pages/p1-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* MVP launch teams. The copy is the brief's, cut down to what a reader
+   needs; the Lean and Assurance pods, the phase timings and hand-overs, the
+   race lanes and the FAQ answers are drafts. Have them checked before
+   launch. Photos alternate with the sections that carry an interaction or a
+   list. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Launch phase", "MVP launch teams"],
+  headline: ["MVP launch", "teams."],
+  lede: "Turn a validated idea into a credible first release, with a tight, senior squad built to hit your first market milestone.",
+  ctas: [
+    { label: "Assemble your squad", href: "#contact", arrow: "diagonal" },
+    { label: "See the blueprint", href: "#blueprint", arrow: "right" },
+  ],
+  image: launchPhoto,
+  imageAlt: "Five team members lean over a table covered in wireframes and sticky notes, planning a product together.",
+  specs: [
+    { label: "Stage", value: "Idea to first release" },
+    { label: "First commit", value: "Within two weeks" },
+    { label: "Team", value: "A senior, dedicated pod" },
+    { label: "Delivery", value: "Dallas-led, X-shore" },
+  ],
+};
+
+const PODS: RosterPod[] = [
+  {
+    label: "Speed to market",
+    icon: "zap",
+    name: "Velocity pod",
+    summary: "Senior-heavy and parallel: the fastest route to market.",
+    size: "5 specialists",
+    roles: [
+      { mark: "PM", title: "Product manager", note: "Guards the scope and the date." },
+      { mark: "LA", title: "Lead architect", note: "Fast technical calls, CI/CD on day one." },
+      { mark: "FS", title: "Senior full stack ×2", note: "Front to back, no hand-offs." },
+      { mark: "PD", title: "Product designer", note: "A sprint ahead of engineering." },
+    ],
+  },
+  {
+    label: "Budget control",
+    icon: "wallet",
+    name: "Lean pod",
+    summary: "A smaller core that ships the essentials, then scales.",
+    size: "4 specialists",
+    roles: [
+      { mark: "PO", title: "Technical product owner", note: "Trades features for runway." },
+      { mark: "LF", title: "Lead full stack", note: "Owns the critical path." },
+      { mark: "FS", title: "Full stack engineer", note: "Ships end to end, X-shore blended." },
+      { mark: "PD", title: "Product designer", note: "Designs the essential flows." },
+    ],
+  },
+  {
+    label: "Compliance rigor",
+    icon: "shield",
+    name: "Assurance pod",
+    summary: "Security, testing and audit trails from the first commit.",
+    size: "6 specialists",
+    roles: [
+      { mark: "PM", title: "Product manager", note: "Maps requirements to controls." },
+      { mark: "LA", title: "Lead architect", note: "Security and audit by design." },
+      { mark: "FS", title: "Senior full stack ×2", note: "Reviewed, fully tested changes." },
+      { mark: "QA", title: "QA & DevOps engineer", note: "Automated tests, safe releases." },
+    ],
+  },
+];
+
+const STATS: PageStat[] = [
+  { value: 100, suffix: "%", label: "dedicated team allocation" },
+  { value: 90, suffix: " days", label: "target for a focused MVP release", featured: true },
+  { value: "4–6", label: "specialists per pod" },
+];
+
+const FAQS = [
+  {
+    q: "Do I own the code?",
+    a: "Yes. Code, designs, infrastructure and documentation are yours from the first commit.",
+  },
+  {
+    q: "How do you handle scope changes?",
+    a: "Every new idea is sized and traded against the plan, so the date and the quality both hold.",
+  },
+  {
+    q: "What happens after launch?",
+    a: "Your choice: we hand over to your team, or the pod keeps building and running the product.",
+  },
+  {
+    q: "Do you use offshore talent?",
+    a: "Where it helps. Leadership is in Dallas, and a pod can blend onshore, nearshore and offshore engineers. You always know who is on your team.",
+  },
+];
+---
+
+<Layout
+  title={`MVP launch teams · ${BRAND.name}`}
+  description="A senior, high-velocity squad that turns a validated idea into a credible first release, targeted at 90 days."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <LanesSection
+      id="momentum"
+      eyebrow="Why launch teams"
+      headline={["Momentum", "over bloat."]}
+      lede="The biggest launch risk isn’t technical feasibility. It’s time to market."
+      media={{ image: momentumPhoto, alt: "A product team works side by side at laptops around one long table.", focus: "50% 45%" }}
+      trackLabel="Time to first commit"
+      scale={["Start", "Weeks", "Months"]}
+      lanes={[
+        { label: "Traditional hiring", verdict: "Too slow.", length: 1, value: "Months of hiring first" },
+        { label: "Freelancers", verdict: "Too fractured.", length: 0.56, value: "Weeks of sourcing" },
+        { label: `${BRAND.name} launch team`, verdict: "One cohesive unit.", length: 0.14, value: "Within two weeks", featured: true },
+      ]}
+      extrasLabel="Only with a launch team"
+      extras={["Dozens of products shipped together", "Product, design and engineering in one pod", "One accountable team"]}
+    />
+    <RosterSection
+      id="composition"
+      eyebrow="Team composition engine"
+      headline={["Shape your squad", "around your constraints."]}
+      accent={1}
+      lede="Pick your main constraint. We shape the pod around it."
+      label="Primary constraint"
+      pods={PODS}
+      stats={STATS}
+    />
+    <GanttSection
+      id="blueprint"
+      eyebrow="The blueprint"
+      headline={["How the squad", "executes."]}
+      accent={1}
+      lede="Thirteen weeks and one accountable team, from first commit to a live product."
+      media={{ image: blueprintPhoto, alt: "A squad works at laptops in a bright office, a wall of sticky notes planning the sprint behind them.", focus: "50% 55%" }}
+      weeks={13}
+      phases={[
+        { title: "Architecture & setup", body: "Stack, repos and CI/CD in week one.", from: 1, to: 1, output: "A working pipeline" },
+        { title: "Core feature build", body: "Only what proves your core value.", from: 2, to: 9, output: "A demo every sprint" },
+        { title: "Quality & hardening", body: "Tests and release pipelines.", from: 10, to: 12, output: "Release pipeline" },
+        { title: "Market handoff", body: "Hand over, or keep building.", from: 13, to: 13, output: "A live product" },
+      ]}
+    />
+    <LoadSection
+      id="foundation"
+      eyebrow="Built to scale"
+      headline={["Build an MVP.", "Not technical debt."]}
+      myth="An MVP has to be throwaway code to hit a deadline."
+      practices={[
+        { icon: "layout", label: "Component-driven frontend" },
+        { icon: "plug", label: "Documented APIs" },
+        { icon: "cloud", label: "Cloud-native infrastructure" },
+      ]}
+      keepsTitle="What you walk away with"
+      keeps={[
+        "Production-ready codebase",
+        "Automated deployment pipelines",
+        "Full API documentation",
+        "Scalable cloud infrastructure",
+        "Complete IP ownership",
+      ]}
+      board={{ title: "Launch week", target: 100000, unit: "users", note: "Illustrative" }}
+      days={["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]}
+      traffic={[0.04, 0.12, 0.2, 0.36, 0.5, 0.72, 0.96]}
+      readouts={[
+        { label: "Uptime", value: "99.99%" },
+        { label: "p95 latency", value: "118 ms" },
+        { label: "Error rate", value: "0.02%" },
+      ]}
+    />
+    <FaqSection
+      eyebrow="Launch questions"
+      headline={["Before", "you launch."]}
+      cta="Talk to a launch lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "Four colleagues gather around one laptop, smiling at what they have built.", focus: "50% 40%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to launch"
+      headline={["Stop waiting.", "Start building."]}
+      body="Your market window won’t stay open. Let’s scope your MVP and assemble the team to launch it."
+      cta="Schedule a launch consultation"
+    />
+  </main>
+  <Footer />
+</Layout>

@@ -1,0 +1,230 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import StakeholderSection from "@/components/StakeholderSection.astro";
+import StorySection from "@/components/StorySection.astro";
+import SwimlaneSection from "@/components/SwimlaneSection.astro";
+import ToolkitSection from "@/components/ToolkitSection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p12-hero.jpg";
+import boardPhoto from "@/assets/pages/p12-board.jpg";
+import stakeholdersPhoto from "@/assets/pages/p12-stakeholders.jpg";
+import faqPhoto from "@/assets/pages/p12-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* Business analysts. The quote, the story, the process figures, the
+   stakeholder map and the FAQ answers are illustrative drafts; have them
+   checked before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "Product & experience", "Business analysts"],
+  headline: ["Business", "analysts."],
+  accent: 1,
+  lede: "Analysts who turn what stakeholders say into stories engineers can build, map how work really flows, and fix it before code is written.",
+  ctas: [
+    { label: "Add a business analyst", href: "#contact", arrow: "diagonal" },
+    { label: "See a story take shape", href: "#story", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A business analyst presents charts on a screen to colleagues around a meeting table.",
+  specs: [
+    { label: "Elicits", value: "Needs, not wishes" },
+    { label: "Writes", value: "Stories with criteria" },
+    { label: "Maps", value: "Work as it runs" },
+    { label: "Aligns", value: "Every stakeholder" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Do we need a BA if we have a PM?",
+    a: "Often, yes. The PM decides what matters; the analyst works out exactly how it should behave and writes it down.",
+  },
+  {
+    q: "Can they start on our existing backlog?",
+    a: "Yes. Most start by tidying it: splitting epics, adding acceptance criteria and flagging what nobody has decided.",
+  },
+  {
+    q: "Do they work with data?",
+    a: "Enough SQL to check the data behind a requirement and validate a report before it ships.",
+  },
+  {
+    q: "What if stakeholders disagree?",
+    a: "They map who decides, bring the trade-off to that person with evidence, and record the decision.",
+  },
+];
+---
+
+<Layout
+  title={`Business analysts · ${BRAND.name}`}
+  description="Business analysts who turn stakeholder needs into clear user stories, map processes, align stakeholders and specify what to build."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <StorySection
+      id="story"
+      eyebrow="Requirement to story"
+      headline={["What they said.", "What we build."]}
+      lede="A stakeholder’s words, rewritten into a story the team can build and test. Nothing guessed."
+      media={{ image: boardPhoto, alt: "An analyst maps work on a whiteboard of sticky notes in an orange meeting room.", focus: "40% 50%" }}
+      quote={{
+        label: "Discovery call, verbatim",
+        who: "Head of Support",
+        parts: [
+          "Refunds are a mess. ",
+          { text: "My team", mark: 1 },
+          " emails finance and waits two days while customers chase us. Can’t we just ",
+          { text: "do the small ones ourselves", mark: 2 },
+          "? ",
+          { text: "People want their money back", mark: 3 },
+          ".",
+        ],
+      }}
+      story={{
+        label: "User story",
+        ref: "REF-142",
+        meta: "3 points",
+        status: "Ready for sprint",
+        lines: [
+          { lead: "As a", text: "support agent," },
+          { lead: "I want", text: "to refund orders under $50 myself," },
+          { lead: "so that", text: "customers are paid back the same day." },
+        ],
+      }}
+      criteriaLabel="Acceptance criteria"
+      criteria={[
+        { given: "an order under $50,", when: "I refund it,", then: "it posts without finance approval." },
+        { given: "an order of $50 or more,", when: "I refund it,", then: "finance approves it first." },
+        { given: "a refund posts,", when: "it clears,", then: "the customer is emailed that day." },
+      ]}
+    />
+    <SwimlaneSection
+      id="process"
+      eyebrow="Swimlane process map"
+      headline={["Find the wait.", "Fix the flow."]}
+      lede="The same refund, mapped across the people who touch it. The analyst finds where it stalls and redesigns the route."
+      title="Refund process"
+      lanes={["Customer", "Support", "Finance", "System"]}
+      nodes={[
+        { id: "ask", label: ["Asks for", "a refund"] },
+        { id: "check", label: ["Checks", "the order"] },
+        { id: "gate", label: ["Gateway", "< $50?"] },
+        { id: "approve", label: ["Approves", "refund"] },
+        { id: "post", label: ["Posts", "refund"] },
+        { id: "paid", label: ["Money", "back"] },
+      ]}
+      yes="Yes"
+      no="No"
+      states={{ asis: "As-is", tobe: "To-be" }}
+      stateLabel="Process view"
+      flags={{
+        asis: "Bottleneck: every refund waits for finance approval.",
+        tobe: "Fixed: refunds under $50 skip the queue.",
+      }}
+      readouts={[
+        { label: "Lead time", asis: "2.4 days", tobe: "4 hours" },
+        { label: "Hand-offs", asis: "3", tobe: "2" },
+        { label: "Need finance", asis: "100%", tobe: "22%" },
+      ]}
+    />
+    <StakeholderSection
+      id="stakeholders"
+      eyebrow="Stakeholder map"
+      headline={["Everyone heard.", "Nobody surprised."]}
+      lede="Who decides, who cares, and how the analyst keeps each of them in the loop."
+      media={{ image: stakeholdersPhoto, alt: "Two analysts discuss a wall of sticky notes in a bright office.", focus: "50% 40%" }}
+      axes={{ power: "Power", interest: "Interest", low: "Low", high: "High" }}
+      pickLabel="Engagement approaches"
+      quadrants={[
+        { key: "manage", name: "Manage closely", approach: "Shape decisions together.", cadence: "Weekly 1:1" },
+        { key: "satisfy", name: "Keep satisfied", approach: "Short updates, no surprises.", cadence: "Monthly steering" },
+        { key: "inform", name: "Keep informed", approach: "Show the work as it lands.", cadence: "Sprint demo" },
+        { key: "monitor", name: "Monitor", approach: "Light touch, open door.", cadence: "Release notes" },
+      ]}
+      people={[
+        { name: "Head of Support", power: 78, interest: 84 },
+        { name: "Finance director", power: 58, interest: 68 },
+        { name: "CFO", power: 84, interest: 22 },
+        { name: "IT security", power: 70, interest: 12 },
+        { name: "Support agents", power: 44, interest: 80 },
+        { name: "Finance clerks", power: 28, interest: 64 },
+        { name: "Legal", power: 32, interest: 14 },
+        { name: "Marketing", power: 14, interest: 30 },
+      ]}
+    />
+    <ToolkitSection
+      id="toolkit"
+      eyebrow="Analyst toolkit"
+      headline={["Every tool,", "on the spec."]}
+      lede="Elicit, model, specify and validate in the tools your team already runs."
+      doc={{ code: "SPEC-012", title: "Analyst toolkit", owner: "Business analysis", status: "Approved", stamp: "Approved" }}
+      metaLabels={{ code: "Document", owner: "Owner", status: "Status", history: "Revisions" }}
+      history={[
+        { rev: "R1", note: "Discovery" },
+        { rev: "R2", note: "Process design" },
+        { rev: "R3", note: "Build and sign-off" },
+      ]}
+      chapters={[
+        {
+          title: "Elicit",
+          entries: [
+            { slug: "miro", role: "Workshops" },
+            { slug: "zoom", role: "Interviews" },
+            { slug: "loom", role: "Walkthroughs" },
+            { slug: "typeform", role: "Surveys" },
+          ],
+        },
+        {
+          title: "Model",
+          entries: [
+            { slug: "diagramsdotnet", role: "Swimlanes" },
+            { slug: "lucid", role: "Process maps" },
+            { slug: "camunda", role: "BPMN models" },
+            { slug: "figma", role: "Wireframes" },
+          ],
+        },
+        {
+          title: "Specify",
+          entries: [
+            { slug: "jira", role: "Stories" },
+            { slug: "confluence", role: "Specs" },
+            { slug: "notion", role: "Decision logs" },
+            { slug: "googledocs", role: "Sign-off drafts" },
+          ],
+        },
+        {
+          title: "Validate",
+          entries: [
+            { slug: "postgresql", role: "Data checks" },
+            { slug: "googlesheets", role: "Test data" },
+            { slug: "looker", role: "Report checks" },
+            { slug: "metabase", role: "Dashboards" },
+          ],
+        },
+      ]}
+    />
+    <FaqSection
+      eyebrow="BA questions"
+      headline={["Questions,", "clarified."]}
+      accent={1}
+      cta="Talk to a lead analyst"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "An analyst writes on sticky notes on a dark wall during a workshop.", focus: "60% 40%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to clarify"
+      headline={["Clear specs.", "Calm sprints."]}
+      body="Send us the requirement nobody can agree on. We’ll match an analyst who can turn it into a story this sprint."
+      cta="Find my analyst"
+    />
+  </main>
+  <Footer />
+</Layout>

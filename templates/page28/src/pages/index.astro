@@ -1,0 +1,292 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import DagSection from "@/components/DagSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import FreshnessSection from "@/components/FreshnessSection.astro";
+import LayersSection from "@/components/LayersSection.astro";
+import Footer from "@/components/Footer.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import PlatformSection from "@/components/PlatformSection.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p28-hero.jpg";
+import teamPhoto from "@/assets/pages/p28-team.jpg";
+import platformPhoto from "@/assets/pages/p28-platform.jpg";
+import faqPhoto from "@/assets/pages/p28-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* Data engineers. The pipeline run, the sample rows, the freshness figures
+   and the FAQ answers are illustrative drafts. Have them checked before
+   launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "AI & data", "Data engineers"],
+  headline: ["Data", "engineers."],
+  accent: 1,
+  lede: "Engineers who build the pipelines your numbers depend on: tested at every step, on time every morning, and cheap to run.",
+  ctas: [
+    { label: "Hire data engineers", href: "#contact", arrow: "diagonal" },
+    { label: "Watch a run", href: "#dag", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A data engineer walks colleagues through a chart on a wall screen.",
+  specs: [
+    { label: "Builds", value: "Pipelines, warehouses, lakes" },
+    { label: "Stack", value: "Spark, Airflow, dbt" },
+    { label: "Measured by", value: "Freshness and tests" },
+    { label: "Team", value: "1 to 5 engineers" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Batch or streaming?",
+    a: "Batch, unless a decision needs the data within minutes. Streaming costs more to run and to staff, so we use it where it pays.",
+  },
+  {
+    q: "Can you work in the stack we already have?",
+    a: "Yes. We work in your warehouse, orchestrator and cloud, and change them only when cost or reliability asks for it.",
+  },
+  {
+    q: "How do you stop bad data reaching dashboards?",
+    a: "Tests at every layer: schemas, nulls, duplicates and row counts. A failed check stops the run before anything is published.",
+  },
+  {
+    q: "Who owns the pipelines afterwards?",
+    a: "Your team. Every pipeline is in version control and documented, and handed over with runbooks and alerts already wired.",
+  },
+];
+---
+
+<Layout
+  title={`Data engineers · ${BRAND.name}`}
+  description="Data engineers who build tested, on-time pipelines: orchestration, medallion layers, freshness SLAs and the platform to run them."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <DagSection
+      id="dag"
+      eyebrow="Orchestration"
+      headline={["Every task,", "in order."]}
+      accent={1}
+      lede="Each night’s run waits on its dependencies, retries what fails, and publishes only when everything upstream has passed."
+      stages={["Extract", "Validate", "Transform", "Load", "Publish"]}
+      tasks={[
+        { id: "orders", stage: 0, dur: 1.2, after: [] },
+        { id: "customers", stage: 0, dur: 1.6, after: [] },
+        { id: "events", stage: 0, dur: 1.4, failAfter: 0.9, after: [] },
+        { id: "check_raw", stage: 1, dur: 1, after: ["orders", "customers", "events"] },
+        { id: "fct_orders", stage: 2, dur: 1.3, after: ["check_raw"] },
+        { id: "dim_users", stage: 2, dur: 0.9, after: ["check_raw"] },
+        { id: "warehouse", stage: 3, dur: 1, after: ["fct_orders", "dim_users"] },
+        { id: "dashboards", stage: 4, dur: 0.8, after: ["warehouse"] },
+        { id: "crm_sync", stage: 4, dur: 1.1, after: ["warehouse"] },
+      ]}
+      dag="orders_daily"
+      schedule="Daily · 02:00 UTC"
+      runtime={1452}
+      labels={{ queued: "Queued", running: "Running", retry: "Up for retry", success: "Success" }}
+      retryNote="events: the source API timed out. Retried once, then passed. Nothing downstream ran on partial data."
+      replay="Run again"
+      footnote="Illustrative run"
+    />
+    <LayersSection
+      id="layers"
+      eyebrow="Medallion layers"
+      headline={["Bronze, silver,", "gold."]}
+      accent={1}
+      lede="Raw rows land as they come. Each layer cleans, joins or sums them, until the numbers are ready for the board."
+      media={{ image: teamPhoto, alt: "Four colleagues work through data together at a long desk.", focus: "50% 40%" }}
+      bronze={{
+        title: "Bronze",
+        note: "Raw, as landed",
+        rows: [
+          { cells: ["1001", { t: "\"  Acme Corp \"", issue: true }, { t: "2024/03/01", issue: true }, { t: "\"$1,200.00\"", issue: true }] },
+          { cells: ["1002", { t: "acme corp", issue: true }, { t: "03-01-2024", issue: true }, "1200"] },
+          { cells: ["1002", "acme corp", "03-01-2024", "1200"], dup: true },
+          { cells: ["1003", "Harbor Co", { t: "null", issue: true }, "860"] },
+          { cells: ["1004", { t: "HARBOR co ", issue: true }, "2024-03-02", { t: "€640", issue: true }] },
+          { cells: ["1005", "Lumen Labs", "2024-03-02", "410"] },
+        ],
+        foot: "6 rows · 1 duplicate · 1 missing date",
+      }}
+      silver={{
+        title: "Silver",
+        note: "Clean and typed",
+        steps: "Trim · cast · dedupe · join",
+        cols: ["Order", "Customer", "Date", "USD", "Region"],
+        rows: [
+          ["1001", "Acme Corp", "2024-03-01", "1,200.00", "West"],
+          ["1002", "Acme Corp", "2024-03-01", "1,200.00", "West"],
+          ["1004", "Harbor Co", "2024-03-02", "696.00", "East"],
+          ["1005", "Lumen Labs", "2024-03-02", "410.00", "East"],
+        ],
+        held: "1003 held back: no order date. Flagged to the source team.",
+        foot: "4 rows · 1 held for review"
+      }}
+      gold={{
+        title: "Gold",
+        note: "Ready to report",
+        steps: "Group · sum",
+        metric: "March revenue",
+        total: "$3,506",
+        rows: [
+          { label: "West", count: "2 orders", value: "$2,400", share: 1 },
+          { label: "East", count: "2 orders", value: "$1,106", share: 0.46 },
+        ],
+        foot: "By region · feeds the board pack",
+      }}
+    />
+    <FreshnessSection
+      id="freshness"
+      eyebrow="Freshness"
+      headline={["Stale data,", "caught early."]}
+      accent={1}
+      lede="Every table carries a freshness promise. When one slips, the team knows before the dashboard does, and the late load lands."
+      speed={6}
+      tables={[
+        { name: "raw_events", layer: "bronze", sla: 15, every: 10, age: 4, rows: [1.21e6, 1.18e6, 1.26e6, 1.3e6, 1.24e6, 1.19e6, 1.33e6, 1.28e6, 1.35e6, 1.31e6] },
+        { name: "orders_clean", layer: "silver", sla: 60, every: 30, age: 18, rows: [48210, 47100, 49850, 51200, 50300, 52900, 51800, 53400, 54100, 52600] },
+        { name: "inventory_snap", layer: "silver", sla: 120, every: 60, age: 96, late: 85, rows: [8120, 8090, 8150, 8110, 8200, 8170, 8230, 8190, 8260, 8240] },
+        { name: "customers_dim", layer: "silver", sla: 360, every: 180, age: 96, rows: [214e3, 214.4e3, 214.9e3, 215.2e3, 215.8e3, 216.1e3, 216.7e3, 217e3, 217.6e3, 218e3] },
+        { name: "revenue_daily", layer: "gold", sla: 120, every: 60, age: 33, rows: [412, 398, 430, 445, 421, 460, 452, 470, 466, 481] },
+        { name: "marketing_spend", layer: "gold", sla: 240, every: 120, age: 70, rows: [96, 102, 99, 110, 104, 98, 112, 118, 109, 121] },
+      ]}
+      record={{ label: "SLA met, last 30 days", value: "99.4%" }}
+      notes={{
+        calm: "Every table is inside its promise.",
+        stale: "inventory_snap missed its 2h SLA. On-call is paged; dashboards show a stale-data banner.",
+        back: "The late load landed. inventory_snap is back inside its SLA.",
+      }}
+      status={{ fresh: "Fresh", stale: "Stale", back: "Back on SLA" }}
+      footnote="Illustrative tables · 1 s = 6 min"
+    />
+    <PlatformSection
+      id="platform"
+      eyebrow="The platform"
+      headline={["From source", "to dashboard."]}
+      accent={1}
+      lede="The tools our data engineers work in, laid out the way data moves through them. Pick one to trace its path."
+      media={{ image: platformPhoto, alt: "An engineer concentrates at his screen in a busy, blue-lit office.", focus: "68% 35%" }}
+      stages={[
+        {
+          name: "Ingest",
+          tools: [
+            { slug: "apachekafka", name: "Kafka", note: "Streams events from apps and services as they happen." },
+            { slug: "airbyte", name: "Airbyte", note: "Syncs SaaS tools and databases on a schedule." },
+            { slug: "apacheflink", name: "Flink", note: "Cleans and windows streams before they land." },
+          ],
+        },
+        {
+          name: "Store",
+          tools: [
+            { slug: "snowflake", name: "Snowflake", note: "The warehouse for modelled, shared tables." },
+            { slug: "googlebigquery", name: "BigQuery", note: "A serverless warehouse for teams on Google Cloud." },
+            { slug: "databricks", name: "Databricks", note: "The lakehouse for Spark jobs and ML features." },
+            { slug: "postgresql", name: "PostgreSQL", short: "Postgres", note: "Operational data and small marts." },
+            { slug: "clickhouse", name: "ClickHouse", note: "Fast columns for event analytics.", ink: true },
+            { slug: "apacheparquet", name: "Parquet", note: "Open files in the lake that every engine reads." },
+          ],
+        },
+        {
+          name: "Process",
+          tools: [
+            { slug: "apachespark", name: "Spark", note: "Large batch transforms across the lake." },
+            { slug: "trino", name: "Trino", note: "One SQL query across many stores." },
+            { slug: "duckdb", name: "DuckDB", note: "In-process SQL for quick, local work.", ink: true },
+            { slug: "python", name: "Python", note: "Glue code, tests and custom transforms." },
+            { slug: "polars", name: "Polars", note: "Fast dataframes for mid-size jobs." },
+          ],
+        },
+        {
+          name: "Serve",
+          tools: [
+            { slug: "looker", name: "Looker", note: "Governed metrics and the dashboards built on them." },
+            { slug: "metabase", name: "Metabase", note: "Self-serve questions for every team." },
+            { slug: "apachesuperset", name: "Superset", note: "Open-source dashboards at scale." },
+          ],
+        },
+      ]}
+      links={[
+        ["apachekafka", "snowflake", 3],
+        ["apachekafka", "databricks", 2],
+        ["apachekafka", "clickhouse", 3],
+        ["airbyte", "snowflake", 3],
+        ["airbyte", "googlebigquery", 3],
+        ["airbyte", "postgresql", 2],
+        ["apacheflink", "databricks", 2],
+        ["apacheflink", "clickhouse", 1],
+        ["apacheflink", "apacheparquet", 2],
+        ["snowflake", "apachespark", 2],
+        ["snowflake", "trino", 2],
+        ["snowflake", "python", 2],
+        ["googlebigquery", "trino", 1],
+        ["googlebigquery", "python", 2],
+        ["databricks", "apachespark", 4],
+        ["postgresql", "duckdb", 1],
+        ["postgresql", "polars", 1],
+        ["clickhouse", "trino", 2],
+        ["clickhouse", "polars", 2],
+        ["apacheparquet", "apachespark", 1],
+        ["apacheparquet", "duckdb", 1],
+        ["apachespark", "looker", 4],
+        ["apachespark", "apachesuperset", 3],
+        ["trino", "looker", 2],
+        ["trino", "apachesuperset", 3],
+        ["duckdb", "metabase", 2],
+        ["python", "looker", 2],
+        ["python", "metabase", 2],
+        ["polars", "metabase", 3],
+      ]}
+      rail={{
+        label: "Scheduled and run by",
+        groups: [
+          {
+            name: "Orchestrate",
+            tools: [
+              { slug: "apacheairflow", name: "Airflow", note: "Schedules every run and retries what fails.", touches: [0, 1, 2, 3] },
+              { slug: "prefect", name: "Prefect", note: "Python-native flows with retries built in.", touches: [0, 1, 2] },
+            ],
+          },
+          {
+            name: "Run",
+            tools: [
+              { slug: "docker", name: "Docker", note: "Packages each job with its dependencies.", touches: [2, 3] },
+              { slug: "kubernetes", name: "Kubernetes", note: "Runs and scales the jobs and the tools.", touches: [0, 2, 3] },
+              { slug: "terraform", name: "Terraform", note: "Declares the whole platform as code.", touches: [0, 1, 2, 3] },
+              { slug: "googlecloud", name: "GCP", note: "Compute, storage and access where your data lives.", touches: [1, 2] },
+            ],
+          },
+        ],
+      }}
+      readout={{
+        title: "How to read it",
+        hint: "Band width is each tool's typical share of the volume. Hover, tap or tab to a tool to trace it.",
+        also: "Also: dbt, Fivetran and Apache Iceberg.",
+        from: "From",
+        to: "To",
+        touches: "Touches",
+      }}
+    />
+    <FaqSection
+      eyebrow="Data questions"
+      headline={["Clean data,", "on time."]}
+      accent={1}
+      cta="Talk to a data lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "Colleagues go through charts together around a meeting table.", focus: "50% 40%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to build"
+      headline={["Raw in.", "Trusted out."]}
+      body="Tell us where your data lives and what it should answer. We’ll staff the engineers to build pipelines you can trust."
+      cta="Plan my data team"
+    />
+  </main>
+  <Footer />
+</Layout>

@@ -1,0 +1,132 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* The specialties, as a list set large. Pointing at a row brings up a
+   photo of that kind of specialist at work, floating with the pointer, and
+   the row's detail slides in on the right. On touch screens and small
+   screens each row simply shows its photo as a thumbnail. See
+   docs/sections.md. */
+
+interface Specialty {
+  name: string;
+  note: string;
+  stack: string;
+  media: SectionPhoto;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  specialties: Specialty[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, specialties } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+---
+
+<section data-ac-sec="light" data-ac-reveal id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <div data-ac-reveal-head>
+      <div>
+        <p data-ac-sec-eyebrow class="mono-label">
+          <span aria-hidden="true">+</span>
+          {eyebrow}
+        </p>
+        <h2 data-ac-reveal-headline aria-label={headline.join(" ")}>
+          {headline.map((line, i) => (
+            <Fragment>
+              {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+              <span data-ac-sec-line data-accent={i === accent || undefined}>
+                <RevealText text={line} offset={offsets[i]} />
+              </span>
+            </Fragment>
+          ))}
+        </h2>
+      </div>
+      <p data-ac-reveal-lede data-ac-sec-rise>{lede}</p>
+    </div>
+
+    <ul data-ac-reveal-list>
+      {specialties.map((s, i) => (
+        <li data-ac-reveal-row style={`--ac-i:${i}`} tabindex="0">
+          <span data-ac-reveal-num class="mono-label">{pad(i + 1)}</span>
+          <span data-ac-reveal-thumb>
+            <Image src={s.media.image} alt="" widths={[160, 320]} sizes="96px" quality={70} />
+          </span>
+          <span data-ac-reveal-name>{s.name}</span>
+          <span data-ac-reveal-detail>
+            <span>{s.note}</span>
+            <span class="mono-label-sm">{s.stack}</span>
+          </span>
+          <span data-ac-reveal-arrow aria-hidden="true">
+            <svg viewBox="0 0 16 16"><path d="M3 8h10M13 8 9 4M13 8l-4 4" /></svg>
+          </span>
+        </li>
+      ))}
+    </ul>
+
+    {/* The floating photos: one per row, only the pointed-at one showing. */}
+    <div data-ac-reveal-float aria-hidden="true">
+      {specialties.map((s, i) => (
+        <span data-ac-reveal-photo data-index={i}>
+          <Image src={s.media.image} alt="" widths={[400, 700]} sizes="340px" quality={78} style={s.media.focus ? `object-position:${s.media.focus}` : undefined} />
+        </span>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-reveal]").forEach((section) => {
+    toggleInView(section);
+
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const float = section.querySelector<HTMLElement>("[data-ac-reveal-float]")!;
+    const photos = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-reveal-photo]"));
+    const rows = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-reveal-row]"));
+
+    const show = (index: number) => {
+      photos.forEach((p, i) => p.toggleAttribute("data-on", i === index));
+      rows.forEach((r, i) => r.toggleAttribute("data-on", i === index));
+      float.toggleAttribute("data-on", index >= 0);
+    };
+
+    /* The photo trails the pointer a little, eased each frame. */
+    let tx = 0;
+    let ty = 0;
+    let x = 0;
+    let y = 0;
+    let frame = 0;
+    const follow = () => {
+      x += (tx - x) * 0.18;
+      y += (ty - y) * 0.18;
+      float.style.transform = `translate(${x}px, ${y}px)`;
+      frame = Math.abs(tx - x) + Math.abs(ty - y) > 0.5 ? requestAnimationFrame(follow) : 0;
+    };
+
+    rows.forEach((row, i) => {
+      row.addEventListener("pointerenter", () => fine.matches && show(i));
+      row.addEventListener("focus", () => show(i));
+      row.addEventListener("blur", () => show(-1));
+    });
+    section.querySelector("[data-ac-reveal-list]")!.addEventListener("pointerleave", () => show(-1));
+    section.addEventListener("pointermove", (event) => {
+      if (!fine.matches) return;
+      const box = section.getBoundingClientRect();
+      tx = event.clientX - box.left;
+      ty = event.clientY - box.top;
+      if (!frame) frame = requestAnimationFrame(follow);
+    });
+  });
+</script>

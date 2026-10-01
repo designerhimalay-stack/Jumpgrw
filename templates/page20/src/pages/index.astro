@@ -1,0 +1,155 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import ClimbSection from "@/components/ClimbSection.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import MaintainSection from "@/components/MaintainSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import PlatformsSection from "@/components/PlatformsSection.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p20-hero.jpg";
+import platformsPhoto from "@/assets/pages/p20-platforms.jpg";
+import maintainPhoto from "@/assets/pages/p20-maintain.jpg";
+import faqPhoto from "@/assets/pages/p20-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* PHP developers. The version figures are relative and illustrative, the
+   checklist timings are an example plan, and the FAQ answers are drafts;
+   have them checked before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "Backend", "PHP"],
+  headline: ["PHP", "developers."],
+  accent: 1,
+  lede: "Engineers who build on Laravel, Symfony and WordPress, and keep older PHP estates fast, patched and upgraded.",
+  ctas: [
+    { label: "Hire PHP developers", href: "#contact", arrow: "diagonal" },
+    { label: "See the climb", href: "#versions", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A developer works at his laptop beside a colleague in a bright office.",
+  specs: [
+    { label: "Frameworks", value: "Laravel, Symfony" },
+    { label: "Platforms", value: "WordPress, Drupal" },
+    { label: "Upgrades", value: "PHP 5.6 to 8" },
+    { label: "Starts", value: "Within two weeks" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Can you upgrade an old PHP 5 app?",
+    a: "Yes. We put tests around the risky parts first, then move up one version at a time so the app keeps running.",
+  },
+  {
+    q: "Do you work on WordPress and WooCommerce?",
+    a: "Yes: custom themes and plugins, store integrations, speed work and safe core updates.",
+  },
+  {
+    q: "Laravel or Symfony?",
+    a: "Both. We follow what you run today, and for new builds we recommend one to suit the product and the team.",
+  },
+  {
+    q: "Can you take over an app another team built?",
+    a: "Yes. We start with an audit of the code, dependencies and hosting, and agree a plan before changing anything.",
+  },
+];
+---
+
+<Layout
+  title={`PHP developers · ${BRAND.name}`}
+  description="PHP engineers for Laravel, Symfony and WordPress, who keep older PHP estates fast, patched and upgraded."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <ClimbSection
+      id="versions"
+      eyebrow="Version climb"
+      headline={["Old PHP is slow PHP.", "Climb to 8."]}
+      accent={1}
+      lede="Each major upgrade buys speed and safer code. We take apps up a step at a time, tests first."
+      measure="Requests per second, relative"
+      baseline="PHP 5.6 = 1×"
+      note="Illustrative · varies by app"
+      bringsLabel="Brings"
+      legend={["End of life", "Supported"]}
+      steps={[
+        { version: "PHP 5.6", value: 1, figure: "1×", status: "End of life", brings: ["Security fixes ended 2018", "Loosely typed code"] },
+        { version: "PHP 7.4", value: 2, figure: "2×", status: "End of life", brings: ["Typed properties", "Arrow functions", "Preloading"] },
+        {
+          version: "PHP 8.x",
+          value: 2.3,
+          figure: "2.3×",
+          status: "Supported",
+          current: true,
+          brings: ["JIT compiler", "Enums and readonly", "Match, named arguments"],
+        },
+      ]}
+    />
+    <PlatformsSection
+      id="platforms"
+      eyebrow="Frameworks and platforms"
+      headline={["Six ways to PHP.", "One team for all."]}
+      accent={1}
+      lede="From custom Laravel apps to WooCommerce stores. Flip a card to see what we build on each."
+      media={{ image: platformsPhoto, alt: "A developer in headphones writes code across his monitors in a dim room.", focus: "4% 50%" }}
+      flip="Flip"
+      back="We build"
+      cards={[
+        { slug: "laravel", kind: "Framework", builds: ["SaaS products", "APIs and queues", "Admin panels"] },
+        { slug: "symfony", kind: "Framework", builds: ["Enterprise apps", "Reusable bundles", "Long-lived APIs"] },
+        { slug: "php", kind: "Custom code", builds: ["Legacy rescues", "Version upgrades", "Integrations"] },
+        { slug: "wordpress", kind: "CMS", builds: ["Custom themes", "Plugins", "Headless sites"] },
+        { slug: "drupal", kind: "CMS", builds: ["Multisite estates", "Custom modules", "Migrations"] },
+        { slug: "woocommerce", kind: "Commerce", builds: ["Store builds", "Payment and ERP links", "Checkout speed"] },
+      ]}
+    />
+    <MaintainSection
+      id="maintain"
+      eyebrow="Maintain and modernise"
+      headline={["Legacy code,", "kept healthy."]}
+      accent={1}
+      lede="The steady work that keeps a PHP estate fast, patched and safe to change."
+      media={{ image: maintainPhoto, alt: "An engineer works through code on her laptop at a bright desk.", focus: "62% 50%" }}
+      listLabel="Legacy health plan"
+      doneLabel="6 of 6"
+      tasks={[
+        { task: "Tests around the risky paths", when: "Week 1" },
+        { task: "Deploys automated, rollbacks tested", when: "Week 2" },
+        { task: "Upgrade to PHP 8, step by step", when: "Weeks 3–6" },
+        { task: "Slow queries profiled and fixed", when: "Week 4" },
+        { task: "Composer dependencies kept current", when: "Monthly" },
+        { task: "Security patches applied", when: "Monthly" },
+      ]}
+      toolsLabel="In the toolbelt"
+      tools={[
+        { slug: "composer", role: "Packages" },
+        { slug: "mysql", role: "Data" },
+        { slug: "redis", role: "Cache, queues" },
+        { slug: "docker", role: "Environments" },
+        { slug: "phpstorm", role: "Inspections" },
+      ]}
+    />
+    <FaqSection
+      eyebrow="PHP questions"
+      headline={["Questions?", "echo answers;"]}
+      accent={1}
+      cta="Talk to a PHP lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "A team listens to a colleague present in a meeting room, laptops open.", focus: "50% 45%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to upgrade"
+      headline={["composer update.", "Your team too."]}
+      body="Tell us what runs on PHP today and what worries you about it. We will shape the team to fix it."
+      cta="Plan my PHP team"
+    />
+  </main>
+  <Footer />
+</Layout>

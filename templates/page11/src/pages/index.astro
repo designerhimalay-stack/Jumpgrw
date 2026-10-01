@@ -1,0 +1,178 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import AccessSection from "@/components/AccessSection.astro";
+import CanvasSection from "@/components/CanvasSection.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import ResearchSection from "@/components/ResearchSection.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import TokensSection from "@/components/TokensSection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p11-hero.jpg";
+import whiteboardPhoto from "@/assets/pages/p11-whiteboard.jpg";
+import reviewPhoto from "@/assets/pages/p11-review.jpg";
+import faqPhoto from "@/assets/pages/p11-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* UX/UI designers. The research notes, the card copy and the FAQ answers are
+   illustrative drafts; the contrast ratios are computed from the colours.
+   Have the copy checked before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "Product & experience", "UX/UI designers"],
+  headline: ["UX/UI", "designers."],
+  lede: "Designers who research first, build systems rather than screens, and hand engineers work that ships exactly as designed.",
+  ctas: [
+    { label: "Add a designer", href: "#contact", arrow: "diagonal" },
+    { label: "See the system", href: "#tokens", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A designer works on a web page layout at her desk, colour swatches printed beside her laptop.",
+  specs: [
+    { label: "Researches", value: "Users, not guesses" },
+    { label: "Designs in", value: "Figma and code" },
+    { label: "Hands over", value: "Tokens and components" },
+    { label: "Checks", value: "WCAG 2.2 AA" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Do your designers do research too?",
+    a: "Yes. Interviews, usability tests and synthesis are part of the job, not a separate team.",
+  },
+  {
+    q: "Can they work inside our design system?",
+    a: "Yes. They extend what you have: tokens, components and docs, kept in step with the code.",
+  },
+  {
+    q: "How do they hand over to engineers?",
+    a: "Specced components, tokens engineers can import, and a designer in review until it ships.",
+  },
+  {
+    q: "What about accessibility?",
+    a: "Built in from the first frame: contrast, focus, motion and screen readers, checked before handover.",
+  },
+];
+---
+
+<Layout
+  title={`UX/UI designers · ${BRAND.name}`}
+  description="UX/UI designers who research, build design systems and hand over accessible components that ship as designed."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <TokensSection
+      id="tokens"
+      eyebrow="Tokens to component"
+      headline={["Systems first.", "Screens follow."]}
+      lede="Every component is assembled from tokens, so one change to a colour or a radius reaches every screen."
+      groups={[
+        { name: "Colour", hint: "5 tokens" },
+        { name: "Type scale", hint: "3 steps" },
+        { name: "Spacing", hint: "4-point grid" },
+        { name: "Radius", hint: "4 steps" },
+      ]}
+      artboard="Card / default"
+      card={{
+        eyebrow: "Research",
+        title: "Design review",
+        body: "Thursday at 2pm. Bring the new checkout flows.",
+        primary: "Join review",
+        secondary: "Later",
+      }}
+      done="Built from 16 tokens"
+      replay="Replay"
+    />
+    <ResearchSection
+      id="research"
+      eyebrow="Research wall"
+      headline={["Twelve notes.", "Three truths."]}
+      accent={1}
+      lede="After the interviews, the designer sorts what users said into themes. The themes become the brief."
+      media={{ image: whiteboardPhoto, alt: "A designer maps a user flow on a whiteboard.", focus: "35% 40%" }}
+      caption="Mapping the flow"
+      themes={[
+        {
+          label: "Can’t find it",
+          notes: ["Where is export?", "Search misses my files", "Settings are buried", "Too many menus"],
+        },
+        {
+          label: "Slow to start",
+          notes: ["Setup took a day", "Didn’t know step two", "Invites got lost", "Empty screens"],
+        },
+        {
+          label: "Trust gaps",
+          notes: ["Did it save?", "Unclear pricing", "Errors say nothing", "Who can see this?"],
+        },
+      ]}
+    />
+    <CanvasSection
+      id="toolbelt"
+      eyebrow="Canvas tool belt"
+      headline={["Every tool,", "one canvas."]}
+      accent={1}
+      lede="Research, design, prototype and hand-off tools, used side by side by designers who work in the open."
+      page="Tool belt"
+      frames={[
+        { slug: "figma", note: "Interfaces and prototypes", at: [3, 7, 23, 188] },
+        { slug: "framer", note: "High-fidelity motion", at: [30, 5, 16, 128] },
+        { slug: "storybook", note: "Components, documented", at: [50, 11, 20, 150] },
+        { slug: "webflow", note: "Marketing pages", at: [74, 5, 23, 124] },
+        { slug: "miro", note: "Workshops and journeys", at: [4, 60, 21, 140] },
+        { slug: "sketch", note: "Legacy libraries", at: [30, 52, 15, 128] },
+        { slug: "maze", note: "Unmoderated tests", at: [50, 58, 18, 140] },
+        { slug: "dovetail", note: "Research repository", at: [73, 46, 24, 170] },
+      ]}
+      cursors={[
+        { name: "Maya · UI", path: [0, 2, 3, 7, 6, 4] },
+        { name: "Leo · UX", path: [4, 5, 1, 0, 6, 7] },
+      ]}
+    />
+    <AccessSection
+      id="accessible"
+      eyebrow="Accessible by default"
+      headline={["Readable by", "everyone."]}
+      accent={1}
+      lede="Every colour pair is checked before handover. Switch the preview to see the design hold up."
+      media={{ image: reviewPhoto, alt: "Two designers review a screen together at a laptop.", focus: "50% 45%" }}
+      modeLabel="Preview as"
+      modes={["As designed", "Low vision", "Colour blind"]}
+      pairs={[
+        { name: "Body text", fg: "#0a1022", bg: "#ffffff", use: "text" },
+        { name: "Primary button", fg: "#ffffff", bg: "#3a65eb", use: "button" },
+        { name: "Muted label", fg: "#4a5368", bg: "#f1f3f7", use: "caption" },
+        { name: "Link on dark", fg: "#a9bdff", bg: "#0a1022", use: "footer" },
+      ]}
+      preview={{
+        title: "Your order is on its way",
+        body: "It should arrive on Friday. We’ll text you when it’s close.",
+        button: "Track order",
+        muted: "Order 4821",
+        link: "Need help?",
+      }}
+      tool="Checked with Lighthouse and by hand"
+    />
+    <FaqSection
+      eyebrow="Design questions"
+      headline={["Questions,", "designed."]}
+      accent={1}
+      cta="Talk to a design lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "A team sorts sticky notes on a glass wall during a research session.", focus: "50% 40%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to design"
+      headline={["Less rework.", "More craft."]}
+      body="Tell us about your product and your design system. We’ll match designers who can pick it up next sprint."
+      cta="Find my designer"
+    />
+  </main>
+  <Footer />
+</Layout>

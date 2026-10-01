@@ -1,0 +1,142 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CostCurveSection from "@/components/CostCurveSection.astro";
+import Footer from "@/components/Footer.astro";
+import MatrixSection from "@/components/MatrixSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import PyramidSection from "@/components/PyramidSection.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import TestRunSection from "@/components/TestRunSection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p5-hero.jpg";
+import consolePhoto from "@/assets/pages/p5-console.jpg";
+import devicesPhoto from "@/assets/pages/p5-devices.jpg";
+import faqPhoto from "@/assets/pages/p5-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* QA pods. There was no brief for this page: the copy is written from what
+   the home page says about QA (manual, automated, performance and
+   functional testing). The test run is illustrative, the pyramid's shares
+   are a rule of thumb, and the FAQ answers are drafts. Have them checked
+   before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Delivery", "QA pods"],
+  headline: ["QA", "pods."],
+  lede: "Protect every release with a dedicated quality team: automated suites, exploratory testing and performance checks, built into your delivery from day one.",
+  ctas: [
+    { label: "Add a QA pod", href: "#contact", arrow: "diagonal" },
+    { label: "See a test run", href: "#test-run", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A tester checks an app on a phone beside a laptop running the same build.",
+  specs: [
+    { label: "Covers", value: "Manual to automated" },
+    { label: "Pod", value: "2 to 5 QA engineers" },
+    { label: "Runs in", value: "Your CI pipeline" },
+    { label: "Reports", value: "Every release" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Can the pod work with our existing tests?",
+    a: "Yes. We start from your suite, fix what is flaky, and grow coverage where the risk is highest.",
+  },
+  {
+    q: "Do you only automate, or test by hand too?",
+    a: "Both. Automation covers what repeats; exploratory testing finds what nobody scripted.",
+  },
+  {
+    q: "Which tools do you use?",
+    a: "Whatever fits your stack: Playwright, Cypress, Appium, k6 and others, run in your CI.",
+  },
+];
+---
+
+<Layout
+  title={`QA pods · ${BRAND.name}`}
+  description="A dedicated quality team that protects every release with automated, exploratory and performance testing."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <TestRunSection
+      id="test-run"
+      eyebrow="Quality, built in"
+      headline={["Every release,", "tested."]}
+      lede="The pod writes the tests with your engineers and runs them on every change, so problems surface in minutes, not in production."
+      media={{ image: consolePhoto, alt: "Two teammates point at a laptop screen, reviewing a build together.", focus: "50% 50%" }}
+      suite="checkout.spec · 12 tests"
+      tests={[
+        { name: "cart › adds an item", ms: 142 },
+        { name: "cart › updates quantity", ms: 98 },
+        { name: "checkout › applies a discount code", ms: 211 },
+        { name: "checkout › rejects an expired card", ms: 186 },
+        { name: "checkout › retries a failed payment", ms: 264 },
+        { name: "checkout › sends the receipt", ms: 173 },
+        { name: "account › resets a password", ms: 155 },
+        { name: "account › signs in with SSO", ms: 238 },
+        { name: "a11y › checkout is keyboard-usable", ms: 121 },
+        { name: "a11y › forms have labels", ms: 64 },
+        { name: "perf › search responds under 300ms", ms: 302 },
+        { name: "visual › matches the design", ms: 347 },
+      ]}
+    />
+    <PyramidSection
+      id="pyramid"
+      eyebrow="The approach"
+      headline={["The right test", "at the right level."]}
+      accent={1}
+      lede="Most tests fast and low; fewer, slower ones at the top. The pod balances the suite so it stays quick and trusted."
+      tiers={[
+        { name: "Exploratory", share: "By hand", note: "Testers probe what no script anticipates." },
+        { name: "End to end", share: "Few", note: "Critical journeys, run in real browsers." },
+        { name: "Integration", share: "Some", note: "Services and APIs, tested together." },
+        { name: "Unit", share: "Most", note: "Fast checks on every function, on every change." },
+      ]}
+    />
+    <MatrixSection
+      id="coverage"
+      eyebrow="Coverage"
+      headline={["Every browser.", "Every screen."]}
+      accent={1}
+      lede="Your users don’t all have your laptop. The pod tests on the browsers and screens they actually use."
+      media={{ image: devicesPhoto, alt: "A tester works through an app on a tablet at a bright table.", focus: "50% 45%" }}
+      caption="Browser by screen"
+      rows={["Chrome", "Safari", "Firefox", "Edge"]}
+      columns={["Desktop", "Laptop", "Tablet", "Phone", "Small phone"]}
+    />
+    <CostCurveSection
+      id="cost"
+      eyebrow="Why early matters"
+      headline={["Bugs found late", "cost the most."]}
+      lede="The later a bug is found, the more it costs to fix. A QA pod moves finding them to where they’re cheapest."
+      stages={["Requirements", "Design", "Build", "Test", "Production"]}
+      catchFrom={2}
+      catchTo={3}
+      catchLabel="Where the pod catches them"
+      axis="Cost to fix"
+    />
+    <FaqSection
+      eyebrow="QA questions"
+      headline={["Questions,", "tested."]}
+      accent={1}
+      cta="Talk to a QA lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "An engineer maps test flows on a whiteboard.", focus: "50% 40%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to release"
+      headline={["Ship it.", "With confidence."]}
+      body="Tell us about your product and your release cadence. We’ll shape a QA pod that fits into your pipeline."
+      cta="Plan my QA pod"
+    />
+  </main>
+  <Footer />
+</Layout>

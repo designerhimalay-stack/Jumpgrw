@@ -1,0 +1,117 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import { TECH_LOGOS, type TechLogoSlug } from "@/lib/tech-logos";
+import type { SectionPhoto } from "@/types/page";
+
+/* The ML toolkit, as a model card. One frame laid out like the card that
+   ships with every model: column 1 holds the owners' photo; columns 2–4
+   the card itself: the model's name, version and status, what it
+   predicts, four headline figures, then what it was built with, one row
+   per stage (explore, data, train, track and tune, scale, serve), each
+   tool by its logo on a tile. The rows fill in from the top as the
+   section arrives. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  model: string;
+  version: string;
+  status: string;
+  purpose: string;
+  owner: string;
+  metrics: { label: string; value: string }[];
+  fields: { label: string; tools: TechLogoSlug[] }[];
+}
+
+const { id, eyebrow, headline, accent, lede, media, model, version, status, purpose, owner, metrics, fields } = Astro.props;
+
+/* Yellow marks sit on an ink tile; the rest on white. */
+const DARK: string[] = ["huggingface", "weightsandbiases"];
+---
+
+<section data-ac-sec="light" data-ac-card id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <article data-ac-sec-frame data-ac-card-frame aria-label={`Model card: ${model} ${version}`}>
+      <Joints />
+
+      <div data-ac-card-owner>
+        <div data-ac-card-photo>
+          <Image
+            src={media.image}
+            alt={media.alt}
+            widths={[400, 700, 1000]}
+            sizes="(max-width: 991px) 100vw, 24vw"
+            quality={78}
+            style={media.focus ? `object-position:${media.focus}` : undefined}
+          />
+        </div>
+        <p data-ac-card-owned>
+          <span class="mono-label-sm">Owners</span>
+          {owner}
+        </p>
+      </div>
+
+      <div data-ac-card-body>
+        <header data-ac-card-head>
+          <p class="mono-label" data-ac-card-kind>Model card</p>
+          <h3 data-ac-card-name>
+            {model}
+            <span data-ac-card-version>{version}</span>
+          </h3>
+          <p data-ac-card-status>
+            <i aria-hidden="true" />
+            {status}
+          </p>
+          <p data-ac-card-purpose>{purpose}</p>
+        </header>
+
+        <dl data-ac-card-metrics>
+          {metrics.map((m) => (
+            <div>
+              <dt class="mono-label-sm">{m.label}</dt>
+              <dd>{m.value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <dl data-ac-card-fields>
+          {fields.map((field, i) => (
+            <div style={`--ac-i:${i}`}>
+              <dt class="mono-label-sm">{field.label}</dt>
+              <dd>
+                <ul>
+                  {field.tools.map((slug) => (
+                    <li>
+                      <span data-ac-card-tile data-dark={DARK.includes(slug) || undefined}>
+                        <TechLogo slug={slug} size={24} tone="brand" />
+                      </span>
+                      {TECH_LOGOS[slug].title}
+                    </li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </article>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-card]").forEach(toggleInView);
+</script>

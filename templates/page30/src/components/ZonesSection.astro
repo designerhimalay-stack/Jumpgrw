@@ -1,0 +1,115 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* Four time zones, one working day, on the dark tone. The header splits
+   around a photo of engineers at work. Under it, the country as four bands,
+   Pacific to Eastern, one per column of the page; each band carries its
+   zone, the real local time now, and the hubs in it placed roughly where
+   they sit on the map. Dashed lines run from the head office to every hub,
+   drawing themselves in as the section arrives. On phones the bands keep
+   their columns and list their hubs as text. See docs/sections.md. */
+
+interface Hub {
+  city: string;
+  /** Position inside its band, 0–1 across and 0–1 down. */
+  x: number;
+  y: number;
+  hq?: boolean;
+}
+
+interface Zone {
+  code: string;
+  name: string;
+  tz: string;
+  hubs: Hub[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  zones: Zone[];
+  hqLabel: string;
+  foot: string;
+}
+
+const { id, eyebrow, headline, accent, lede, media, zones, hqLabel, foot } = Astro.props;
+
+/* Every hub on one 1000 × 400 plane: band i spans 250 units. */
+const plane = zones.flatMap((zone, i) =>
+  zone.hubs.map((hub) => ({ ...hub, px: (i + hub.x) * 250, py: hub.y * 400 })),
+);
+const hq = plane.find((h) => h.hq) ?? plane[0];
+const curve = (to: { px: number; py: number }) => {
+  const mx = (hq.px + to.px) / 2;
+  const my = Math.min(hq.py, to.py) - 60;
+  return `M${hq.px} ${hq.py} Q${mx} ${my} ${to.px} ${to.py}`;
+};
+---
+
+<section data-ac-sec="dark" data-ac-zones id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div data-ac-sec-frame data-ac-zones-map>
+      <Joints />
+      <svg data-ac-zones-lines viewBox="0 0 1000 400" preserveAspectRatio="none" aria-hidden="true">
+        {plane.filter((h) => !h.hq).map((h, i) => (
+          <path d={curve(h)} pathLength="1" style={`--ac-i:${i}`} />
+        ))}
+      </svg>
+      <ol data-ac-zones-bands>
+        {zones.map((zone) => (
+          <li data-ac-zones-band>
+            <p data-ac-zones-head>
+              <span data-ac-zones-code>{zone.code}</span>
+              <span data-ac-zones-name class="mono-label-sm">{zone.name}</span>
+            </p>
+            <p data-ac-zones-time>
+              <span data-ac-zones-clock data-tz={zone.tz}>--:--</span>
+              <span class="mono-label-sm">local now</span>
+            </p>
+            <ul data-ac-zones-hubs>
+              {zone.hubs.map((hub) => (
+                <li data-ac-zones-hub data-hq={hub.hq ? "" : undefined} style={`--ac-x:${hub.x};--ac-y:${hub.y}`}>
+                  <i aria-hidden="true" />
+                  <span>{hub.city}{hub.hq && <b class="mono-label-sm">{hqLabel}</b>}</span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    <p data-ac-zones-foot class="mono-label-sm">{foot}</p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-zones]").forEach((section) => {
+    toggleInView(section);
+
+    const clocks = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-zones-clock]"));
+    const tick = () =>
+      clocks.forEach((el) => {
+        el.textContent = new Intl.DateTimeFormat("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          timeZone: el.dataset.tz,
+        }).format(new Date());
+      });
+    tick();
+    window.setInterval(tick, 30_000);
+  });
+</script>

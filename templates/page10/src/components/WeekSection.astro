@@ -1,0 +1,176 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* A product manager's week, photo-led, on the dark tone. The headline spans
+   the top; under it a wide photo of a PM leading the team, and laid over its
+   foot a Monday-to-Friday strip of the rituals that shape the week. The
+   day's highlight steps along the strip while the section is on screen,
+   filling as it goes; choosing a day (pointer or keyboard) holds it there.
+   Phones put the strip under the photo as five day tabs and one detail
+   panel, every day's detail in the same grid cell. Without the script, or
+   under reduced motion, Monday shows and the days still switch. See
+   docs/sections.md. */
+
+interface Day {
+  day: string;
+  short: string;
+  time: string;
+  ritual: string;
+  note: string;
+  with: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  label: string;
+  days: Day[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, label, days } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+---
+
+<section data-ac-sec="dark" data-ac-week id={id} style={`--ac-days:${days.length};--ac-day:0`}>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-week-grid>
+    <div data-ac-week-head>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-week-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+    </div>
+    <p data-ac-week-lede data-ac-sec-rise>{lede}</p>
+
+    <div data-ac-week-stage>
+      <Joints />
+      <div data-ac-week-image>
+        <Image
+          src={media.image}
+          alt={media.alt}
+          widths={[480, 800, 1200, media.image.width]}
+          sizes="(max-width: 991px) 100vw, 92vw"
+          quality={78}
+          style={media.focus ? `object-position:${media.focus}` : undefined}
+        />
+      </div>
+
+      <div data-ac-week-strip role="group" aria-label={label}>
+        <span data-ac-week-marker aria-hidden="true"><i /></span>
+        {days.map((d, i) => (
+          <button type="button" data-ac-week-day aria-pressed={i === 0 ? "true" : "false"} style={`--ac-i:${i}`}>
+            <span data-ac-week-when class="mono-label-sm">
+              <span data-ac-week-long>{d.day}</span>
+              <span data-ac-week-short aria-hidden="true">{d.short}</span>
+              <span data-ac-week-time> · {d.time}</span>
+            </span>
+            <span data-ac-week-ritual>{d.ritual}</span>
+            <span data-ac-week-note>{d.note}</span>
+            <span data-ac-week-with class="mono-label-sm">{d.with}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Phones: the chosen day's detail, all five in one cell. */}
+      <div data-ac-week-detail aria-hidden="true">
+        {days.map((d, i) => (
+          <p data-ac-week-card data-i={i} data-on={i === 0 || undefined}>
+            <span class="mono-label-sm">{d.day} · {d.time}</span>
+            <span data-ac-week-card-ritual>{d.ritual}</span>
+            <span data-ac-week-card-note>{d.note}</span>
+            <span data-ac-week-card-with class="mono-label-sm">{d.with}</span>
+          </p>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-week]").forEach((section) => {
+    const buttons = Array.from(section.querySelectorAll<HTMLButtonElement>("[data-ac-week-day]"));
+    const cards = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-week-card]"));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const STEP_MS = 2800;
+    let day = 0;
+    let timer = 0;
+    let held = false;
+    let inView = false;
+
+    const show = (i: number) => {
+      day = i;
+      section.style.setProperty("--ac-day", String(i));
+      buttons.forEach((b, j) => b.setAttribute("aria-pressed", String(j === i)));
+      cards.forEach((c, j) => c.toggleAttribute("data-on", j === i));
+      /* Restart the marker's fill for the new day. */
+      section.removeAttribute("data-ac-week-run");
+      void section.offsetWidth;
+      if (!held && inView && !reduced) section.setAttribute("data-ac-week-run", "");
+    };
+
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = 0;
+      section.removeAttribute("data-ac-week-run");
+    };
+    const start = () => {
+      stop();
+      if (held || reduced || !inView) return;
+      show(day);
+      timer = window.setInterval(() => show((day + 1) % buttons.length), STEP_MS);
+    };
+
+    buttons.forEach((b, i) =>
+      b.addEventListener("click", () => {
+        held = true;
+        stop();
+        show(i);
+      }),
+    );
+
+    /* Arrow keys move along the strip, as in a toolbar. */
+    section.querySelector("[data-ac-week-strip]")!.addEventListener("keydown", (e) => {
+      const key = (e as KeyboardEvent).key;
+      if (key !== "ArrowRight" && key !== "ArrowLeft") return;
+      e.preventDefault();
+      const next = (day + (key === "ArrowRight" ? 1 : buttons.length - 1)) % buttons.length;
+      held = true;
+      stop();
+      show(next);
+      buttons[next].focus();
+    });
+
+    /* The loop runs only on screen, and starts over from Monday each time
+       the section comes back, unless the reader chose a day. */
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        inView = entry.isIntersecting;
+        if (inView) {
+          if (!held) day = 0;
+          start();
+        } else stop();
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

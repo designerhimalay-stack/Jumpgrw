@@ -1,0 +1,138 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { TechLogoSlug } from "@/lib/tech-logos";
+import type { SectionPhoto } from "@/types/page";
+
+/* One codebase, many targets, on the light tone. A framed photo holds the
+   first column; the rest of the frame is an optical bench. The shared
+   module (commonMain) sends one beam into a prism drawn around the Kotlin
+   mark, and the prism splits it into four rays, one per target: Android,
+   iOS, web and server, each with its source set and native layer. The
+   beam, prism and rays draw in order as the section arrives, then a pulse
+   of light runs down the beam and out along the rays while the section is
+   in view. Phones: the bench turns upright, the rays fan down to the four
+   targets in a row. See docs/sections.md. */
+
+interface Target {
+  slug: TechLogoSlug;
+  name: string;
+  set: string;
+  native: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  shared: { name: string; note: string; items: string[] };
+  targets: Target[];
+}
+
+const { id, eyebrow, headline, accent, lede, media, shared, targets } = Astro.props;
+
+/* Each ray ends on its target's centre: targets share the column equally. */
+const ends = targets.map((_, i) => ((i + 0.5) / targets.length) * 100);
+---
+
+<section data-ac-sec="light" data-ac-kmp id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-kmp-frame>
+      <Joints />
+
+      <div data-ac-kmp-photo>
+        <Image
+          src={media.image}
+          alt={media.alt}
+          widths={[480, 800, media.image.width]}
+          sizes="(max-width: 991px) 100vw, 25vw"
+          quality={78}
+          style={media.focus ? `object-position:${media.focus}` : undefined}
+        />
+      </div>
+
+      <div data-ac-kmp-bench>
+        <div data-ac-kmp-source>
+          <p data-ac-kmp-source-head>
+            <span data-ac-kmp-source-mark><TechLogo slug="kotlin" size={22} tone="white" /></span>
+            <code>{shared.name}</code>
+          </p>
+          <ul>
+            {shared.items.map((item, i) => (
+              <li style={`--ac-i:${i}`}>{item}</li>
+            ))}
+          </ul>
+          <p data-ac-kmp-note class="mono-label-sm">{shared.note}</p>
+        </div>
+
+        <div data-ac-kmp-optics aria-hidden="true">
+          {/* Across: the beam enters on the left, the rays leave on the right.
+              Coordinates are percentages of the box, so strokes keep their
+              weight at any size. */}
+          <svg data-ac-kmp-rays data-axis="x">
+            <line data-ac-kmp-beam x1="0%" y1="50%" x2="50%" y2="50%" pathLength="1" />
+            {ends.map((y, i) => (
+              <line data-ac-kmp-ray x1="50%" y1="50%" x2="100%" y2={`${y}%`} pathLength="1" style={`--ac-i:${i}`} />
+            ))}
+            <line data-ac-kmp-pulse data-leg="in" x1="0%" y1="50%" x2="50%" y2="50%" pathLength="1" />
+            {ends.map((y) => (
+              <line data-ac-kmp-pulse data-leg="out" x1="50%" y1="50%" x2="100%" y2={`${y}%`} pathLength="1" />
+            ))}
+          </svg>
+          {/* Upright, for phones: the beam drops from the top, the rays fan
+              down to the targets in a row. */}
+          <svg data-ac-kmp-rays data-axis="y">
+            <line data-ac-kmp-beam x1="50%" y1="0%" x2="50%" y2="50%" pathLength="1" />
+            {ends.map((x, i) => (
+              <line data-ac-kmp-ray x1="50%" y1="50%" x2={`${x}%`} y2="100%" pathLength="1" style={`--ac-i:${i}`} />
+            ))}
+            <line data-ac-kmp-pulse data-leg="in" x1="50%" y1="0%" x2="50%" y2="50%" pathLength="1" />
+            {ends.map((x) => (
+              <line data-ac-kmp-pulse data-leg="out" x1="50%" y1="50%" x2={`${x}%`} y2="100%" pathLength="1" />
+            ))}
+          </svg>
+          <span data-ac-kmp-prism>
+            <svg viewBox="0 0 100 88">
+              <defs>
+                <linearGradient id={`${id}-glass`} x1="0%" y1="0%" x2="1%" y2="1%">
+                  <stop offset="0" stop-color="#ffffff" />
+                  <stop offset="1" stop-color="#dbe4fd" />
+                </linearGradient>
+              </defs>
+              <path d="M50 4 L96 84 L4 84 Z" fill={`url(#${id}-glass)`} />
+              <path d="M50 4 L96 84 L4 84 Z M50 4 L50 84" data-ac-kmp-edge />
+            </svg>
+            <TechLogo slug="kotlin" size={26} />
+          </span>
+        </div>
+
+        <ul data-ac-kmp-targets>
+          {targets.map((t, i) => (
+            <li style={`--ac-i:${i}`}>
+              <span data-ac-kmp-tile><TechLogo slug={t.slug} size={24} /></span>
+              <span data-ac-kmp-name>{t.name}</span>
+              <code data-ac-kmp-set>{t.set}</code>
+              <span data-ac-kmp-native>{t.native}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-kmp]").forEach(toggleInView);
+</script>

@@ -1,0 +1,111 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* Infrastructure as code, applied. The header splits around a photo of
+   engineers at their screens. Under it: the code on the left, and on the
+   right the resources it creates, each ticking to "created" in turn as its
+   line in the code lights, the way an apply runs. Replays on each arrival.
+   See docs/sections.md. */
+
+interface Line {
+  text: string;
+  /** The resource this line creates, if any. */
+  creates?: string;
+  kind?: "comment" | "block" | "attr";
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  file: string;
+  lines: Line[];
+  summary: string;
+}
+
+const { id, eyebrow, headline, accent, lede, media, file, lines, summary } = Astro.props;
+const resources = lines.map((l, i) => ({ ...l, i })).filter((l) => l.creates);
+---
+
+<section data-ac-sec="light" data-ac-iac id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div data-ac-sec-frame data-ac-iac-frame>
+      <Joints />
+      <div data-ac-iac-code aria-hidden="true">
+        <p data-ac-iac-file class="mono-label-sm">{file}</p>
+        <ol>
+          {lines.map((line, i) => (
+            <li data-kind={line.kind} data-step={resources.findIndex((r) => r.i === i)}>
+              <span data-ac-iac-num>{i + 1}</span>
+              <code>{line.text}</code>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div data-ac-iac-plan>
+        <p data-ac-iac-plan-head class="mono-label">Apply</p>
+        <ul>
+          {resources.map((r, s) => (
+            <li data-ac-iac-resource style={`--ac-i:${s}`}>
+              <span data-ac-iac-dot aria-hidden="true" />
+              <span data-ac-iac-name>{r.creates}</span>
+              <span data-ac-iac-state class="mono-label-sm">
+                <span data-state="wait">Planned</span>
+                <span data-state="done">Created</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p data-ac-iac-summary>{summary}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-iac]").forEach((section) => {
+    const lines = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-iac-code] li"));
+    const resources = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-iac-resource]"));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const STEP_MS = 520;
+    let timers: number[] = [];
+
+    const set = (step: number) => {
+      lines.forEach((line) => {
+        const s = Number(line.dataset.step);
+        line.toggleAttribute("data-live", s === step);
+        line.toggleAttribute("data-applied", s >= 0 && s <= step);
+      });
+      resources.forEach((r, i) => r.toggleAttribute("data-done", i <= step));
+    };
+
+    const reset = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      set(-1);
+    };
+
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        if (reduced) return set(resources.length - 1);
+        if (!entry.isIntersecting) return reset();
+        reset();
+        resources.forEach((_, i) => timers.push(window.setTimeout(() => set(i), 600 + i * STEP_MS)));
+        timers.push(window.setTimeout(() => set(resources.length), 600 + resources.length * STEP_MS));
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>

@@ -1,0 +1,75 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* The people and their skills, as a mosaic, on the dark tone. Photos of
+   engineers at work in Canadian cities and skill tiles share one grid on
+   the page's four columns, set like a checkerboard with one tall photo
+   through the middle. Each photo carries the city it was taken in; each
+   skill tile a number, the skill and what it covers. The tiles turn in on
+   arrival in a diagonal wave. See docs/sections.md. */
+
+type Tile =
+  | { kind: "photo"; media: SectionPhoto; city: string; role: string }
+  | { kind: "skill"; title: string; body: string; stack: string };
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  /** Seven tiles, in reading order: photo, skill, tall photo, skill, skill, photo, photo. */
+  tiles: Tile[];
+  footnote: string;
+}
+
+const { id, eyebrow, headline, accent, lede, tiles, footnote } = Astro.props;
+let skillNo = 0;
+---
+
+<section data-ac-sec="dark" data-ac-mosaic id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <ul data-ac-mosaic-grid>
+      {tiles.map((tile, i) =>
+        tile.kind === "photo" ? (
+          <li data-ac-mosaic-tile data-kind="photo" data-slot={i} style={`--ac-i:${i}`}>
+            <Image
+              src={tile.media.image}
+              alt={tile.media.alt}
+              widths={[360, 600, 900]}
+              sizes="(max-width: 599px) 50vw, 25vw"
+              quality={76}
+              style={tile.media.focus ? `object-position:${tile.media.focus}` : undefined}
+            />
+            <p data-ac-mosaic-cap>
+              <span>{tile.role}</span>
+              <span class="mono-label-sm">{tile.city}</span>
+            </p>
+          </li>
+        ) : (
+          <li data-ac-mosaic-tile data-kind="skill" data-slot={i} style={`--ac-i:${i}`}>
+            <span data-ac-mosaic-no class="mono-label-sm">{String(++skillNo).padStart(2, "0")}</span>
+            <h3 data-ac-mosaic-title>{tile.title}</h3>
+            <p data-ac-mosaic-body>{tile.body}</p>
+            <p data-ac-mosaic-stack class="mono-label-sm">{tile.stack}</p>
+          </li>
+        ),
+      )}
+    </ul>
+
+    <p data-ac-mosaic-foot class="mono-label-sm">{footnote}</p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-mosaic]").forEach(toggleInView);
+</script>

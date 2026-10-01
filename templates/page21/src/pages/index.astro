@@ -1,0 +1,166 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import PreviewSection from "@/components/PreviewSection.astro";
+import LockStackSection from "@/components/LockStackSection.astro";
+import HomeScreenSection from "@/components/HomeScreenSection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p21-hero.jpg";
+import releasePhoto from "@/assets/pages/p21-release.jpg";
+import toolchainPhoto from "@/assets/pages/p21-toolchain.jpg";
+import faqPhoto from "@/assets/pages/p21-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* iOS developers. The code, the release timeline, the figures in the
+   widget and the FAQ answers are illustrative drafts; have them checked
+   before launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "Mobile", "iOS"],
+  headline: ["Native iOS.", "Swift hands."],
+  accent: 1,
+  lede: "Senior Swift engineers who build native iPhone and iPad apps inside your team, from the first SwiftUI screen to the App Store release.",
+  ctas: [
+    { label: "Add iOS developers", href: "#contact", arrow: "diagonal" },
+    { label: "See the preview", href: "#preview", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A developer checks an app on an iPhone beside a MacBook showing the same data.",
+  specs: [
+    { label: "Language", value: "Swift & SwiftUI" },
+    { label: "Devices", value: "iPhone, iPad, Watch" },
+    { label: "Ships via", value: "TestFlight to App Store" },
+    { label: "Starts", value: "Within two weeks" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "SwiftUI or UIKit?",
+    a: "Both. New screens are built in SwiftUI; working UIKit code stays and is bridged where it earns its keep.",
+  },
+  {
+    q: "Can they take us through App Store review?",
+    a: "Yes. They prepare builds, screenshots, privacy details and review notes, and answer the reviewers’ questions.",
+  },
+  {
+    q: "Will they work in our existing codebase?",
+    a: "Yes. They start with your repository, your conventions and your CI, and raise changes as ordinary pull requests.",
+  },
+  {
+    q: "Do they cover iPad and Apple Watch?",
+    a: "Yes. Layouts adapt to iPad from the start, and watchOS companions are built on the same shared Swift code.",
+  },
+];
+---
+
+<Layout
+  title={`iOS developers · ${BRAND.name}`}
+  description="Senior Swift engineers who build native iPhone and iPad apps inside your team, from SwiftUI to the App Store."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <PreviewSection
+      id="preview"
+      eyebrow="Code to preview"
+      headline={["Write a line.", "See the screen."]}
+      accent={1}
+      lede="Our engineers build in SwiftUI with live previews, so every line of code shows up on screen before it reaches a device."
+      file="ProfileView.swift"
+      device="iPhone 16 Pro"
+      pieces={["Avatar", "Name", "Stats", "Toggle", "Button"]}
+      lines={[
+        { code: "struct ProfileView: View {" },
+        { code: "\t@State private var alerts = true" },
+        { code: "" },
+        { code: "\tvar body: some View {" },
+        { code: "\t\tVStack(spacing: 16) {" },
+        { code: "\t\t\tAvatar(user.photo)", step: 0 },
+        { code: "\t\t\t\t.frame(width: 72, height: 72)", step: 0 },
+        { code: "\t\t\tText(user.name)", step: 1 },
+        { code: "\t\t\t\t.font(.title2.bold())", step: 1 },
+        { code: "\t\t\tStatsRow(user.stats)", step: 2 },
+        { code: "\t\t\tToggle(\"Release alerts\", isOn: $alerts)", step: 3 },
+        { code: "\t\t\tSpacer()" },
+        { code: "\t\t\tButton(\"Ship to TestFlight\") { ship() }", step: 4 },
+        { code: "\t\t\t\t.buttonStyle(.borderedProminent)", step: 4 },
+        { code: "\t\t}" },
+        { code: "\t}" },
+        { code: "}" },
+      ]}
+      screen={{
+        title: "Profile",
+        initials: "MR",
+        name: "Maya Rivera",
+        role: "iOS engineer",
+        stats: [
+          { label: "Builds", value: "128" },
+          { label: "Crash-free", value: "99.9%" },
+        ],
+        toggle: "Release alerts",
+        button: "Ship to TestFlight",
+      }}
+    />
+    <LockStackSection
+      id="release"
+      eyebrow="Release, on your lock screen"
+      headline={["From merge", "to the App Store."]}
+      accent={1}
+      lede="The team runs the whole release: signed builds, TestFlight rounds, review notes and a phased rollout. You get the notifications."
+      media={{ image: releasePhoto, alt: "A developer holds an iPhone while working on a MacBook at a wooden desk.", focus: "30% 50%" }}
+      time="9:41"
+      date="Thursday 16 October"
+      caption="Release 4.2, illustrative"
+      notes={[
+        { app: "Xcode Cloud", title: "Build uploaded", body: "Build 318 is processing.", when: "2d ago", icon: "xcode" },
+        { app: "TestFlight", title: "TestFlight: 40 testers", body: "Sent to the beta group.", when: "2d ago", icon: "plane" },
+        { app: "App Store Connect", title: "In review", body: "Version 4.2 is being reviewed.", when: "1d ago", icon: "appstore" },
+        { app: "App Store Connect", title: "Approved", body: "Ready for a phased release.", when: "3h ago", icon: "appstore" },
+        { app: "App Store Connect", title: "Released", body: "Version 4.2 is live.", when: "now", icon: "appstore" },
+      ]}
+    />
+    <HomeScreenSection
+      id="toolchain"
+      eyebrow="The toolchain"
+      headline={["Apple’s tools,", "and the rest."]}
+      accent={1}
+      lede="The team arrives fluent in the Apple toolchain and the services around it, and works in whichever of them you already use."
+      media={{ image: toolchainPhoto, alt: "An engineer works at a desk with an iMac and a MacBook.", focus: "60% 40%" }}
+      widget={{ label: "Crash-free users", value: "99.8%", note: "Last 30 days" }}
+      apps={[
+        { slug: "ios", label: "iOS" },
+        { slug: "cocoapods", label: "CocoaPods" },
+        { slug: "fastlane", label: "fastlane" },
+        { slug: "firebase", label: "Firebase" },
+        { slug: "sentry", label: "Sentry" },
+        { slug: "githubactions", label: "Actions" },
+        { slug: "figma", label: "Figma" },
+        { slug: "revenuecat", label: "RevenueCat" },
+      ]}
+      dock={["apple", "swift", "xcode", "appstore"]}
+    />
+    <FaqSection
+      eyebrow="iOS questions"
+      headline={["Questions,", "compiled."]}
+      accent={1}
+      cta="Talk to an iOS lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "A developer writes code on a MacBook with an iPhone plugged in beside it.", focus: "50% 45%" }}
+    />
+    <CtaSection
+      eyebrow="Ready for review"
+      headline={["Your next build,", "approved."]}
+      body="Tell us about your app and your release plans, and we’ll match Swift engineers who fit your team."
+      cta="Find iOS developers"
+    />
+  </main>
+  <Footer />
+</Layout>

@@ -1,0 +1,81 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+
+/* Scale up, scale down, on a grey band. A year of one client's team as a
+   bar per month rising from the floor as the section arrives, each bar in
+   engineer blocks, the busy months marked with what drove them. The claim
+   sits above, the terms under it. The months are an example and say so.
+   See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  caption: string;
+  months: { month: string; size: number; note?: string }[];
+  terms: { title: string; note: string }[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, caption, months, terms } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+const max = Math.max(...months.map((m) => m.size));
+---
+
+<section data-ac-sec="light" data-ac-flex id={id} style={`--ac-max:${max}`}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <div data-ac-flex-head>
+      <div>
+        <p data-ac-sec-eyebrow class="mono-label">
+          <span aria-hidden="true">+</span>
+          {eyebrow}
+        </p>
+        <h2 data-ac-flex-headline aria-label={headline.join(" ")}>
+          {headline.map((line, i) => (
+            <Fragment>
+              {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+              <span data-ac-sec-line data-accent={i === accent || undefined}>
+                <RevealText text={line} offset={offsets[i]} />
+              </span>
+            </Fragment>
+          ))}
+        </h2>
+      </div>
+      <p data-ac-flex-lede data-ac-sec-rise>{lede}</p>
+    </div>
+
+    <figure data-ac-flex-chart>
+      <ol data-ac-flex-months style={`--ac-n:${months.length}`}>
+        {months.map((m, i) => (
+          <li data-ac-flex-month style={`--ac-i:${i}`}>
+            {m.note && <span data-ac-flex-note>{m.note}</span>}
+            <span data-ac-flex-bar aria-label={`${m.month}: ${m.size} engineers`}>
+              {Array.from({ length: m.size }, (_, b) => <i style={`--ac-b:${b}`} />)}
+            </span>
+            <span data-ac-flex-label class="mono-label-sm">{m.month}</span>
+          </li>
+        ))}
+      </ol>
+      <figcaption class="mono-label-sm">{caption}</figcaption>
+    </figure>
+
+    <dl data-ac-flex-terms data-ac-sec-rise>
+      {terms.map((term) => (
+        <div>
+          <dt>{term.title}</dt>
+          <dd>{term.note}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-flex]").forEach(toggleInView);
+</script>

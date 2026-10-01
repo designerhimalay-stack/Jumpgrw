@@ -1,0 +1,247 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import TechLogo from "@/components/TechLogo.astro";
+import Joints from "@/components/process/Joints.astro";
+
+/* Widget tree to UI, on the light tone. One frame in two halves: the
+   app's widget tree on the left, indented the way an inspector shows it,
+   and on the right a phone in a pale bezel with every widget's bounds
+   traced faintly over its screen, the way Flutter's debug paint draws
+   them. Pointing at or focusing a widget lights its box on the screen,
+   with its name and size on a tag; while the frame is in view and nobody
+   is pointing, the light steps through the tree on its own. Every box is
+   drawn from the start and only its opacity changes, so nothing moves.
+   Without the script, the Column stays lit. See docs/sections.md. */
+
+interface Node {
+  id: string;
+  name: string;
+  /** A hint of the widget's main property, shown muted. */
+  hint: string;
+  depth: number;
+}
+
+interface ScreenCopy {
+  title: string;
+  place: string;
+  dates: string;
+  badge: string;
+  chips: [string, string, string];
+  tiles: { title: string; sub: string; meta: string }[];
+  nav: [string, string, string, string];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  treeLabel: string;
+  /** One line under the tree: how to use it. */
+  tip: string;
+  nodes: Node[];
+  screen: ScreenCopy;
+}
+
+const { id, eyebrow, headline, accent, lede, treeLabel, tip, nodes, screen } = Astro.props;
+
+/* Each widget's box on the 240 × 520 screen. */
+const BOX: Record<string, [number, number, number, number]> = {
+  scaffold: [0, 0, 240, 520],
+  appbar: [0, 30, 240, 52],
+  column: [0, 82, 240, 334],
+  card: [14, 90, 212, 118],
+  row: [14, 220, 212, 30],
+  chip: [14, 220, 44, 30],
+  listview: [0, 258, 240, 156],
+  tile: [0, 258, 240, 52],
+  fab: [174, 352, 52, 52],
+  navbar: [0, 430, 240, 90],
+};
+const LIT = "column";
+const NAV_ICONS = [
+  "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z",
+  "M4 7h16v12H4zM9 7V5h6v2",
+  "M7 4h10v16l-5-4-5 4z",
+  "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4.5-6 8-6s7 2 8 6",
+];
+---
+
+<section data-ac-sec="light" data-ac-wt id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-wt-frame>
+      <Joints />
+
+      <div data-ac-wt-tree>
+        <p data-ac-wt-tree-head>
+          <TechLogo slug="flutter" size={16} />
+          <span class="mono-label">{treeLabel}</span>
+        </p>
+        <ul data-ac-wt-nodes>
+          {nodes.map((n) => (
+            <li style={`--d:${n.depth}`}>
+              <button type="button" data-ac-wt-node={n.id} data-lit={n.id === LIT || undefined} aria-pressed={n.id === LIT ? "true" : "false"}>
+                <i data-ac-wt-glyph aria-hidden="true" />
+                <span data-ac-wt-name>{n.name}</span>
+                <span data-ac-wt-hint>{n.hint}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p data-ac-wt-tip class="mono-label-sm">{tip}</p>
+      </div>
+
+      <div data-ac-wt-stage>
+        <div data-ac-wt-phone role="img" aria-label={`A phone running the ${screen.title} screen, with the bounds of every widget in the tree traced over it.`}>
+          <div data-ac-wt-screen aria-hidden="true">
+            <p data-ac-wt-status>
+              <span>9:41</span>
+              <i data-ac-wt-cam />
+              <span data-ac-wt-bat />
+            </p>
+
+            <p data-ac-wt-appbar>
+              <span>{screen.title}</span>
+              <svg viewBox="0 0 24 24"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5" /></svg>
+            </p>
+
+            <div data-ac-wt-card>
+              <span data-ac-wt-badge>{screen.badge}</span>
+              <span data-ac-wt-place>{screen.place}</span>
+              <span data-ac-wt-dates>{screen.dates}</span>
+            </div>
+
+            <p data-ac-wt-chips>
+              {screen.chips.map((c, i) => <span data-on={i === 0 || undefined}>{c}</span>)}
+            </p>
+
+            <ul data-ac-wt-tiles>
+              {screen.tiles.map((t) => (
+                <li>
+                  <i>{t.title.charAt(0)}</i>
+                  <span>
+                    <b>{t.title}</b>
+                    <span>{t.sub}</span>
+                  </span>
+                  <em>{t.meta}</em>
+                </li>
+              ))}
+            </ul>
+
+            <i data-ac-wt-fab>+</i>
+
+            <ul data-ac-wt-nav>
+              {screen.nav.map((label, i) => (
+                <li data-on={i === 1 || undefined}>
+                  <i><svg viewBox="0 0 24 24"><path d={NAV_ICONS[i]} /></svg></i>
+                  <span>{label}</span>
+                </li>
+              ))}
+            </ul>
+
+            {nodes.map((n) => {
+              const [x, y, w, h] = BOX[n.id] ?? BOX.scaffold;
+              return (
+                <span
+                  data-ac-wt-box={n.id}
+                  data-lit={n.id === LIT || undefined}
+                  data-low={y < 24 || undefined}
+                  data-right={x > 120 || undefined}
+                  style={`left:${x}px;top:${y}px;width:${w}px;height:${h}px`}
+                >
+                  <b>{n.name} · {w}×{h}</b>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-wt]").forEach((section) => {
+    toggleInView(section);
+
+    const frame = section.querySelector<HTMLElement>("[data-ac-wt-frame]")!;
+    const tree = section.querySelector<HTMLElement>("[data-ac-wt-tree]")!;
+    const buttons = Array.from(section.querySelectorAll<HTMLButtonElement>("[data-ac-wt-node]"));
+    const boxes = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-wt-box]"));
+    const ids = buttons.map((b) => b.dataset.acWtNode ?? "");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let step = ids.indexOf("column");
+    let timer = 0;
+    let held = false;
+    let inView = false;
+
+    const light = (id: string) => {
+      buttons.forEach((b) => {
+        const on = b.dataset.acWtNode === id;
+        b.toggleAttribute("data-lit", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      boxes.forEach((box) => box.toggleAttribute("data-lit", box.dataset.acWtBox === id));
+    };
+
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = 0;
+    };
+
+    /* The tour runs only in view, and never while the reader is pointing
+       or has focus in the tree. */
+    const start = () => {
+      if (reduced || held || !inView || timer) return;
+      timer = window.setInterval(() => {
+        step = (step + 1) % ids.length;
+        light(ids[step]);
+      }, 1700);
+    };
+
+    buttons.forEach((b, i) => {
+      const pick = () => {
+        step = i;
+        light(ids[i]);
+      };
+      b.addEventListener("pointerenter", pick);
+      b.addEventListener("focus", pick);
+      b.addEventListener("click", pick);
+    });
+
+    tree.addEventListener("pointerenter", () => {
+      held = true;
+      stop();
+    });
+    tree.addEventListener("pointerleave", () => {
+      held = tree.contains(document.activeElement);
+      start();
+    });
+    tree.addEventListener("focusin", () => {
+      held = true;
+      stop();
+    });
+    tree.addEventListener("focusout", (e) => {
+      if (tree.contains(e.relatedTarget as Node | null)) return;
+      held = false;
+      start();
+    });
+
+    new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        if (inView) start();
+        else stop();
+      },
+      { threshold: 0.35 },
+    ).observe(frame);
+  });
+</script>

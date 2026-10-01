@@ -1,0 +1,186 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CtaSection from "@/components/CtaSection.astro";
+import DriftSection from "@/components/DriftSection.astro";
+import ExplainSection from "@/components/ExplainSection.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import ModelCardSection from "@/components/ModelCardSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@/components/PageHero.astro";
+import SmoothScroll from "@/components/SmoothScroll.astro";
+import TrainingSection from "@/components/TrainingSection.astro";
+import type { PageHeroContent } from "@/types/page";
+import heroPhoto from "@/assets/pages/p27-hero.jpg";
+import whiteboardPhoto from "@/assets/pages/p27-whiteboard.jpg";
+import cardPhoto from "@/assets/pages/p27-card.jpg";
+import faqPhoto from "@/assets/pages/p27-faq.jpg";
+import { BRAND } from "@/lib/brand";
+
+/* Machine learning engineers. The training run, the feature importances,
+   the single prediction, the drift loop and the model card are
+   illustrative, and the FAQ answers are drafts. Have them checked before
+   launch. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Technologies", "AI & data", "Machine learning"],
+  headline: ["ML", "engineers."],
+  accent: 1,
+  lede: "Engineers who take models from notebook to production: trained with care, explained to your team, and watched for drift once they’re live.",
+  ctas: [
+    { label: "Hire ML engineers", href: "#contact", arrow: "diagonal" },
+    { label: "Scrub a training run", href: "#training", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "An engineer in headphones works at a standing desk with code on two monitors.",
+  specs: [
+    { label: "Builds", value: "Forecasts, ranking, vision" },
+    { label: "Stack", value: "PyTorch to scikit-learn" },
+    { label: "Ships with", value: "Monitoring and retraining" },
+    { label: "Team", value: "1 to 5 engineers" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "We only have a notebook. Is that enough to start?",
+    a: "Yes. We turn it into a versioned pipeline with tracked experiments, tests on the data, and a model you can deploy and roll back.",
+  },
+  {
+    q: "Do we need deep learning?",
+    a: "Often not. We start with the simplest model that meets the target, and reach for PyTorch or TensorFlow when the data earns it.",
+  },
+  {
+    q: "How do you explain predictions to the business?",
+    a: "Global feature importance for the model, and a per-prediction breakdown for any single decision your team needs to justify.",
+  },
+  {
+    q: "What happens after launch?",
+    a: "Inputs and outputs are watched for drift. When a score crosses its threshold, retraining runs and a new model ships only if it beats the old one.",
+  },
+];
+
+/* A training run, 40 epochs: training loss keeps falling, validation loss
+   bottoms out and then rises. Illustrative. */
+const EPOCHS = 40;
+const train = Array.from({ length: EPOCHS }, (_, i) => 0.16 + 1.05 * Math.exp(-(i + 1) / 7.5));
+const val = Array.from({ length: EPOCHS }, (_, i) => {
+  const e = i + 1;
+  return 0.29 + 0.95 * Math.exp(-e / 6.8) + Math.pow(Math.max(0, e - 22), 1.7) * 0.0026;
+});
+---
+
+<Layout
+  title={`Machine learning engineers · ${BRAND.name}`}
+  description="ML engineers who train, explain, ship and monitor your models, from the first notebook to retraining in production."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <TrainingSection
+      id="training"
+      eyebrow="Training, watched"
+      headline={["Stop at the best", "epoch."]}
+      accent={1}
+      lede="Training loss always falls. The engineer watches validation loss, and keeps the checkpoint from before the model starts memorising."
+      train={train}
+      val={val}
+      patience={5}
+      scrubLabel="Epoch"
+      footnote="Illustrative run"
+    />
+    <ExplainSection
+      id="explain"
+      eyebrow="Explainability"
+      headline={["What drives", "the prediction."]}
+      accent={1}
+      lede="Which inputs matter across the model, and why it scored one customer the way it did, in terms your team can check."
+      media={{ image: whiteboardPhoto, alt: "An engineer works through equations on a chalkboard.", focus: "50% 40%" }}
+      globalTitle="Across the model"
+      globalCaption="Mean impact on churn score"
+      globalNote="SHAP values · 50k held-out accounts"
+      features={[
+        { name: "Days since last login", value: 0.142 },
+        { name: "Tickets, 90 days", value: 0.118 },
+        { name: "Contract type", value: 0.097 },
+        { name: "Seats used", value: 0.071 },
+        { name: "Monthly spend", value: 0.064 },
+        { name: "Tenure", value: 0.052 },
+        { name: "Payment failures", value: 0.038 },
+        { name: "Region", value: 0.011 },
+      ]}
+      localTitle="One customer, #48213"
+      base={0.18}
+      baseLabel="Average customer"
+      contributions={[
+        { name: "Last login 41 days ago", value: 0.21 },
+        { name: "6 support tickets", value: 0.14 },
+        { name: "Annual contract", value: -0.09 },
+        { name: "38% of seats used", value: 0.12 },
+        { name: "3 years a customer", value: -0.05 },
+        { name: "2 failed payments", value: 0.08 },
+        { name: "Everything else", value: 0.02 },
+      ]}
+      threshold={0.5}
+      resultLabel="Churn risk"
+      verdict="Flagged for outreach"
+    />
+    <DriftSection
+      id="drift"
+      eyebrow="In production"
+      headline={["Drift, caught", "and fixed."]}
+      accent={1}
+      lede="Live data wanders from what the model learned. When the drift score crosses its line, retraining runs and the model catches up."
+      feature="Basket value, €"
+      ticks={["0", "50", "100", "150", "200"]}
+      threshold={0.2}
+      steps={["Detect", "Retrain", "Validate", "Deploy"]}
+      states={{ stable: "Stable", drift: "Drift detected", retrain: "Retraining", done: "Realigned" }}
+      footnote="Illustrative feature"
+    />
+    <ModelCardSection
+      id="toolkit"
+      eyebrow="The toolkit"
+      headline={["Every model,", "on one card."]}
+      accent={1}
+      lede="Each model ships with a card: what it predicts, how well, what it was built with and who owns it."
+      media={{ image: cardPhoto, alt: "Three colleagues review a model’s results on a laptop.", focus: "50% 35%" }}
+      model="churn-predictor"
+      version="v3.2"
+      status="In production"
+      purpose="Scores each account’s risk of leaving in the next 60 days."
+      owner="Owned by your ML pod"
+      metrics={[
+        { label: "AUC", value: "0.87" },
+        { label: "Precision, top 10%", value: "0.64" },
+        { label: "Trained on", value: "2.1M rows" },
+        { label: "Retrained", value: "Monthly" },
+      ]}
+      fields={[
+        { label: "Explore", tools: ["python", "jupyter"] },
+        { label: "Data", tools: ["pandas", "polars", "numpy", "dvc"] },
+        { label: "Train", tools: ["pytorch", "tensorflow", "keras", "scikitlearn"] },
+        { label: "Track & tune", tools: ["mlflow", "weightsandbiases", "optuna"] },
+        { label: "Scale", tools: ["ray", "kubernetes"] },
+        { label: "Serve", tools: ["onnx", "fastapi", "docker", "huggingface"] },
+      ]}
+    />
+    <FaqSection
+      eyebrow="ML questions"
+      headline={["Questions,", "answered."]}
+      accent={1}
+      cta="Talk to an ML lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "An engineer takes notes beside her laptop at a bright desk.", focus: "50% 40%" }}
+    />
+    <CtaSection
+      eyebrow="Ready to train"
+      headline={["Notebook in.", "Model out."]}
+      body="Tell us what you want to predict and what data you have. We’ll staff the engineers to build it, ship it and keep it accurate."
+      cta="Plan my ML team"
+    />
+  </main>
+  <Footer />
+</Layout>

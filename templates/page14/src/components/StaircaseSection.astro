@@ -1,0 +1,126 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@/components/GridRules.astro";
+import RevealText from "@/components/RevealText.astro";
+import Joints from "@/components/process/Joints.astro";
+import type { SectionPhoto } from "@/types/page";
+
+/* The upgrade path, as a staircase, on the dark tone. Five steps rise left
+   to right, each taller than the last, a version on each tread and its
+   migration note on the riser. On arrival the steps rise from the floor one
+   after another and a marker climbs them, lighting each tread as it lands,
+   until it stands on the latest. The photo of the team fills the space
+   the low steps leave above them. Phones turn the stair so it climbs up
+   the screen, oldest at the foot. Reduced motion shows the finished climb.
+   See docs/sections.md. */
+
+interface Step {
+  version: string;
+  year: string;
+  note: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  /** Oldest first. */
+  steps: Step[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, steps } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+const n = steps.length;
+---
+
+<section data-ac-sec="dark" data-ac-stairs id={id} style={`--ac-n:${n}`}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <div data-ac-stairs-head>
+      <div>
+        <p data-ac-sec-eyebrow class="mono-label">
+          <span aria-hidden="true">+</span>
+          {eyebrow}
+        </p>
+        <h2 data-ac-stairs-headline aria-label={headline.join(" ")}>
+          {headline.map((line, i) => (
+            <Fragment>
+              {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+              <span data-ac-sec-line data-accent={i === accent || undefined}>
+                <RevealText text={line} offset={offsets[i]} />
+              </span>
+            </Fragment>
+          ))}
+        </h2>
+      </div>
+      <p data-ac-stairs-lede data-ac-sec-rise>{lede}</p>
+    </div>
+
+    <div data-ac-stairs-stage>
+      <div data-ac-stairs-photo>
+        <Joints />
+        <div data-ac-stairs-image>
+          <Image
+            src={media.image}
+            alt={media.alt}
+            widths={[480, 800, 1200]}
+            sizes="(max-width: 991px) 100vw, 40vw"
+            quality={78}
+            style={media.focus ? `object-position:${media.focus}` : undefined}
+          />
+        </div>
+      </div>
+
+      <ol data-ac-stairs-steps>
+        {steps.map((step, i) => (
+          <li data-ac-stairs-step style={`--ac-i:${i}`} data-last={i === n - 1 || undefined}>
+            <span data-ac-stairs-tread>
+              <span data-ac-stairs-year class="mono-label-sm">{step.year}</span>
+              <span data-ac-stairs-version>{step.version}</span>
+            </span>
+            <span data-ac-stairs-note>{step.note}</span>
+          </li>
+        ))}
+      </ol>
+
+      <span data-ac-stairs-climber aria-hidden="true"><i /></span>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ac-stairs]").forEach((section) => {
+    const steps = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-stairs-step]"));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const STEP_MS = 520;
+    let timers: number[] = [];
+
+    /* --ac-at is the step the marker stands on; each tread it reaches lights. */
+    const stand = (at: number) => {
+      section.style.setProperty("--ac-at", String(Math.max(at, 0)));
+      section.toggleAttribute("data-climbing", at >= 0);
+      steps.forEach((s, i) => s.toggleAttribute("data-reached", i <= at));
+    };
+
+    const reset = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      stand(-1);
+    };
+
+    new IntersectionObserver(
+      ([entry]) => {
+        section.toggleAttribute("data-ac-in", entry.isIntersecting);
+        if (reduced) return stand(steps.length - 1);
+        if (!entry.isIntersecting) return reset();
+        reset();
+        steps.forEach((_, i) => timers.push(window.setTimeout(() => stand(i), 900 + i * STEP_MS)));
+      },
+      { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+    ).observe(section);
+  });
+</script>
