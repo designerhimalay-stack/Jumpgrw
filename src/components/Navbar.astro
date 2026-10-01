@@ -1,7 +1,6 @@
 ---
 import { Image } from "astro:assets";
 import Chevron from "@/components/icons/Chevron.astro";
-import { withBase } from "@/lib/paths";
 import type { NavLink } from "@/types/hero";
 import jumpgrowthLogo from "@/assets/jumpgrowth-logo.webp";
 import jumpgrowthLogoDark from "@/assets/jumpgrowth-logo-dark.webp";
@@ -30,25 +29,25 @@ const NAV_LINKS: NavLink[] = [
         {
           title: "LAUNCH",
           items: [
-            { label: "MVP Launch Teams", href: withBase("/page1/") },
-            { label: "Product Discovery", href: withBase("/page2/") },
-            { label: "Prototype to Launch", href: withBase("/page3/") },
+            { label: "MVP Launch Teams", href: "#teams" },
+            { label: "Product Discovery", href: "#process" },
+            { label: "Prototype to Launch", href: "#process" },
           ],
         },
         {
           title: "BUILD & RUN",
           items: [
-            { label: "Production Teams", href: withBase("/page4/") },
-            { label: "QA Pods", href: withBase("/page5/") },
-            { label: "DevOps Pods", href: withBase("/page6/") },
+            { label: "Production Teams", href: "#teams" },
+            { label: "QA Pods", href: "#skills" },
+            { label: "DevOps Pods", href: "#skills" },
           ],
         },
         {
           title: "EXTEND",
           items: [
-            { label: "Staff Augmentation", href: withBase("/page7/") },
-            { label: "Specialist Developers", href: withBase("/page8/") },
-            { label: "Global Capability Center", href: withBase("/page9/") },
+            { label: "Staff Augmentation", href: "#teams" },
+            { label: "Specialist Developers", href: "#skills" },
+            { label: "Global Capability Center", href: "#x-shore" },
           ],
         },
       ],
@@ -71,58 +70,58 @@ const NAV_LINKS: NavLink[] = [
           title: "PRODUCT & EXPERIENCE",
           href: "#skills",
           items: [
-            { label: "Product Managers", href: withBase("/page10/") },
-            { label: "UX/UI Designers", href: withBase("/page11/") },
-            { label: "Business Analysts", href: withBase("/page12/") },
+            { label: "Product Managers", href: "#skills" },
+            { label: "UX/UI Designers", href: "#skills" },
+            { label: "Business Analysts", href: "#skills" },
           ],
         },
         {
           title: "FRONTEND",
           href: "#skills",
           items: [
-            { label: "React", href: withBase("/page13/") },
-            { label: "Angular", href: withBase("/page14/") },
+            { label: "React", href: "#skills" },
+            { label: "Angular", href: "#skills" },
           ],
         },
         {
           title: "BACKEND",
           href: "#skills",
           items: [
-            { label: "Full Stack", href: withBase("/page15/") },
-            { label: "Node.js", href: withBase("/page16/") },
-            { label: "Python", href: withBase("/page17/") },
-            { label: ".NET", href: withBase("/page18/") },
-            { label: "Java", href: withBase("/page19/") },
-            { label: "PHP", href: withBase("/page20/") },
+            { label: "Full Stack", href: "#skills" },
+            { label: "Node.js", href: "#skills" },
+            { label: "Python", href: "#skills" },
+            { label: ".NET", href: "#skills" },
+            { label: "Java", href: "#skills" },
+            { label: "PHP", href: "#skills" },
           ],
         },
         {
           title: "MOBILE",
           href: "#skills",
           items: [
-            { label: "iOS", href: withBase("/page21/") },
-            { label: "Android", href: withBase("/page22/") },
-            { label: "Kotlin", href: withBase("/page23/") },
-            { label: "React Native", href: withBase("/page24/") },
-            { label: "Flutter", href: withBase("/page25/") },
+            { label: "iOS", href: "#skills" },
+            { label: "Android", href: "#skills" },
+            { label: "Kotlin", href: "#skills" },
+            { label: "React Native", href: "#skills" },
+            { label: "Flutter", href: "#skills" },
           ],
         },
         {
           title: "AI & DATA",
           href: "#skills",
           items: [
-            { label: "Generative AI", href: withBase("/page26/") },
-            { label: "Machine Learning", href: withBase("/page27/") },
-            { label: "Data Engineers", href: withBase("/page28/") },
+            { label: "Generative AI", href: "#skills" },
+            { label: "Machine Learning", href: "#skills" },
+            { label: "Data Engineers", href: "#skills" },
           ],
         },
         {
           title: "DELIVERY",
           href: "#skills",
           items: [
-            { label: "QA Engineers", href: withBase("/page5/") },
-            { label: "Automation QA Engineers", href: withBase("/page29/") },
-            { label: "DevOps Engineers", href: withBase("/page6/") },
+            { label: "QA Engineers", href: "#skills" },
+            { label: "Automation QA Engineers", href: "#skills" },
+            { label: "DevOps Engineers", href: "#skills" },
           ],
         },
       ],
@@ -144,21 +143,21 @@ const NAV_LINKS: NavLink[] = [
         {
           title: "ONSHORE",
           items: [
-            { label: "United States", href: withBase("/page30/") },
+            { label: "United States", href: "#x-shore" },
           ],
         },
         {
           title: "NEARSHORE",
           items: [
-            { label: "Mexico", href: withBase("/page31/") },
-            { label: "Canada", href: withBase("/page32/") },
+            { label: "Mexico", href: "#x-shore" },
+            { label: "Canada", href: "#x-shore" },
           ],
         },
         {
           title: "OFFSHORE",
           items: [
-            { label: "India", href: withBase("/page33/") },
-            { label: "GCC from India", href: withBase("/page34/") },
+            { label: "India", href: "#x-shore" },
+            { label: "GCC from India", href: "#x-shore" },
           ],
         },
       ],
