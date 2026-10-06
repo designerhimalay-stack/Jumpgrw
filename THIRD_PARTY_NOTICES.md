@@ -33,9 +33,9 @@ The OFL text: https://openfontlicense.org/open-font-license-official-text/
 
 | Files | Source | Licence |
 |---|---|---|
-| `src/assets/avatars/*`, `cases/*`, `clients/*`, `why/*`, `teams/production.jpg` | Unsplash (IDs in `docs/components/`) | Unsplash License |
+| `src/assets/avatars/*`, `cases/*.jpg`, `clients/*`, `why/*`, `teams/production.jpg`, `xshore/*` | Unsplash (IDs in `docs/components/`) | Unsplash License |
 | `src/assets/teams/specialist.jpg`, `teams/extension.jpg` | Pexels 1181677, 7988757 | Pexels License |
-| `src/assets/team-photo.webp`, `showcase/portrait.jpg`, `xshore/time-zones.jpg` | Supplied by the AgentCraft team | AgentCraft's own |
+| `src/assets/team-photo.webp`, `showcase/portrait.jpg`, `cases/*.webm` | Supplied by the AgentCraft team | AgentCraft's own |
 
 Unsplash and Pexels images are free for commercial use with no attribution required; the
 sources are recorded so each licence can be checked. Replace the stand-in portraits and

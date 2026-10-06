@@ -1,29 +1,42 @@
 ---
 import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import RevealText from "@/components/RevealText.astro";
 import Joints from "@/components/process/Joints.astro";
-import { REFERENCE_TZ, clock, isWorking, type Zone } from "@/lib/timezones";
-import timeZones from "@/assets/xshore/time-zones.jpg";
+import { REFERENCE_TZ, clock, isWorking, tileState, tilesSummary, type Zone, type ZoneTile } from "@/lib/timezones";
+import zoneUs from "@/assets/xshore/zone-us.jpg";
+import zoneCanada from "@/assets/xshore/zone-canada.jpg";
+import zoneMexico from "@/assets/xshore/zone-mexico.jpg";
+import zoneIndia from "@/assets/xshore/zone-india.jpg";
 
-/* Three delivery regions, and one working day across time zones. The clocks
-   are live: the script below redraws them from the visitor's clock. What
-   renders here is the same at build time, so the page is complete without
-   it. See docs/components/xshore.md. */
+/* Three delivery regions, and one working day across four locations. The
+   clocks, the tiles and the summary are live: the script below redraws them
+   from the visitor's clock. What renders here is computed with the same
+   helpers at build time, so the page is complete without it. See
+   docs/components/xshore.md. */
 
 const COPY = {
   eyebrow: "X-Shore delivery",
   headline: ["One team.", "Three talent regions."],
   lede: "Choose one region or combine all three. We design the team around collaboration, capability, continuity, and the work—not a one-size-fits-all location rule.",
   caption: "One operating rhythm · Multiple time zones",
-  photoAlt:
-    "Four developers at work at the same moment in San Francisco by day, London in the evening, Bengaluru in the morning and Tokyo at night, linked by threads of light.",
 };
 
+/* The city clocks on each region card. */
 const ZONES: Zone[] = [
   { id: "dallas", city: "Dallas", region: "onshore", tz: REFERENCE_TZ },
   { id: "toronto", city: "Toronto", region: "nearshore", tz: "America/Toronto" },
   { id: "mexico-city", city: "Mexico City", region: "nearshore", tz: "America/Mexico_City" },
-  { id: "bengaluru", city: "Bengaluru", region: "offshore", tz: "Asia/Kolkata" },
+  { id: "delhi", city: "Delhi", region: "offshore", tz: "Asia/Kolkata" },
+  { id: "pune", city: "Pune", region: "offshore", tz: "Asia/Kolkata" },
+];
+
+/* The four location tiles. */
+const TILES: (ZoneTile & { region: string; image: ImageMetadata; alt: string })[] = [
+  { tz: REFERENCE_TZ, place: "United States", region: "Onshore", image: zoneUs, alt: "A product lead walking a team through a sticky-note plan at a workshop" },
+  { tz: "America/Toronto", place: "Canada", region: "Nearshore", image: zoneCanada, alt: "Two developers pairing on a change at a laptop in an open office" },
+  { tz: "America/Mexico_City", place: "Mexico", region: "Nearshore", image: zoneMexico, alt: "A team of engineers in headphones working at laptops around a shared table" },
+  { tz: "Asia/Kolkata", place: "India", region: "Offshore", abbr: "IST", image: zoneIndia, alt: "A developer coding on a laptop late in a dimly lit room" },
 ];
 
 const REGIONS = [
@@ -52,6 +65,7 @@ const REGIONS = [
 
 const now = new Date();
 const refClock = clock(REFERENCE_TZ, now);
+const summary = tilesSummary(TILES, now);
 ---
 
 <section data-ac-xshore id="x-shore">
@@ -97,13 +111,62 @@ const refClock = clock(REFERENCE_TZ, now);
       <div data-ac-xshore-cell="photo">
         <Joints />
         <div data-ac-xshore-photo>
-          <Image
-            src={timeZones}
-            alt={COPY.photoAlt}
-            widths={[640, 960, 1280, 1442]}
-            sizes="(max-width: 1199px) 100vw, 50vw"
-            quality={80}
-          />
+          <div data-ac-xshore-zones>
+            {TILES.map((tile) => {
+              const state = tileState(tile, now);
+              return (
+                <figure
+                  data-ac-xshore-zone
+                  data-tz={tile.tz}
+                  data-place={tile.place}
+                  data-abbr={tile.abbr}
+                  data-working={state.on || undefined}
+                >
+                  <Image
+                    src={tile.image}
+                    alt={tile.alt}
+                    widths={[360, 540, 900]}
+                    sizes="(max-width: 1199px) 50vw, 25vw"
+                    quality={78}
+                  />
+                  <div data-ac-xshore-zone-top>
+                    <span data-ac-xshore-zone-region class="mono-label">{tile.region}</span>
+                    <span data-ac-xshore-zone-status class="mono-label">
+                      <i aria-hidden="true" />
+                      <span data-status>{state.on ? "Working" : "Off hours"}</span>
+                    </span>
+                  </div>
+                  <figcaption data-ac-xshore-zone-bottom>
+                    <span data-ac-xshore-zone-place>{tile.place}</span>
+                    <span data-ac-xshore-zone-time>
+                      <time data-time>{state.time}</time><span data-ampm>{state.ampm}</span><span data-ac-xshore-zone-abbr data-abbr-text>{state.abbr}</span>
+                    </span>
+                    <span data-ac-xshore-zone-day aria-hidden="true">
+                      <span data-ac-xshore-zone-shift />
+                      <span data-ac-xshore-zone-now data-now style={`--now: ${state.now}%`} />
+                    </span>
+                    <span data-ac-xshore-zone-note data-note>{state.note}</span>
+                  </figcaption>
+                </figure>
+              );
+            })}
+          </div>
+
+          {/* The point the four make together, live. */}
+          <dl data-ac-xshore-sum>
+            <div>
+              <dt class="mono-label">Teams working now</dt>
+              <dd><strong data-working-count>{summary.working}</strong> of {TILES.length}</dd>
+            </div>
+            <div>
+              <dt class="mono-label">Covered every day</dt>
+              <dd><strong data-coverage>{summary.coverage}</strong> of 24</dd>
+            </div>
+            <div>
+              <dt class="mono-label" data-next-label>{summary.nextLabel}</dt>
+              <dd><strong data-next>{summary.next}</strong></dd>
+            </div>
+          </dl>
         </div>
       </div>
 
@@ -136,12 +199,20 @@ const refClock = clock(REFERENCE_TZ, now);
 </section>
 
 <script>
-  import { clock, isWorking } from "@/lib/timezones";
+  import { clock, isWorking, tileState, tilesSummary, type ZoneTile } from "@/lib/timezones";
 
   const section = document.querySelector<HTMLElement>("[data-ac-xshore]")!;
+  const tiles = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-xshore-zone]")).map((el) => ({
+    el,
+    tile: { tz: el.dataset.tz!, place: el.dataset.place!, abbr: el.dataset.abbr } satisfies ZoneTile,
+  }));
+  const set = (selector: string, text: string) => {
+    const el = section.querySelector(selector);
+    if (el) el.textContent = text;
+  };
 
-  /* Redraws the clocks and the working dots. Cheap, so it simply runs on a
-     timer. */
+  /* Redraws the clocks, the working dots, the four tiles and their summary.
+     Cheap, so it simply runs on a timer. */
   const draw = () => {
     const now = new Date();
     for (const el of section.querySelectorAll<HTMLElement>("[data-ac-clock]")) {
@@ -153,6 +224,21 @@ const refClock = clock(REFERENCE_TZ, now);
     for (const dot of section.querySelectorAll<HTMLElement>("[data-ac-xshore-dot]")) {
       dot.toggleAttribute("data-working", isWorking(dot.dataset.acZoneTz!, now));
     }
+    for (const { el, tile } of tiles) {
+      const state = tileState(tile, now);
+      el.toggleAttribute("data-working", state.on);
+      el.querySelector("[data-time]")!.textContent = state.time;
+      el.querySelector("[data-ampm]")!.textContent = state.ampm;
+      el.querySelector("[data-abbr-text]")!.textContent = state.abbr;
+      el.querySelector<HTMLElement>("[data-now]")!.style.setProperty("--now", `${state.now}%`);
+      el.querySelector("[data-status]")!.textContent = state.on ? "Working" : "Off hours";
+      el.querySelector("[data-note]")!.textContent = state.note;
+    }
+    const summary = tilesSummary(tiles.map(({ tile }) => tile), now);
+    set("[data-working-count]", String(summary.working));
+    set("[data-coverage]", summary.coverage);
+    set("[data-next-label]", summary.nextLabel);
+    set("[data-next]", summary.next);
   };
 
   draw();

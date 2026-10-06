@@ -2806,9 +2806,8 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   padding: 10px;
 }
 
-/* The photo keeps its square (the source is 1442 × 1440) and sets the height
-   the regions share. Where they need a little more, it crops from the centre,
-   which the captions in its four corners survive. */
+/* Four locations on the left two columns. Their square sets the height the
+   regions share; it grows taller (never wider) when the regions need more. */
 [data-ac-xshore-cell="photo"] {
   grid-column: 1 / 3;
   grid-row: 2 / span 3;
@@ -2818,25 +2817,235 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
 [data-ac-xshore-photo] {
   position: relative;
   flex: 1;
-  border: 1px solid var(--ac-line);
-  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* -- four locations --------------------------------------------------------- */
+
+[data-ac-xshore-zones] {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 6px;
+  aspect-ratio: 1;
+}
+
+[data-ac-xshore-zone] {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  margin: 0;
+  padding: clamp(12px, 1.4vw, 20px);
+  border-radius: 10px;
   overflow: clip;
-  background: #0a1022;
+  background: var(--xs-ink);
+  color: #ffffff;
+  isolation: isolate;
 }
 
-[data-ac-xshore-photo]::before {
-  content: "";
-  display: block;
-  padding-top: 100%;
-}
-
-[data-ac-xshore-photo] img {
+[data-ac-xshore-zone] img {
   position: absolute;
   inset: 0;
+  z-index: -2;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Off hours read as quieter: the team is offline, the photo dims. */
+  filter: grayscale(0.55) brightness(0.62);
+  transition: filter 600ms ease;
+}
+
+[data-ac-xshore-zone][data-working] img {
+  filter: none;
+}
+
+/* Navy at the top and bottom edges so the labels hold on any photo. */
+[data-ac-xshore-zone]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    rgb(10 16 34 / 0.55) 0%,
+    rgb(10 16 34 / 0) 30%,
+    rgb(10 16 34 / 0) 42%,
+    rgb(10 16 34 / 0.88) 100%
+  );
+}
+
+[data-ac-xshore-zone-top] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+[data-ac-xshore-zone-region],
+[data-ac-xshore-zone-status] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: 999px;
+  background: rgb(10 16 34 / 0.32);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font-size: 10px;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+[data-ac-xshore-zone-status] i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  border: 1.5px solid rgb(255 255 255 / 0.55);
+}
+
+[data-ac-xshore-zone][data-working] [data-ac-xshore-zone-status] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+[data-ac-xshore-zone][data-working] [data-ac-xshore-zone-status] i {
+  border-color: #ffffff;
+  background: #ffffff;
+}
+
+[data-ac-xshore-zone-bottom] {
+  display: flex;
+  flex-direction: column;
+}
+
+[data-ac-xshore-zone-place] {
+  font-family: var(--font-display-stack);
+  font-size: clamp(16px, 1.45vw, 21px);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: rgb(255 255 255 / 0.86);
+}
+
+[data-ac-xshore-zone-time] {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 2px;
+  font-family: var(--font-display-stack);
+  font-size: clamp(28px, 3vw, 44px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-ac-xshore-zone-time] [data-ampm] {
+  font-size: 0.42em;
+  letter-spacing: 0;
+}
+
+[data-ac-xshore-zone-abbr] {
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: rgb(255 255 255 / 0.6);
+}
+
+/* The local day, midnight to midnight: the 9 to 6 shift lit, a dot for now. */
+[data-ac-xshore-zone-day] {
+  position: relative;
+  height: 3px;
+  margin: clamp(10px, 1.1vw, 14px) 0 8px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.2);
+}
+
+[data-ac-xshore-zone-shift] {
+  position: absolute;
+  inset: 0 25% 0 37.5%; /* 9:00 to 18:00 of 24 hours, as WORK_START/END */
+  border-radius: inherit;
+  background: rgb(255 255 255 / 0.45);
+}
+
+[data-ac-xshore-zone][data-working] [data-ac-xshore-zone-shift] {
+  background: var(--color-accent);
+}
+
+[data-ac-xshore-zone-now] {
+  position: absolute;
+  top: 50%;
+  left: var(--now, 0%);
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgb(10 16 34 / 0.5);
+  transform: translate(-50%, -50%);
+}
+
+[data-ac-xshore-zone-note] {
+  font-size: 12px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+  color: rgb(255 255 255 / 0.72);
+}
+
+/* -- what the four add up to ------------------------------------------------- */
+
+[data-ac-xshore-sum] {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 6px 0 0;
+  border: 1px solid var(--ac-line);
+  border-radius: 10px;
+}
+
+[data-ac-xshore-sum] > div {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  padding: clamp(12px, 1.2vw, 16px) clamp(12px, 1.4vw, 20px);
+}
+
+[data-ac-xshore-sum] > div + div {
+  border-left: 1px solid var(--ac-line);
+}
+
+[data-ac-xshore-sum] dt {
+  font-size: 10px;
+  line-height: 14px;
+  color: var(--xs-muted);
+}
+
+[data-ac-xshore-sum] dd {
+  margin: 0;
+  font-family: var(--font-display-stack);
+  font-size: 16px;
+  line-height: 1.1;
+  color: rgb(10 16 34 / 0.72);
+  white-space: nowrap;
+}
+
+[data-ac-xshore-sum] strong {
+  font-size: clamp(24px, 2.2vw, 32px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--xs-ink);
+}
+
+[data-ac-xshore-sum] > div:first-child strong {
+  color: var(--color-accent);
 }
 
 [data-ac-xshore-cell="region"] {
@@ -2968,6 +3177,15 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   [data-ac-xshore-cell="photo"] > [data-ac-joints] i[data-ac-corner="br"] {
     display: none;
   }
+
+  /* Full width now: the tiles are wider, so the type follows them. */
+  [data-ac-xshore-zone-place] {
+    font-size: clamp(15px, 2.4vw, 24px);
+  }
+
+  [data-ac-xshore-zone-time] {
+    font-size: clamp(26px, 5vw, 52px);
+  }
 }
 
 @media (max-width: 991px) {
@@ -2993,6 +3211,43 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   }
 }
 
+/* Phones: the tiles are a quarter of the screen each, so they keep to the
+   time, the status and the note. */
+@media (max-width: 599px) {
+  [data-ac-xshore-zone] {
+    padding: 10px;
+  }
+
+  [data-ac-xshore-zone-region] {
+    display: none;
+  }
+
+  [data-ac-xshore-zone-status] {
+    margin-left: auto;
+  }
+
+  [data-ac-xshore-zone-note] {
+    font-size: 11px;
+  }
+
+  [data-ac-xshore-sum] > div {
+    padding: 10px;
+  }
+
+  [data-ac-xshore-sum] dt {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+
+  [data-ac-xshore-sum] dd {
+    font-size: 13px;
+  }
+
+  [data-ac-xshore-sum] strong {
+    font-size: 22px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-ac-xshore-eyebrow],
   [data-ac-xshore-lede] {
@@ -3004,6 +3259,10 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
 
   [data-ac-xshore-pulse]::after {
     animation: none;
+  }
+
+  [data-ac-xshore-zone] img {
+    transition: none;
   }
 }
 
