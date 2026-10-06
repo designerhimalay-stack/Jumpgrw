@@ -1,0 +1,159 @@
+---
+import "@pg/page7/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page7/layouts/Layout.astro";
+import FlexSection from "@pg/page7/components/FlexSection.astro";
+import Footer from "@/components/Footer.astro";
+import MergeSection from "@pg/page7/components/MergeSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import OnboardSection from "@pg/page7/components/OnboardSection.astro";
+import OverlapSection from "@pg/page7/components/OverlapSection.astro";
+import PageHero from "@pg/page7/components/PageHero.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import FaqSection from "@pg/page7/components/FaqSection.astro";
+import SmoothScroll from "@pg/page7/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@pg/page7/types/page";
+import heroPhoto from "@pg/page7/assets/pages/p7-hero.jpg";
+import mergePhoto from "@pg/page7/assets/pages/p7-merge.jpg";
+import onboardPhoto from "@pg/page7/assets/pages/p7-onboard.jpg";
+import faqPhoto from "@pg/page7/assets/pages/p7-faq.jpg";
+import { BRAND } from "@pg/page7/lib/brand";
+
+/* Staff augmentation. There was no brief for this page: the copy is
+   written from what the home page says about team extension (senior
+   engineers inside your team, US time-zone overlap, your tools and
+   rituals). The onboarding days, the example year of scaling and the FAQ
+   answers are drafts. Have them checked before launch. See
+   docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Flexible", "Staff augmentation"],
+  headline: ["Staff", "augmentation."],
+  lede: "Senior engineers who join your team, your tools and your stand-ups, and scale up or down as your roadmap changes.",
+  ctas: [
+    { label: "Extend your team", href: "#contact", arrow: "diagonal" },
+    { label: "Check your overlap", href: "#overlap", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "Three colleagues work side by side on laptops on a sofa, sharing what’s on their screens.",
+  specs: [
+    { label: "Joins", value: "Your existing team" },
+    { label: "Seniority", value: "Senior engineers" },
+    { label: "Overlap", value: "US working hours" },
+    { label: "Scale", value: "Month to month" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: "Will they really work like our own engineers?",
+    a: "Yes. They join your stand-ups, take tickets from your board and follow your code review, like anyone you hire.",
+  },
+  {
+    q: "How quickly can someone start?",
+    a: "Usually within two weeks, and productive in the first: see the onboarding plan above.",
+  },
+  {
+    q: "What if it isn’t the right fit?",
+    a: "Tell us early. We replace an engineer without a gap, and the handover is on us.",
+  },
+  {
+    q: "Who manages them day to day?",
+    a: "You do, like the rest of your team. We look after everything else: hiring, pay, growth and cover.",
+  },
+];
+---
+
+<Layout
+  title={`Staff augmentation · ${BRAND.name}`}
+  description="Senior engineers who join your team, tools and rituals, with US time-zone overlap, scaling month to month."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <MergeSection
+      id="one-team"
+      eyebrow="Team extension"
+      headline={["Your team,", "extended."]}
+      lede="Our engineers don’t work next to your team. They work in it: same board, same channel, same standards."
+      media={{ image: mergePhoto, alt: "Three engineers laugh together over a laptop in a library-lined studio.", focus: "40% 45%" }}
+      yours={{ label: "Your team", marks: ["JM", "AR", "KL", "SP", "TN"] }}
+      ours={{ label: `${BRAND.name} engineers`, marks: ["DV", "MF", "RG"] }}
+      merged="One team, one backlog"
+    />
+    <OverlapSection
+      id="overlap"
+      eyebrow="Working hours"
+      headline={["Your hours.", "Our hours. Shared."]}
+      accent={1}
+      lede="Pick where your team sits. The chart shows your working day, ours, and the hours you share, in your local time."
+      label="Your team is in"
+      offices={[
+        { label: "San Francisco", zone: "America/Los_Angeles" },
+        { label: "Dallas", zone: "America/Chicago" },
+        { label: "New York", zone: "America/New_York" },
+        { label: "London", zone: "Europe/London" },
+      ]}
+      start={2}
+      workFrom={9}
+      workTo={17}
+      ours={[
+        { name: "Onshore", city: "Dallas", zone: "America/Chicago", from: 9, to: 17 },
+        { name: "Nearshore", city: "Mexico City", zone: "America/Mexico_City", from: 9, to: 17 },
+        { name: "Nearshore", city: "Toronto", zone: "America/Toronto", from: 9, to: 17 },
+        { name: "Offshore", city: "Pune", zone: "Asia/Kolkata", from: 13, to: 22 },
+      ]}
+    />
+    <OnboardSection
+      id="onboarding"
+      eyebrow="Onboarding"
+      headline={["Productive", "in days."]}
+      lede="A plan for the first two weeks, so a new engineer ships something real before the second sprint."
+      media={{ image: onboardPhoto, alt: "A team gathers on sofas with laptops, talking through a plan at a whiteboard.", focus: "50% 45%" }}
+      days={[
+        { day: "Day 1", title: "Access and introductions", note: "Accounts, repositories and a first call with your team lead." },
+        { day: "Day 2", title: "Architecture walk-through", note: "Your codebase, services and the way you deploy." },
+        { day: "Day 3", title: "A first small change", note: "Something real, reviewed and shipped, to learn the path to production." },
+        { day: "Day 5", title: "Into the sprint", note: "Full tickets from your board, paired with an engineer of yours." },
+        { day: "Day 10", title: "Owning a feature", note: "From ticket to release, with your reviews and your standards." },
+      ]}
+    />
+    <FlexSection
+      id="scale"
+      eyebrow="Flexible by design"
+      headline={["Scale up.", "Scale down."]}
+      lede="Add engineers for a launch, step back after it. The team follows your roadmap, not a contract."
+      caption="An example year: engineers on one client’s team, month by month"
+      months={[
+        { month: "Jan", size: 2 },
+        { month: "Feb", size: 2 },
+        { month: "Mar", size: 3 },
+        { month: "Apr", size: 5, note: "Launch" },
+        { month: "May", size: 6 },
+        { month: "Jun", size: 6 },
+        { month: "Jul", size: 4 },
+        { month: "Aug", size: 3 },
+        { month: "Sep", size: 4 },
+        { month: "Oct", size: 7, note: "Peak season" },
+        { month: "Nov", size: 7 },
+        { month: "Dec", size: 3 },
+      ]}
+      terms={[
+        { title: "Month to month", note: "No long lock-in. Adjust as the roadmap moves." },
+        { title: "Two weeks’ notice", note: "To add or release an engineer." },
+        { title: "Knowledge stays", note: "Handovers documented whenever the team changes." },
+      ]}
+    />
+    <FaqSection
+      eyebrow="What people ask"
+      headline={["Fair", "questions."]}
+      cta="Talk to us about your team"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "Three colleagues work side by side on laptops at a café table.", focus: "50% 45%" }}
+    />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

@@ -1,0 +1,53 @@
+---
+import GridRules from "@pg/page33/components/GridRules.astro";
+import SectionHead from "@pg/page33/components/SectionHead.astro";
+import Joints from "@pg/page33/components/process/Joints.astro";
+import type { HireColumn, HireHead } from "@pg/page33/components/hire/types";
+
+/* Get help across your stack. Three framed columns in one row (for example
+   Build / Data / Platform): a mono label and number, a title, one line and
+   the skill tags. The columns rise in turn as the section arrives.
+
+   Phones: a compact stack, each column a short block with its tags. */
+
+interface Props extends HireHead {
+  /** Three reads best. */
+  columns: HireColumn[];
+  /** "tint" is a light section on a pale blue ground. */
+  tone?: "light" | "tint" | "dark";
+}
+
+const { id, eyebrow, headline, accent, lede, columns, tone = "light" } = Astro.props;
+---
+
+<section data-ac-sec={tone === "tint" ? "light" : tone} data-ac-hire-tint={tone === "tint" || undefined} data-ac-hire="columns" id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent ?? headline.length - 1} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-hire-cols-frame>
+      <Joints />
+      <ul data-ac-hire-cols role="list">
+      {columns.map((col, i) => (
+        <li data-ac-hire-col style={`--i:${i}`}>
+          <p data-ac-hire-col-label class="mono-label">
+            <span>{col.label}</span>
+            <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+          </p>
+          <h3 data-ac-hire-card-title>{col.title}</h3>
+          <p data-ac-hire-card-body>{col.body}</p>
+          <ul data-ac-hire-chips role="list">
+            {col.tags.map((tag) => <li>{tag}</li>)}
+          </ul>
+        </li>
+      ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page33/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>('[data-ac-hire="columns"]').forEach(toggleInView);
+</script>

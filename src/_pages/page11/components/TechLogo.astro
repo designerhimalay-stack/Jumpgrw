@@ -1,0 +1,30 @@
+---
+import { TECH_LOGOS, type TechLogoSlug } from "@pg/page11/lib/tech-logos";
+
+/* One technology logo, drawn from src/lib/tech-logos.ts. `tone` picks the
+   fill: the brand's own colour, the page's ink, white (for dark and accent
+   sections) or currentColor. Decorative unless `label` is set, in which case
+   it is announced by the technology's name. */
+interface Props {
+  slug: TechLogoSlug;
+  size?: number;
+  tone?: "brand" | "ink" | "white" | "current";
+  label?: boolean;
+  class?: string;
+}
+
+const { slug, size = 24, tone = "brand", label = false, class: className } = Astro.props;
+const logo = TECH_LOGOS[slug];
+const fill = { brand: logo.hex, ink: "#0e121a", white: "#ffffff", current: "currentColor" }[tone];
+---
+
+<svg
+  class={className}
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  role={label ? "img" : undefined}
+  aria-label={label ? logo.title : undefined}
+  aria-hidden={label ? undefined : "true"}
+  data-ac-tech-logo
+><path d={logo.path} fill={fill} /></svg>

@@ -1,0 +1,120 @@
+---
+import GridRules from "@pg/page2/components/GridRules.astro";
+import SectionHead from "@pg/page2/components/SectionHead.astro";
+import Joints from "@pg/page2/components/process/Joints.astro";
+import type { ReadinessAsset } from "@pg/page2/types/page";
+
+/* The readiness check, as a checklist and a schedule. Three cards, one per
+   asset the client may already have, each a real checkbox; the fourth
+   column is the answer on the accent, the plan's length in weeks. Under
+   them, the schedule: one segment per phase along a ruler of weeks, on grid
+   paper. Checking an asset crosses its phase out and hatches it. Every
+   segment is always drawn, so the schedule never changes height. See
+   docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  resultLabel: string;
+  assets: ReadinessAsset[];
+  weeksPerPhase: number;
+  plans: { full: string; partial: string; none: { value: number; unit: string; summary: string } };
+}
+
+const { id, eyebrow, headline, accent, lede, resultLabel, assets, weeksPerPhase, plans } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+const total = assets.length * weeksPerPhase;
+---
+
+<section
+  data-ac-sec="light"
+  data-ac-check
+  id={id}
+  data-weeks={weeksPerPhase}
+  data-full={plans.full}
+  data-partial={plans.partial}
+  data-none-value={plans.none.value}
+  data-none-unit={plans.none.unit}
+  data-none-summary={plans.none.summary}
+>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-check-grid>
+      {assets.map((asset, i) => (
+        <label data-ac-check-card style={`--ac-i:${i}`}>
+          <Joints />
+          <input type="checkbox" data-ac-check-input value={i} />
+          <span data-ac-check-box aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+          </span>
+          <span data-ac-check-number class="mono-label">{pad(i + 1)}</span>
+          <span data-ac-check-label>{asset.label}</span>
+          <span data-ac-check-covers>Covers {asset.phase.title.toLowerCase()}</span>
+        </label>
+      ))}
+
+      <div data-ac-check-result aria-live="polite">
+        <p class="mono-label">{resultLabel}</p>
+        <p data-ac-check-figure>
+          <span data-ac-check-value>{total}</span>
+          <span data-ac-check-unit>weeks</span>
+        </p>
+        <p data-ac-check-summary>{plans.full}</p>
+      </div>
+    </div>
+
+    <ol data-ac-check-plan style={`--ac-weeks:${weeksPerPhase}`}>
+      {assets.map((asset, i) => (
+        <li data-ac-check-phase>
+          <span data-ac-check-ticks aria-hidden="true">
+            {Array.from({ length: weeksPerPhase }, (_, w) => (
+              <span class="mono-label-sm">W{i * weeksPerPhase + w + 1}</span>
+            ))}
+          </span>
+          <span data-ac-check-phase-head>
+            <span class="mono-label">Phase {pad(i + 1)}</span>
+            <span data-ac-check-state class="mono-label-sm">Covered</span>
+          </span>
+          <span data-ac-check-phase-title>{asset.phase.title}</span>
+          <span data-ac-check-phase-note>{asset.phase.note}</span>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page2/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-check]").forEach((section) => {
+    toggleInView(section);
+
+    const inputs = Array.from(section.querySelectorAll<HTMLInputElement>("[data-ac-check-input]"));
+    const phases = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-check-phase]"));
+    const value = section.querySelector<HTMLElement>("[data-ac-check-value]")!;
+    const unit = section.querySelector<HTMLElement>("[data-ac-check-unit]")!;
+    const summary = section.querySelector<HTMLElement>("[data-ac-check-summary]")!;
+    const weeks = Number(section.dataset.weeks);
+    const { full = "", partial = "", noneValue = "1", noneUnit = "", noneSummary = "" } = section.dataset;
+
+    const update = () => {
+      let remaining = 0;
+      inputs.forEach((input, i) => {
+        phases[i].toggleAttribute("data-covered", input.checked);
+        if (!input.checked) remaining += 1;
+      });
+      value.textContent = remaining ? String(remaining * weeks) : noneValue;
+      unit.textContent = remaining ? "weeks" : noneUnit;
+      summary.textContent = remaining === inputs.length ? full : remaining ? partial : noneSummary;
+    };
+
+    inputs.forEach((input) => input.addEventListener("change", update));
+    update();
+  });
+</script>

@@ -1,0 +1,590 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import FaqSection from "@pg/page30/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@pg/page30/components/PageHero.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import HireStack from "@pg/page30/components/hire/HireStack.astro";
+import HireServices from "@pg/page30/components/hire/HireServices.astro";
+import HireWhy from "@pg/page30/components/hire/HireWhy.astro";
+import HireWays from "@pg/page30/components/hire/HireWays.astro";
+import HirePlanner from "@pg/page30/components/hire/HirePlanner.astro";
+import HireEngineers from "@pg/page30/components/hire/HireEngineers.astro";
+import HireColumns from "@pg/page30/components/hire/HireColumns.astro";
+import HireSteps from "@pg/page30/components/hire/HireSteps.astro";
+import HireCases from "@pg/page30/components/hire/HireCases.astro";
+import HirePod from "@pg/page30/components/hire/HirePod.astro";
+import HireFit from "@pg/page30/components/hire/HireFit.astro";
+import HireProcess from "@pg/page30/components/hire/HireProcess.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import type { PageHeroContent } from "@pg/page30/types/page";
+import { BRAND } from "@pg/page30/lib/brand";
+
+import heroPhoto from "@pg/page30/assets/pages/p30-hero.jpg";
+import faqPhoto from "@pg/page30/assets/pages/p30-faq.jpg";
+import waysSolo from "@pg/page30/assets/pages/p30-ways-solo.jpg";
+import waysSquad from "@pg/page30/assets/pages/p30-ways-squad.jpg";
+import waysPod from "@pg/page30/assets/pages/p30-ways-pod.jpg";
+import engWeb from "@pg/page30/assets/pages/p30-eng-web.jpg";
+import engMobile from "@pg/page30/assets/pages/p30-eng-mobile.jpg";
+import engBackend from "@pg/page30/assets/pages/p30-eng-backend.jpg";
+import engData from "@pg/page30/assets/pages/p30-eng-data.jpg";
+import engMl from "@pg/page30/assets/pages/p30-eng-ml.jpg";
+import engGenai from "@pg/page30/assets/pages/p30-eng-genai.jpg";
+import engQa from "@pg/page30/assets/pages/p30-eng-qa.jpg";
+import engDevops from "@pg/page30/assets/pages/p30-eng-devops.jpg";
+import stepCall from "@pg/page30/assets/pages/p30-step-call.jpg";
+import stepModel from "@pg/page30/assets/pages/p30-step-model.jpg";
+import stepOptions from "@pg/page30/assets/pages/p30-step-options.jpg";
+import stepInterview from "@pg/page30/assets/pages/p30-step-interview.jpg";
+import stepKickoff from "@pg/page30/assets/pages/p30-step-kickoff.jpg";
+
+/* Onshore engineers, United States. The page sells US-based engineers and
+   teams across the stack (web, mobile, back end, data, AI/ML, QA, DevOps and
+   cloud), built from the shared hire kit in src/components/hire/. Every word
+   on the page lives here. Figures, rates, example results and FAQ answers
+   are the owner's figures or drafts: have them checked before launch (see
+   docs/sections.md, "Copy to check before launch"). */
+
+const HERO: PageHeroContent = {
+  trail: ["X-Shore", "Onshore", "United States"],
+  audience: "For product and engineering leaders",
+  headline: ["Hire US-based", "engineers who work", "your hours, your way."],
+  accent: 2,
+  size: "long",
+  lede: "Add senior US-based web, mobile, data, AI or full-stack engineers without changing how your team plans, builds, reviews or ships.",
+  ctas: [
+    { label: "Plan your engineering hires", href: "#contact", arrow: "diagonal" },
+    { label: "Explore team options", href: "#ways", arrow: "right" },
+  ],
+  assurances: [
+    { icon: "shield", label: "Senior engineering oversight" },
+    { icon: "clock", label: "US workday overlap" },
+    { icon: "lock", label: "Your stack and controls" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A software engineer works at a laptop beside a bright window.",
+  card: {
+    status: "Build context / Active",
+    place: "US-based delivery",
+    note: "Start with one engineer. Grow to a pod when the roadmap asks.",
+    kicker: "Onshore capacity, inside your org.",
+    statement: "Engineers in your standups, your codebase and your release calendar.",
+    foot: { label: "Built for product and platform teams", value: "One senior engineer to a full onshore pod" },
+  },
+  specs: [
+    { label: "Years engineering software", value: "20+" },
+    { label: "Engineers under one roof", value: "200+" },
+    { label: "Clients served", value: "300+" },
+    { label: "Global delivery locations", value: "4+" },
+  ],
+  base: { title: "Dallas headquartered", line: "Delivery across the USA, India, Canada and Mexico" },
+};
+
+const FAQS = [
+  {
+    q: "Is this staff augmentation or a managed delivery team?",
+    a: "Both. Add one engineer, a small team, or a full pod with its own technical lead.",
+  },
+  {
+    q: "Can we start with one engineer?",
+    a: "Yes. Start with the one role you need now and add more when the roadmap calls for it.",
+  },
+  {
+    q: "Can we interview engineers before we choose?",
+    a: "Yes. You get pre-vetted profiles, interview the people you like and make the final call.",
+  },
+  {
+    q: "What skills can we hire for?",
+    a: "Web, mobile, back end, data, AI and ML, QA, and DevOps and cloud: one specialist or a mixed team.",
+  },
+  {
+    q: "How do you match engineers to our team?",
+    a: "We start from your stack, your roadmap and the gap on your team, then send profiles that fit all three.",
+  },
+  {
+    q: `How do ${BRAND.name} engineers collaborate with US teams?`,
+    a: "They are US-based and keep your business hours, so they join stand-ups, reviews and incidents in the same working day.",
+  },
+  {
+    q: "Can the team work inside our cloud, tools and security controls?",
+    a: "Yes. Engineers work in your repositories, cloud accounts and tools, with access you grant and can revoke.",
+  },
+  {
+    q: "Can we scale the team after the first engineer starts?",
+    a: "Yes. Add engineers one at a time, or grow into a managed pod as the work grows.",
+  },
+  {
+    q: "What happens after we select an engineer?",
+    a: "We set up access, rituals and a first task with your leads, so the work starts in week one.",
+  },
+];
+---
+
+<Layout
+  title={`Onshore engineers, United States · ${BRAND.name}`}
+  description="Hire senior US-based engineers and teams: web, mobile, back end, data, AI/ML, QA and DevOps, in your hours and inside your delivery process."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+
+    <HireStack
+      id="stack"
+      tone="tint"
+      eyebrow="Tech we use"
+      headline={["Engineers who", "fit your stack."]}
+      lede="They work with the languages, frameworks, models and clouds your teams already use."
+      groups={[
+        { name: "Web and app", logos: ["react", "nextdotjs", "vuedotjs", "angular", "typescript", "nodedotjs"] },
+        { name: "Mobile", logos: ["swift", "kotlin", "flutter", "android"], named: ["iOS", "React Native"] },
+        { name: "Back end", logos: ["python", "go", "openjdk", "dotnet", "postgresql", "mongodb", "redis", "graphql"] },
+        { name: "Data", logos: ["snowflake", "databricks", "apachespark", "apacheairflow", "apachekafka"], named: ["dbt"] },
+        { name: "AI and ML", logos: ["pytorch", "tensorflow", "scikitlearn", "huggingface", "langchain", "claude", "googlegemini", "mlflow"], named: ["OpenAI", "Llama", "Mistral"] },
+        { name: "QA and testing", logos: ["selenium", "cypress", "jest", "postman"], named: ["Playwright"] },
+        { name: "DevOps and cloud", logos: ["docker", "kubernetes", "terraform", "githubactions", "googlecloud", "datadog"], named: ["AWS", "Azure"] },
+      ]}
+      note="We choose tools based on your product, your data, your security needs and your deployment plan."
+    />
+
+    <HireServices
+      id="help"
+      tone="tint"
+      eyebrow="More ways we can help"
+      headline={["Choose the work", "your team needs."]}
+      lede="Explore the work our US-based engineers take on, and the tools they use every day."
+      services={[
+        {
+          name: "Web and product engineering",
+          body: "Add engineers who build the screens, flows and features on your roadmap, and ship them through your own reviews and releases.",
+          work: ["Customer-facing apps", "Admin and internal tools", "Front-end performance"],
+          tools: ["React", "Next.js", "TypeScript", "Node.js"],
+        },
+        {
+          name: "Mobile apps",
+          body: "Build and maintain iOS and Android apps that stay fast, pass store review and keep pace with your web product.",
+          work: ["New app builds", "Release upkeep", "Offline and sync"],
+          tools: ["Swift", "Kotlin", "React Native", "Flutter"],
+        },
+        {
+          name: "Back end and integrations",
+          body: "Design the services and APIs behind your product, connect it to the systems you already run, and keep it quick under load.",
+          work: ["APIs and services", "Third-party integrations", "Scaling and tuning"],
+          tools: ["Python", "Go", "Java", ".NET", "PostgreSQL"],
+        },
+        {
+          name: "Data engineering",
+          body: "Build the pipelines and warehouses that give your product, finance and AI work data they can rely on.",
+          work: ["Data pipelines", "Warehouse models", "Reporting"],
+          tools: ["Snowflake", "Databricks", "Spark", "Airflow", "dbt"],
+        },
+        {
+          name: "AI app development",
+          body: "Build AI features straight into your web and mobile products, connecting models, services and user flows so the feature feels native to your app.",
+          work: ["AI product features", "Chat and search", "Internal AI tools"],
+          tools: ["Python", "FastAPI", "OpenAI SDK", "Next.js"],
+        },
+        {
+          name: "Agents, LLMs and RAG",
+          body: "Ground language models in your own content, build agent workflows with human review, and measure answers before users see them.",
+          work: ["RAG search", "Agent workflows", "Evaluation"],
+          tools: ["LangChain", "Hugging Face", "pgvector", "Claude"],
+        },
+        {
+          name: "QA and test automation",
+          body: "Put test plans, automated suites and quality gates in your pipeline, so every release is checked the same way.",
+          work: ["Test automation", "API testing", "Release gates"],
+          tools: ["Playwright", "Cypress", "Selenium", "Postman"],
+        },
+        {
+          name: "DevOps, cloud and MLOps",
+          body: "Automate builds, deploys and infrastructure, and run models and services in production with monitoring you can act on.",
+          work: ["CI/CD", "Infrastructure as code", "Model deployment"],
+          tools: ["Kubernetes", "Terraform", "AWS", "MLflow", "Datadog"],
+        },
+      ]}
+    />
+
+    <HireWhy
+      id="why"
+      eyebrow={`Why ${BRAND.name}`}
+      headline={["Why teams", `choose ${BRAND.name}.`]}
+      lede="Senior US-based engineers who work in your hours, follow your standards and join your delivery process."
+      reasons={[
+        {
+          title: "Senior engineers, matched to your work",
+          body: "Start with the skill you need, from web and mobile to data, AI or cloud. You review engineer profiles and validate the fit before you choose your team.",
+          points: ["Product to platform skills", "Profiles you review", "Direct client validation"],
+        },
+        {
+          title: "A delivery model built around your team",
+          body: "Engineers follow your sprints, tools and code reviews, with senior oversight that keeps quality steady as the team grows.",
+          points: ["Your rituals and tools", "Senior oversight", "Scale up or down"],
+        },
+        {
+          title: "US-based engineers, aligned to your delivery",
+          body: "The team works in US business hours, can meet you on site when it matters, and fits the security and release process you already run.",
+          points: ["Your business hours", "On site when needed", "Your security controls"],
+        },
+      ]}
+      figures={[
+        { value: "20+", label: "Years building software" },
+        { value: "200+", label: "Engineers in one team" },
+        { value: "300+", label: "Clients served" },
+      ]}
+      cta={{ label: "Talk to our team", href: "#contact" }}
+    />
+
+    <HireWays
+      id="ways"
+      eyebrow="Ways to work together"
+      headline={["Start with one engineer.", "Build a team", "when you need it."]}
+      accent={2}
+      lede="Choose the setup that fits your team and your delivery plan."
+      models={[
+        {
+          kind: "Staff augmentation",
+          size: "1 engineer",
+          title: "Add one engineer",
+          body: "A dedicated US-based engineer in your team, codebase and sprint cycle.",
+          skills: ["Full-stack web", "Mobile", "Python and APIs"],
+          photo: { image: waysSolo, alt: "An engineer with a laptop on his knees listens in a bright office lounge.", focus: "40% 40%" },
+        },
+        {
+          kind: "Augmented squad",
+          size: "2–4 engineers",
+          title: "Add a small team",
+          body: "Web, data, AI or QA engineers to close one clear gap on your team.",
+          skills: ["Data pipelines", "AI features", "Test automation"],
+          photo: { image: waysSquad, alt: "Three engineers work on laptops on sofas in a brick-walled office.", focus: "70% 70%" },
+        },
+        {
+          kind: "Managed delivery pod",
+          size: "5–8 engineers",
+          title: "Build a delivery pod",
+          body: "A connected team with its own technical lead, when you need more capacity.",
+          skills: ["Architecture", "Cloud and DevOps", "Delivery"],
+          photo: { image: waysPod, alt: "A product team with laptops talks around a long table.", focus: "45% 45%" },
+        },
+      ]}
+      cta={{ label: "Plan this team shape", href: "#plan" }}
+      control={{ lead: "You stay in control.", rest: `${BRAND.name} engineers work in your codebase, tools and delivery process.` }}
+    />
+
+    <HirePlanner
+      id="plan"
+      tone="tint"
+      eyebrow="Team planning view"
+      headline={["Size the engineering", "capacity you need."]}
+      lede="See the monthly investment for a senior US-based team at your target capacity."
+      rate={125}
+      hours={160}
+      max={12}
+      start={3}
+      panelLabel="Monthly team cost"
+      oneLabel="One engineer at $125/hr"
+      teamLabel="Your team of {n}"
+      capacity="{n} senior {people} working inside your hours, standards and release rhythm."
+      sizeLabel="Your team size"
+      unit={["engineer", "engineers"]}
+      cta={{ label: "Build my team plan", href: "#contact" }}
+      disclaimer="Ask for a tailored cost view for your exact roles, skills and stack."
+      note={`Estimate at $125 an hour and 160 hours per engineer each month. Planning figures are directional, not a ${BRAND.name} quote.`}
+    />
+
+    <HireEngineers
+      id="engineers"
+      eyebrow="Find the right skill"
+      headline={["Find the engineer", "you need."]}
+      lede={`Pick a skill to see the US-based engineers ${BRAND.name} can match to your team.`}
+      allLabel="All engineers"
+      filters={[
+        { key: "web", label: "Web & mobile" },
+        { key: "backend", label: "Back end" },
+        { key: "data", label: "Data & AI" },
+        { key: "qa", label: "QA" },
+        { key: "cloud", label: "DevOps & cloud" },
+      ]}
+      engineers={[
+        {
+          level: "Senior specialty role",
+          role: "Full-stack web developer",
+          for: "For product screens, APIs and the customer features on your roadmap.",
+          years: "8+ years",
+          skills: ["React", "Next.js", "Node.js", "TypeScript"],
+          tags: ["web", "backend"],
+          photo: { image: engWeb, alt: "A developer smiles as he works at a desk in a bright studio.", focus: "35% 40%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "Mobile app developer",
+          for: "For iOS and Android apps, from a first build to steady releases.",
+          years: "7+ years",
+          skills: ["Swift", "Kotlin", "React Native", "App Store releases"],
+          tags: ["web"],
+          photo: { image: engMobile, alt: "A developer smiles from her desk beside a laptop.", focus: "62% 40%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "Back-end and API engineer",
+          for: "For services, integrations and the performance work behind them.",
+          years: "9+ years",
+          skills: ["Python", "Go", "Java", "PostgreSQL"],
+          tags: ["backend"],
+          photo: { image: engBackend, alt: "A developer in glasses smiles as he types at his desk.", focus: "45% 30%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "Data engineer",
+          for: "For pipelines, data quality, vector data and analytics.",
+          years: "7+ years",
+          skills: ["Snowflake", "Airflow", "dbt", "SQL"],
+          tags: ["data"],
+          photo: { image: engData, alt: "A data engineer thinks through a problem at a large monitor.", focus: "75% 35%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "Machine learning engineer",
+          for: "For forecasting, classification, feature engineering and model training.",
+          years: "8+ years",
+          skills: ["PyTorch", "scikit-learn", "Feature stores", "SQL"],
+          tags: ["data"],
+          photo: { image: engMl, alt: "An engineer smiles at his screens in an office with brick walls.", focus: "35% 40%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "GenAI and LLM developer",
+          for: "For RAG, agent flows, prompt work and AI quality checks inside your app.",
+          years: "6+ years",
+          skills: ["LLM apps", "RAG", "LangChain", "Evaluation"],
+          tags: ["data"],
+          photo: { image: engGenai, alt: "A developer works through a problem on her laptop at a meeting table.", focus: "30% 40%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "QA automation engineer",
+          for: "For test plans, automated suites and release gates.",
+          years: "7+ years",
+          skills: ["Playwright", "Cypress", "API tests", "CI"],
+          tags: ["qa"],
+          photo: { image: engQa, alt: "An engineer takes notes beside her laptop at a window desk.", focus: "28% 45%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "DevOps and MLOps engineer",
+          for: "For CI/CD, cloud reliability, monitoring and model deployment.",
+          years: "8+ years",
+          skills: ["Kubernetes", "Terraform", "AWS", "MLflow"],
+          tags: ["cloud"],
+          photo: { image: engDevops, alt: "An engineer stands at a standing desk in a long, bright office.", focus: "40% 35%" },
+        },
+      ]}
+      cta={{ label: "Discuss this engineering hire", href: "#contact" }}
+      footnote={`These are example roles. ${BRAND.name} confirms availability and fit before you decide.`}
+    />
+
+    <HireColumns
+      id="do"
+      eyebrow="What our engineers do"
+      headline={["Get help across", "your whole stack."]}
+      lede="Add the skills you need across apps, data, models and operations."
+      columns={[
+        {
+          label: "Build",
+          title: "Build product features",
+          body: "Engineers who build web and mobile features, APIs and the app experiences your users touch.",
+          tags: ["Web apps", "Mobile apps", "APIs", "Agent workflows"],
+        },
+        {
+          label: "Data and models",
+          title: "Build and run models",
+          body: "Specialists who build the pipelines, then train, test, deploy and improve the models on top.",
+          tags: ["Data pipelines", "Predictive ML", "NLP and RAG", "Computer vision"],
+        },
+        {
+          label: "Platform",
+          title: "Run it in production",
+          body: "Engineers for testing, releases, cloud platforms and the monitoring that keeps it all up.",
+          tags: ["QA automation", "CI/CD", "MLOps", "Cloud platforms"],
+        },
+      ]}
+    />
+
+    <HireSteps
+      id="how"
+      eyebrow="How they help"
+      headline={["Build, ship and", "improve your products."]}
+      lede={`Hire one specialist or a full team. ${BRAND.name} covers the work from product to production.`}
+      steps={[
+        {
+          title: "Build inside your product",
+          body: "Engineer features, applications, APIs and workflows that sit inside your existing architecture.",
+          focus: "Features, APIs and interfaces",
+        },
+        {
+          title: "Shape the data and models",
+          body: "Prepare the data, choose and evaluate the models, and tie their performance to your goals.",
+          focus: "Data, models and measurement",
+        },
+        {
+          title: "Integrate and release",
+          body: "Work inside your services, quality gates, cloud and release process, so new work ships as a usable system.",
+          focus: "Integration, testing and release",
+        },
+        {
+          title: "Operate and improve",
+          body: "Keep it reliable with observability, maintenance, security awareness and steady follow-through.",
+          focus: "Observability, stability and evolution",
+        },
+      ]}
+      close={{
+        text: `Need help with one part of your stack? ${BRAND.name} can help.`,
+        cta: { label: "Find the right role", href: "#engineers" },
+      }}
+    />
+
+    <HireCases
+      id="cases"
+      eyebrow="How teams use us"
+      headline={["Real examples of", "teams in action."]}
+      lede="The roles we brought in, and what the teams achieved."
+      cases={[
+        {
+          sector: "US industrial engineering company",
+          team: "Computer vision and data pod",
+          title: "Production quality vision team",
+          body: "We provided computer vision, data and QA automation engineers to build models that check production imagery and designs for quality issues.",
+          roles: ["Computer vision ML engineer", "Data engineer", "QA automation engineer"],
+          tools: ["OpenCV", "PyTorch", "Image classification"],
+          results: [
+            { value: "Automated", label: "imagery quality checks" },
+            { value: "Consistent", label: "design review workflows" },
+          ],
+        },
+        {
+          sector: "US fintech lending platform",
+          team: "Dedicated ML and data specialists",
+          title: "Lending risk-model team",
+          body: "We added ML and data specialists to improve scoring, eligibility checks and the model platform.",
+          roles: ["ML engineer", "Data scientist", "MLOps engineer"],
+          tools: ["H2O.ai", "Kubeflow", "ML scoring"],
+          results: [
+            { value: "87%", label: "improved approval accuracy" },
+            { value: "61%", label: "improved fraud detection" },
+          ],
+        },
+        {
+          sector: "US industrial equipment supplier",
+          team: "AI, data and integration team",
+          title: "Predictive maintenance team",
+          body: "We added AI, data and integration engineers to turn sensor data into useful maintenance alerts.",
+          roles: ["ML engineer", "Data engineer", "AI integration developer"],
+          tools: ["Deep learning", "IoT sensors", "Predictive analytics"],
+          results: [
+            { value: "6×", label: "less machine downtime" },
+            { value: "43%", label: "maintenance cost savings" },
+          ],
+        },
+      ]}
+      footnote={`Client details are kept private. Team roles show the skills used on each ${BRAND.name} engagement. Results are examples, not guarantees.`}
+    />
+
+    <HirePod
+      id="pod"
+      eyebrow="One team. One operating rhythm."
+      headline={["How does your", "development pod", `look with ${BRAND.name}?`]}
+      lede={`Your leaders own the product and the architecture. US-based ${BRAND.name} engineers join your way of working, with the context and overlap to contribute inside the team.`}
+      points={[
+        { lead: "Start small", rest: "with the role you need now." },
+        { lead: "Work your way", rest: "in your codebase, tools and quality process." },
+        { lead: "Grow when needed", rest: "with app, data, AI and cloud skills." },
+      ]}
+      rosterLabel="Delivery pod / 01"
+      status="Active"
+      members={[
+        { initials: "SA", role: "Solution architect", layer: "Architecture" },
+        { initials: "FS", role: "Full-stack engineer", layer: "Product layer" },
+        { initials: "ML", role: "AI/ML engineer", layer: "Model layer" },
+        { initials: "DE", role: "Data engineer", layer: "Data systems" },
+        { initials: "DO", role: "DevOps engineer", layer: "Cloud and releases" },
+      ]}
+      terms={[
+        { label: "Rituals", value: "Daily overlap" },
+        { label: "Ownership", value: "Sprint outcomes" },
+        { label: "Start", value: "Roadmap-led" },
+      ]}
+      cta={{ label: "Talk about your team", href: "#contact" }}
+    />
+
+    <HireFit
+      id="fit"
+      tone="tint"
+      eyebrow="Is this a good fit?"
+      headline={["Built for teams", "that need more", "engineering help."]}
+      items={[
+        "You need more engineers to meet your delivery goals.",
+        "You need skills your team doesn’t have today, from mobile to AI and ML.",
+        "You need engineers who can follow your security and release process.",
+        "You need US-based engineers who work in your business hours and inside your delivery process.",
+      ]}
+    />
+
+    <HireProcess
+      id="process"
+      eyebrow="How it works"
+      headline={["Five simple steps", "to add engineers."]}
+      lede="From the first call to a US-based engineer working in your sprint."
+      detailLabel="Leadership context"
+      steps={[
+        {
+          title: "Discovery call",
+          body: "Tell us about your roadmap, your team gap and the work that needs more support.",
+          covers: ["Your goals", "Team gap", "Tech context"],
+          photo: { image: stepCall, alt: "Three colleagues talk through a plan at a meeting table.", focus: "50% 15%" },
+        },
+        {
+          title: "Pick the suitable model",
+          body: "Choose one engineer, a squad or a managed pod, and we shape the team with you.",
+          covers: ["Engagement model", "Team size", "Start date"],
+          photo: { image: stepModel, alt: "A team lead sketches options on a whiteboard with two colleagues.", focus: "55% 40%" },
+        },
+        {
+          title: "Receive pre-vetted options",
+          body: "Get engineer profiles matched to your stack, your hours and your budget.",
+          covers: ["Skills", "Experience", "Availability"],
+          photo: { image: stepOptions, alt: "An engineer reviews work on a laptop.", focus: "60% 50%" },
+        },
+        {
+          title: "Interview & selection",
+          body: "Meet the engineers, test the fit and choose who joins your team.",
+          covers: ["Technical interview", "Team fit", "Your decision"],
+          photo: { image: stepInterview, alt: "Two colleagues talk over a laptop at a table.", focus: "50% 40%" },
+        },
+        {
+          title: "Onboarding & kickoff",
+          body: "Access, rituals and a first task with your leads, so the work starts in week one.",
+          covers: ["Access and tools", "Team rituals", "First sprint"],
+          photo: { image: stepKickoff, alt: "A team gathers around a pinboard to plan its first sprint.", focus: "50% 45%" },
+        },
+      ]}
+      cta={{ label: "Plan your engineering hires", href: "#contact" }}
+    />
+
+    <FaqSection
+      eyebrow="Common questions"
+      headline={["Before you add", "engineers."]}
+      accent={1}
+      cta="Talk to our team"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "An engineer briefs his team in a brick-walled office.", focus: "30% 40%" }}
+    />
+
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

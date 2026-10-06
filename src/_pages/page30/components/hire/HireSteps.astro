@@ -1,0 +1,57 @@
+---
+import Arrow from "@pg/page30/components/icons/Arrow.astro";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import type { HireHead, HireLink, HireStep } from "@pg/page30/components/hire/types";
+
+/* How they help. Four numbered steps, one per column of the page's grid:
+   the number set large, a title, one line and the focus line on the column's
+   floor. A rule runs along the numbers and draws across as the section
+   arrives. Under the steps, a closing line with a link.
+
+   Phones: a compact list, the number beside each step. */
+
+interface Props extends HireHead {
+  /** Four, one per column. */
+  steps: HireStep[];
+  close: { text: string; cta: HireLink };
+  /** "tint" is a light section on a pale blue ground. */
+  tone?: "light" | "tint" | "dark";
+}
+
+const { id, eyebrow, headline, accent, lede, steps, close, tone = "light" } = Astro.props;
+---
+
+<section data-ac-sec={tone === "tint" ? "light" : tone} data-ac-hire-tint={tone === "tint" || undefined} data-ac-hire="steps" id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent ?? headline.length - 1} lede={lede} />
+
+    <ol data-ac-hire-steps role="list">
+      {steps.map((step, i) => (
+        <li data-ac-hire-step style={`--i:${i}`}>
+          <span data-ac-hire-step-num aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+          <h3 data-ac-hire-card-title>{step.title}</h3>
+          <p data-ac-hire-card-body>{step.body}</p>
+          <p data-ac-hire-step-focus class="mono-label">{step.focus}</p>
+        </li>
+      ))}
+    </ol>
+
+    <div data-ac-sec-frame data-ac-hire-close data-ac-sec-rise>
+      <Joints />
+      <p>{close.text}</p>
+      <a data-ac-hire-button class="mono-label" href={close.cta.href}>
+        {close.cta.label}
+        <Arrow direction="right" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>('[data-ac-hire="steps"]').forEach(toggleInView);
+</script>

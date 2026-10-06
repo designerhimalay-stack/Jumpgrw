@@ -1,0 +1,140 @@
+---
+import Arrow from "@pg/page14/components/icons/Arrow.astro";
+import GridRules from "@pg/page14/components/GridRules.astro";
+import SectionHead from "@pg/page14/components/SectionHead.astro";
+import Joints from "@pg/page14/components/process/Joints.astro";
+import { RATES } from "@pg/page14/lib/hire-copy";
+
+/* The savings planner. One frame on the columns: in columns 1–2 the team
+   size, a slider from one to twelve engineers and the basis of the estimate;
+   in columns 3–4, on navy, the monthly cost of the team onshore and offshore
+   and, on the accent, the difference. Every figure is rendered for three
+   engineers first, so the page reads right without the script, and the
+   numbers keep a fixed width so moving the slider never shifts the layout.
+   See docs/sections.md. */
+
+interface Props {
+  copy: {
+    eyebrow: string;
+    headline: string[];
+    lede: string;
+    sizeLabel: string;
+    /** What the slider counts, one and several. */
+    unit: [string, string];
+    onshoreLabel: string;
+    offshoreLabel: string;
+    savingsLabel: string;
+    perMonth: string;
+    cta: string;
+    ctaNote: string;
+    note: string;
+  };
+}
+
+const { copy } = Astro.props;
+const START = 3;
+const MAX = 12;
+const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
+const onshore = START * RATES.onshore * RATES.hours;
+const offshore = START * RATES.offshore * RATES.hours;
+const share = Math.round((1 - RATES.offshore / RATES.onshore) * 100);
+const engineers = (n: number) => `${n} ${n === 1 ? copy.unit[0] : copy.unit[1]}`;
+---
+
+<section
+  data-ac-sec="light"
+  data-ac-save
+  id="savings"
+  data-onshore={RATES.onshore}
+  data-offshore={RATES.offshore}
+  data-hours={RATES.hours}
+  data-unit={copy.unit.join("|")}
+>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={copy.eyebrow} headline={copy.headline} accent={1} lede={copy.lede} />
+
+    <div data-ac-sec-frame data-ac-save-frame>
+      <Joints />
+      <div data-ac-save-input>
+        <div data-ac-save-size>
+          <label for="save-size" class="mono-label">{copy.sizeLabel}</label>
+          <output for="save-size" data-ac-save-count aria-live="polite">{engineers(START)}</output>
+        </div>
+        <input
+          id="save-size"
+          type="range"
+          min="1"
+          max={MAX}
+          step="1"
+          value={START}
+          data-ac-save-range
+          style={`--ac-fill:${((START - 1) / (MAX - 1)) * 100}%`}
+        />
+        <div data-ac-save-ticks class="mono-label-sm" aria-hidden="true">
+          <span>{engineers(1)}</span>
+          <span>{engineers(6)}</span>
+          <span>{engineers(MAX)}</span>
+        </div>
+        <p data-ac-save-basis>{copy.note}</p>
+      </div>
+
+      <div data-ac-save-result>
+        <div data-ac-save-costs>
+          <div>
+            <p class="mono-label-sm">{copy.onshoreLabel}</p>
+            <p data-ac-save-num data-ac-save-onshore>{usd(onshore)}</p>
+            <p data-ac-save-per>{copy.perMonth}</p>
+          </div>
+          <div>
+            <p class="mono-label-sm">{copy.offshoreLabel}</p>
+            <p data-ac-save-num data-ac-save-offshore>{usd(offshore)}</p>
+            <p data-ac-save-per>{copy.perMonth}</p>
+          </div>
+        </div>
+        <div data-ac-save-total>
+          <p class="mono-label-sm">{copy.savingsLabel}</p>
+          <p data-ac-save-num data-ac-save-diff>{usd(onshore - offshore)}</p>
+          <p data-ac-save-share>About {share}% lower than the US onshore estimate.</p>
+        </div>
+        <a data-ac-save-cta class="mono-label" href="#contact">
+          {copy.cta}
+          <Arrow direction="diagonal" />
+        </a>
+        <p data-ac-save-ctanote>{copy.ctaNote}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page14/lib/in-view";
+
+  const section = document.querySelector<HTMLElement>("[data-ac-save]")!;
+  toggleInView(section);
+
+  const range = section.querySelector<HTMLInputElement>("[data-ac-save-range]")!;
+  const count = section.querySelector<HTMLOutputElement>("[data-ac-save-count]")!;
+  const onshore = section.querySelector<HTMLElement>("[data-ac-save-onshore]")!;
+  const offshore = section.querySelector<HTMLElement>("[data-ac-save-offshore]")!;
+  const diff = section.querySelector<HTMLElement>("[data-ac-save-diff]")!;
+  const rate = { on: Number(section.dataset.onshore), off: Number(section.dataset.offshore), hours: Number(section.dataset.hours) };
+  const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
+  const [one, many] = section.dataset.unit!.split("|");
+
+  const update = () => {
+    const n = Number(range.value);
+    const max = Number(range.max);
+    const on = n * rate.on * rate.hours;
+    const off = n * rate.off * rate.hours;
+    count.value = `${n} ${n === 1 ? one : many}`;
+    onshore.textContent = usd(on);
+    offshore.textContent = usd(off);
+    diff.textContent = usd(on - off);
+    range.style.setProperty("--ac-fill", `${((n - 1) / (max - 1)) * 100}%`);
+  };
+
+  range.addEventListener("input", update);
+  update();
+</script>

@@ -1,0 +1,97 @@
+---
+import Arrow from "@pg/page21/components/icons/Arrow.astro";
+import GridRules from "@pg/page21/components/GridRules.astro";
+import SectionHead from "@pg/page21/components/SectionHead.astro";
+import Joints from "@pg/page21/components/process/Joints.astro";
+import type { Role } from "@pg/page21/types/hire";
+
+/* What your pod looks like with us, on navy. Columns 1–2: the headline, the
+   lede, three ways it starts and grows, and a button to the brief. Columns
+   3–4: the pod as a roster, one row per role (its initials, its part of the
+   work), each checking in after the one before when the section arrives;
+   along the roster's floor, how the pod runs. Phones: the roster under the
+   copy, its rows tighter. See docs/sections.md. */
+
+interface Props {
+  copy: {
+    eyebrow: string;
+    headline: string[];
+    lede: string;
+    points: [string, string][];
+    cta: string;
+    label: string;
+    status: string;
+    facts: { label: string; value: string }[];
+  };
+  roles: Role[];
+}
+
+const { copy, roles } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+const initials = (title: string) =>
+  title
+    .split(/\s+/)
+    .map((w) => w.replace(/^[^\p{L}\p{N}]+/u, ""))
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+---
+
+<section data-ac-sec="dark" data-ac-pod id="pod">
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-pod-grid>
+    <div data-ac-pod-copy>
+      <SectionHead eyebrow={copy.eyebrow} headline={copy.headline} accent={1} />
+      <p data-ac-pod-lede data-ac-sec-rise>{copy.lede}</p>
+      <ul data-ac-pod-points data-ac-sec-rise>
+        {copy.points.map(([lead, rest]) => (
+          <li>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="m8 12.5 2.7 2.7L16.2 9.6" /></svg>
+            <span><b>{lead}</b> {rest}</span>
+          </li>
+        ))}
+      </ul>
+      <a data-ac-button class="mono-label" href="#contact" data-ac-sec-rise>
+        {copy.cta}
+        <Arrow direction="diagonal" />
+      </a>
+    </div>
+
+    <div data-ac-sec-frame data-ac-pod-roster>
+      <Joints />
+      <div data-ac-pod-head class="mono-label-sm">
+        <span>{copy.label}</span>
+        <span data-ac-pod-status><i aria-hidden="true" />{copy.status}</span>
+      </div>
+      <ol data-ac-pod-rows>
+        {roles.map((role, i) => (
+          <li data-ac-pod-row style={`--ac-i:${i}`}>
+            <span data-ac-pod-num>{pad(i + 1)}</span>
+            <span data-ac-pod-badge aria-hidden="true">{initials(role.title)}</span>
+            <span data-ac-pod-role>
+              <b>{role.title}</b>
+              <span>{role.part}</span>
+            </span>
+            <svg data-ac-pod-check viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+          </li>
+        ))}
+      </ol>
+      <dl data-ac-pod-facts>
+        {copy.facts.map((fact) => (
+          <div>
+            <dt class="mono-label-sm">{fact.label}</dt>
+            <dd>{fact.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page21/lib/in-view";
+
+  toggleInView(document.querySelector<HTMLElement>("[data-ac-pod]")!);
+</script>

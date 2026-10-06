@@ -1,0 +1,61 @@
+---
+import Arrow from "@pg/page14/components/icons/Arrow.astro";
+import GridRules from "@pg/page14/components/GridRules.astro";
+import SectionHead from "@pg/page14/components/SectionHead.astro";
+import { LINE_ICONS } from "@pg/page14/lib/line-icons";
+import type { HelpStage } from "@pg/page14/types/hire";
+
+/* How they help, from product to production: four stages, one per column,
+   standing on the page's own column rules. A line runs across their tops
+   and draws left to right on arrival, lighting each stage's node as it
+   passes. Each stage: number and icon, title, what it is, and what it
+   covers on its floor. Under them, a line to the roles. Phones: two by two.
+   See docs/sections.md. */
+
+interface Props {
+  copy: { eyebrow: string; headline: string[]; lede: string; stages: HelpStage[]; footer: string; cta: string };
+}
+
+const { copy } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-help id="help">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={copy.eyebrow} headline={copy.headline} accent={1} lede={copy.lede} />
+
+    <div data-ac-help-track>
+      <span data-ac-help-line aria-hidden="true" />
+      <ol data-ac-help-stages>
+      {copy.stages.map((stage, i) => (
+        <li data-ac-help-stage style={`--ac-i:${i}`}>
+          <span data-ac-help-node aria-hidden="true" />
+          <div data-ac-help-meta>
+            <span data-ac-help-num>{pad(i + 1)}</span>
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" set:html={LINE_ICONS[stage.icon]} />
+          </div>
+          <h3 data-ac-help-title>{stage.title}</h3>
+          <p data-ac-help-body>{stage.body}</p>
+          <p data-ac-help-covers class="mono-label-sm">{stage.covers}</p>
+        </li>
+      ))}
+      </ol>
+    </div>
+
+    <div data-ac-help-foot>
+      <p>{copy.footer}</p>
+      <a data-ac-link class="mono-label" href="#roles">
+        {copy.cta}
+        <Arrow direction="right" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page14/lib/in-view";
+
+  toggleInView(document.querySelector<HTMLElement>("[data-ac-help]")!);
+</script>

@@ -1,0 +1,76 @@
+---
+import GridRules from "@pg/page9/components/GridRules.astro";
+import RevealText from "@pg/page9/components/RevealText.astro";
+
+/* The center, as a floor plan, on a grey band. Rooms for each capability
+   laid out on drafting paper, their walls drawn in one after another as the
+   section arrives, each named with what it does. Pointing at a room lifts
+   it. The claim sits on the left. See docs/sections.md. */
+
+interface Room {
+  name: string;
+  note: string;
+  /** Grid placement on a 12 × 8 plan: column start / span, row start / span. */
+  area: [number, number, number, number];
+  lead?: boolean;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  rooms: Room[];
+  caption: string;
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, rooms, caption } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+---
+
+<section data-ac-sec="light" data-ac-floor id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-floor-grid>
+    <div data-ac-floor-copy>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-floor-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+      <p data-ac-floor-lede data-ac-sec-rise>{lede}</p>
+    </div>
+
+    <figure data-ac-floor-plan>
+      <ul>
+        {rooms.map((room, i) => (
+          <li
+            data-ac-floor-room
+            data-lead={room.lead || undefined}
+            style={`--ac-i:${i};grid-column:${room.area[0]} / span ${room.area[1]};grid-row:${room.area[2]} / span ${room.area[3]}`}
+          >
+            <span data-ac-floor-name>{room.name}</span>
+            <span data-ac-floor-note>{room.note}</span>
+          </li>
+        ))}
+      </ul>
+      <figcaption class="mono-label-sm">{caption}</figcaption>
+    </figure>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page9/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-floor]").forEach(toggleInView);
+</script>

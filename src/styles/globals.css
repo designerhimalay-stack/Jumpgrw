@@ -451,6 +451,16 @@ html[data-portal-phase="field"] .ac-nav-link {
   color: #fff;
 }
 
+/* The logo is a raster image, so color above can't tint it: over the hero
+   gradient field, swap to the white logo just like the dark-section path does. */
+html[data-portal-phase="field"] .ac-nav-logo-light {
+  display: none;
+}
+
+html[data-portal-phase="field"] .ac-nav-logo-dark {
+  display: block;
+}
+
 html[data-portal-phase="field"] .ac-nav-link:hover {
   background: var(--color-accent);
   border-color: var(--color-accent-border);
@@ -3237,7 +3247,6 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
    --------------------------------------------------------------------------- */
 
 [data-ac-cases] {
-  --ac-case-duration: 6s;
   --cs-number: 24px;
   --cs-gap: 18px;
 }
@@ -3260,7 +3269,7 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
 [data-ac-cases-cell="media"] {
   grid-column: 3 / 5;
   padding: 10px;
-  min-height: clamp(460px, 44vw, 660px);
+  min-height: clamp(400px, 46vw, 560px);
 }
 
 [data-ac-cases-cell] > [data-ac-joints] i {
@@ -3413,32 +3422,17 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   stroke-width: 1.5;
 }
 
+/* Starts empty; the script fills it from the open project's video progress
+   (stroke-dashoffset 100 = empty, 0 = full). */
 [data-ac-case-ring] [data-ac-case-progress] {
   stroke: var(--color-accent);
   stroke-linecap: round;
   stroke-dasharray: 100;
-  stroke-dashoffset: 0;
+  stroke-dashoffset: 100;
 }
 
-/* The ring is the timer: its animation ending is what opens the next project
-   (see the script), so pausing it pauses the rotation. */
-[data-ac-cases][data-ac-auto] [data-ac-case][data-active] [data-ac-case-progress] {
-  animation: ac-case-progress var(--ac-case-duration) linear both;
-}
-
-[data-ac-cases][data-ac-auto]:not([data-ac-in]) [data-ac-case-progress],
-[data-ac-cases][data-ac-auto][data-ac-hold] [data-ac-case-progress] {
-  animation-play-state: paused;
-}
-
-@keyframes ac-case-progress {
-  from {
-    stroke-dashoffset: 100;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
+/* The ring is driven by the script from the open project's video progress; the
+   video ending is what opens the next project. */
 
 /* Every project's details open to the tallest one's height (measured by the
    script), so the list never changes height as it advances. */
@@ -3527,11 +3521,18 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   }
 }
 
-/* -- the image -------------------------------------------------------------- */
+/* -- the media ---------------------------------------------------------------
+   A square panel: the videos are 630x630, so a square box fills with no crop
+   and no letterbox. It is capped and centred in its cell so it stays tasteful
+   at every width — half the frame on desktop, the full column once stacked. */
 
 [data-ac-cases-media] {
   position: relative;
-  flex: 1;
+  flex: none;
+  width: 100%;
+  max-width: clamp(400px, 46vw, 560px);
+  aspect-ratio: 1;
+  margin: auto;
   border: 1px solid var(--ac-line);
   border-radius: 12px;
   overflow: clip;
@@ -3550,17 +3551,11 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   opacity: 1;
 }
 
-[data-ac-case-media] img {
+[data-ac-case-media] video {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.06);
-  transition: transform 1.6s var(--sec-ease);
-}
-
-[data-ac-case-media][data-active] img {
-  transform: none;
 }
 
 /* A soft floor under the counter. */
@@ -3613,7 +3608,7 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   }
 
   [data-ac-cases-media] {
-    aspect-ratio: 16 / 10;
+    max-width: min(100%, 520px);
   }
 
   [data-ac-cases-cell="media"] > [data-ac-joints] i[data-ac-corner="bl"],
@@ -3628,7 +3623,7 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   }
 
   [data-ac-cases-media] {
-    aspect-ratio: 4 / 3;
+    max-width: 100%;
   }
 
   [data-ac-case-details-inner] {
@@ -3642,12 +3637,8 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   [data-ac-case-details],
   [data-ac-case-details-inner],
   [data-ac-case-media],
-  [data-ac-case-media] img {
+  [data-ac-case-media] video {
     transition: none;
-  }
-
-  [data-ac-case-media] img {
-    transform: none;
   }
 }
 

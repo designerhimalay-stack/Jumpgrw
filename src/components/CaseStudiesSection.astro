@@ -1,5 +1,4 @@
 ---
-import { Image } from "astro:assets";
 import Arrow from "@/components/icons/Arrow.astro";
 import GridRules from "@/components/GridRules.astro";
 import SectionHead from "@/components/SectionHead.astro";
@@ -8,15 +7,19 @@ import gunlox from "@/assets/cases/gunlox.jpg";
 import loanMantra from "@/assets/cases/loan-mantra.jpg";
 import vowtimer from "@/assets/cases/vowtimer.jpg";
 import greenaider from "@/assets/cases/greenaider.jpg";
+import gunloxVideo from "@/assets/cases/gunlox.webm?url";
+import loanMantraVideo from "@/assets/cases/loan-mantra.webm?url";
+import vowtimerVideo from "@/assets/cases/vowtimer.webm?url";
+import greenaiderVideo from "@/assets/cases/greenaider.webm?url";
 import { withBase } from "@/lib/paths";
 
 /* "Proof is in the product." The page's dark section. The project list opens
-   one project at a time and advances on its own, a ring timing each; the open
-   project's image sits on the right. See docs/components/case-studies.md.
+   one project at a time; the open project's product video plays in the square
+   panel on the right, and when it ends the next project opens. The ring on the
+   open project mirrors that video's progress. See docs/components/case-studies.md.
 
    GunLox's copy is the brief's. The other three projects' summaries, tags and
-   stacks are placeholders to replace, and every image is an Unsplash
-   stand-in. */
+   stacks are placeholders to replace. Each video's poster is its own .jpg. */
 
 const CASES = [
   {
@@ -27,6 +30,7 @@ const CASES = [
       "An easy-to-use companion app for managing authorized users, monitoring access attempts, and receiving timely notifications.",
     stack: ["Node.js", "React Native", "Nginx", "MongoDB"],
     image: gunlox,
+    video: gunloxVideo,
   },
   {
     slug: "loan-mantra",
@@ -36,6 +40,7 @@ const CASES = [
       "A lending platform that takes borrowers from application to approval, with document checks and status updates in one place.",
     stack: ["Ruby on Rails", "React", "PostgreSQL", "AWS"],
     image: loanMantra,
+    video: loanMantraVideo,
   },
   {
     slug: "vowtimer",
@@ -45,6 +50,7 @@ const CASES = [
       "A planning companion that counts down to the big day and keeps every vendor, guest and task on one shared timeline.",
     stack: ["Flutter", "Firebase", "Node.js"],
     image: vowtimer,
+    video: vowtimerVideo,
   },
   {
     slug: "greenaider",
@@ -54,6 +60,7 @@ const CASES = [
       "A platform for planning green initiatives and reporting their impact across teams, sites and suppliers.",
     stack: ["React", "Python", "PostgreSQL", "Google Cloud"],
     image: greenaider,
+    video: greenaiderVideo,
   },
 ];
 
@@ -119,7 +126,16 @@ const pad = (n: number) => String(n).padStart(2, "0");
         <div data-ac-cases-media aria-hidden="true">
           {CASES.map((item, i) => (
             <figure data-ac-case-media data-active={i === 0 || undefined}>
-              <Image src={item.image} alt="" widths={[640, 960, 1280, 1600]} sizes="(max-width: 1199px) 100vw, 50vw" quality={78} />
+              <video
+                data-ac-case-video
+                src={item.video}
+                poster={item.image.src}
+                muted
+                playsinline
+                preload="metadata"
+                width="630"
+                height="630"
+              ></video>
               <span data-ac-case-chip class="mono-label">{item.tag}</span>
             </figure>
           ))}
@@ -133,7 +149,6 @@ const pad = (n: number) => String(n).padStart(2, "0");
 </section>
 
 <script>
-  import { toggleInView } from "@/lib/in-view";
   import { holdOnKeyboardFocus } from "@/lib/rotation";
 
   const section = document.querySelector<HTMLElement>("[data-ac-cases]")!;
@@ -141,8 +156,31 @@ const pad = (n: number) => String(n).padStart(2, "0");
   const list = section.querySelector<HTMLElement>("[data-ac-cases-list]")!;
   const items = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-case]"));
   const media = Array.from(section.querySelectorAll<HTMLElement>("[data-ac-case-media]"));
+  /* The videos sit in the media cell and the rings in the list, two separate
+     subtrees, but both are in project order, so index i lines up across all
+     three arrays. */
+  const videos = media.map((figure) => figure.querySelector<HTMLVideoElement>("[data-ac-case-video]"));
+  const rings = items.map((item) => item.querySelector<SVGCircleElement>("[data-ac-case-progress]"));
   const current = section.querySelector<HTMLElement>("[data-ac-cases-current]")!;
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let active = 0;
+  let inView = false;
+  let held = false;
+
+  /* The ring is drawn with pathLength 100 (dasharray 100). Offset 100 is empty,
+     0 is a full ring, so a fraction p of the way through maps to 100 * (1 - p). */
+  const setRing = (index: number, fraction: number) => {
+    const ring = rings[index];
+    if (ring) ring.style.strokeDashoffset = String(100 * (1 - Math.min(1, Math.max(0, fraction))));
+  };
+
+  const canPlay = () => !reduceMotion.matches && inView && !held;
+
+  const playActive = () => {
+    const video = videos[active];
+    if (video && canPlay()) void video.play().catch(() => {});
+  };
 
   const show = (index: number) => {
     active = (index + items.length) % items.length;
@@ -154,7 +192,32 @@ const pad = (n: number) => String(n).padStart(2, "0");
     });
     media.forEach((figure, i) => figure.toggleAttribute("data-active", i === active));
     current.textContent = String(active + 1).padStart(2, "0");
+
+    /* Every video starts from its first frame; only the open one plays, and the
+       rings reset to empty so the open one fills as its video plays. */
+    videos.forEach((video, i) => {
+      if (!video) return;
+      video.pause();
+      if (video.currentTime !== 0) video.currentTime = 0;
+      setRing(i, 0);
+    });
+    playActive();
   };
+
+  /* The open project's video is the timer: its progress drives the ring, and
+     when it ends the next project opens. Choosing a project switches to it and
+     its video plays from the start. Playback holds while the section is off
+     screen or under keyboard focus; under reduced motion nothing plays and the
+     poster frame stays. */
+  videos.forEach((video, i) => {
+    if (!video) return;
+    video.addEventListener("timeupdate", () => {
+      if (i === active && video.duration) setRing(i, video.currentTime / video.duration);
+    });
+    video.addEventListener("ended", () => {
+      if (i === active) show(active + 1);
+    });
+  });
 
   /* Every project's details open to the height of the tallest, so the list
      keeps one height as it advances and nothing below it moves. */
@@ -168,21 +231,30 @@ const pad = (n: number) => String(n).padStart(2, "0");
   new ResizeObserver(measure).observe(frame);
   document.fonts?.ready.then(measure);
 
-  /* The open project's ring is the timer: when its CSS animation ends, the
-     next project opens. Choosing a project moves the ring to it, so the timer
-     starts over from there. It pauses while the section is off screen and
-     under keyboard focus. No rotation at all under reduced motion. */
-  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    section.setAttribute("data-ac-auto", "");
-  }
-  section.addEventListener("animationend", (event) => {
-    if (event.animationName === "ac-case-progress") show(active + 1);
-  });
-
   items.forEach((item, i) => {
     item.querySelector("[data-ac-case-trigger]")!.addEventListener("click", () => show(i));
   });
 
-  holdOnKeyboardFocus(section, frame);
-  toggleInView(section);
+  /* Reversible entrance (data-ac-in), plus play/pause as the section enters and
+     leaves the viewport — the same band every rotating section uses. */
+  new IntersectionObserver(
+    ([entry]) => {
+      inView = entry.isIntersecting;
+      section.toggleAttribute("data-ac-in", inView);
+      if (inView) playActive();
+      else videos.forEach((video) => video?.pause());
+    },
+    { threshold: 0, rootMargin: "-10% 0px -10% 0px" },
+  ).observe(section);
+
+  holdOnKeyboardFocus(section, frame, (on) => {
+    held = on;
+    if (on) videos.forEach((video) => video?.pause());
+    else playActive();
+  });
+
+  reduceMotion.addEventListener("change", () => {
+    if (reduceMotion.matches) videos.forEach((video) => video?.pause());
+    else playActive();
+  });
 </script>

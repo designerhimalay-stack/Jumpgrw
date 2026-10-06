@@ -1,0 +1,84 @@
+---
+import "@pg/page25/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page25/layouts/Layout.astro";
+import FaqSection from "@pg/page25/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@pg/page25/components/PageHero.astro";
+import SmoothScroll from "@pg/page25/components/SmoothScroll.astro";
+import CapabilitiesSection from "@pg/page25/components/hire/CapabilitiesSection.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import ExamplesSection from "@pg/page25/components/hire/ExamplesSection.astro";
+import FitSection from "@pg/page25/components/hire/FitSection.astro";
+import HelpSection from "@pg/page25/components/hire/HelpSection.astro";
+import PodSection from "@pg/page25/components/hire/PodSection.astro";
+import RolesSection from "@pg/page25/components/hire/RolesSection.astro";
+import SavingsSection from "@pg/page25/components/hire/SavingsSection.astro";
+import StackSection from "@pg/page25/components/hire/StackSection.astro";
+import StepsSection from "@pg/page25/components/hire/StepsSection.astro";
+import WaysSection from "@pg/page25/components/hire/WaysSection.astro";
+import WhySection from "@pg/page25/components/hire/WhySection.astro";
+import WorkSection from "@pg/page25/components/hire/WorkSection.astro";
+import { TECH } from "@pg/page25/data/tech";
+import { BRAND } from "@pg/page25/lib/brand";
+import { FIGURES, hireCopy } from "@pg/page25/lib/hire-copy";
+import type { PageHeroContent } from "@pg/page25/types/page";
+import "@pg/page25/styles/hire.css";
+
+/* A Technologies page: the hire kit, filled from this page's profile
+   (src/data/tech.ts) and the shared words in src/lib/hire-copy.ts. Every
+   Technologies page has this same file. See docs/sections.md. */
+
+const c = hireCopy(TECH);
+
+const HERO: PageHeroContent = {
+  trail: c.hero.trail,
+  audience: c.hero.audience,
+  headline: c.hero.headline,
+  size: "long",
+  lede: TECH.hero.lede,
+  ctas: c.hero.ctas,
+  assurances: c.hero.assurances,
+  image: TECH.hero.photo.image,
+  imageAlt: TECH.hero.photo.alt,
+  card: c.hero.card,
+  specs: [
+    { label: FIGURES[0].label, value: FIGURES[0].value },
+    { label: FIGURES[1].label, value: FIGURES[1].value },
+    { label: FIGURES[2].label, value: FIGURES[2].value },
+    { label: FIGURES[3].label, value: FIGURES[3].value },
+  ],
+  base: c.hero.base,
+};
+---
+
+<Layout title={`Hire ${TECH.many} · ${BRAND.name}`} description={TECH.hero.lede} navTone="field">
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <StackSection copy={c.stack} core={TECH.core} ecosystem={TECH.ecosystem} />
+    <WorkSection copy={c.work} benefits={TECH.benefits} />
+    <WhySection copy={c.why} />
+    <WaysSection copy={c.ways} ways={c.ways.cards} />
+    <SavingsSection copy={c.savings} />
+    <RolesSection copy={c.roles} roles={TECH.roles} />
+    <CapabilitiesSection copy={c.capabilities} items={TECH.capabilities} />
+    <HelpSection copy={c.help} />
+    <ExamplesSection copy={c.examples} examples={TECH.examples} />
+    <PodSection copy={c.pod} roles={TECH.roles} />
+    <FitSection copy={c.fit} />
+    <StepsSection copy={c.steps} photo={TECH.photos.steps} />
+    <FaqSection
+      eyebrow={c.faq.eyebrow}
+      headline={c.faq.headline}
+      accent={1}
+      cta={c.faq.cta}
+      faqs={c.faq.faqs}
+      media={TECH.photos.faq}
+    />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

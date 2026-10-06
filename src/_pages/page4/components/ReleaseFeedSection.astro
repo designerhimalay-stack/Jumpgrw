@@ -1,0 +1,99 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@pg/page4/components/GridRules.astro";
+import RevealText from "@pg/page4/components/RevealText.astro";
+import Joints from "@pg/page4/components/process/Joints.astro";
+import type { SectionPhoto } from "@pg/page4/types/page";
+
+/* A product that is already live. The headline sits over columns 1–2; a
+   wide photo of the team runs columns 1–3 under it, and a release feed
+   hangs in column 4, over the photo's edge, scrolling a production
+   team's week of releases without end. The feed pauses on hover and stands
+   still under reduced motion. See docs/sections.md. */
+
+interface Release {
+  version: string;
+  title: string;
+  kind: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  feedLabel: string;
+  releases: Release[];
+}
+
+const { id, eyebrow, headline, accent = headline.length - 1, lede, media, feedLabel, releases } = Astro.props;
+const offsets = headline.map((_, i) => headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0));
+---
+
+<section data-ac-sec="light" data-ac-feed id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-feed-grid>
+    <div data-ac-feed-head>
+      <p data-ac-sec-eyebrow class="mono-label">
+        <span aria-hidden="true">+</span>
+        {eyebrow}
+      </p>
+      <h2 data-ac-feed-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h2>
+    </div>
+    <p data-ac-feed-lede data-ac-sec-rise>{lede}</p>
+
+    <div data-ac-feed-photo>
+      <Joints />
+      <div data-ac-feed-image>
+        <Image
+          src={media.image}
+          alt={media.alt}
+          widths={[640, 1024, 1440, media.image.width]}
+          sizes="(max-width: 991px) 100vw, 70vw"
+          quality={78}
+          style={media.focus ? `object-position:${media.focus}` : undefined}
+        />
+      </div>
+    </div>
+
+    <aside data-ac-feed-card aria-label={feedLabel}>
+      <p data-ac-feed-card-head>
+        <span data-ac-feed-live aria-hidden="true" />
+        <span class="mono-label">{feedLabel}</span>
+      </p>
+      <div data-ac-feed-window>
+        {/* The list twice, so the loop has no seam; the copy is hidden from
+            assistive technology. */}
+        <ul data-ac-feed-list>
+          {[0, 1].map((copy) =>
+            releases.map((release) => (
+              <li aria-hidden={copy === 1 ? "true" : undefined}>
+                <span data-ac-feed-version class="mono-label-sm">{release.version}</span>
+                <span data-ac-feed-title>{release.title}</span>
+                <span data-ac-feed-kind class="mono-label-sm">{release.kind}</span>
+              </li>
+            )),
+          )}
+        </ul>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page4/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-feed]").forEach(toggleInView);
+</script>

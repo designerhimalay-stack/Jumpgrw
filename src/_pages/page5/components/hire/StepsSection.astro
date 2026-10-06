@@ -1,0 +1,107 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@pg/page5/components/icons/Arrow.astro";
+import GridRules from "@pg/page5/components/GridRules.astro";
+import SectionHead from "@pg/page5/components/SectionHead.astro";
+import Joints from "@pg/page5/components/process/Joints.astro";
+import type { Photo, Step } from "@pg/page5/types/hire";
+
+/* How it works, in five steps. One frame on the columns: the steps as tabs in
+   column 1, the chosen step in column 2 (what happens, what we cover, a link
+   to the brief), and a photo in columns 3–4 with the step's number pinned to
+   it. All five panels share one grid cell, so the frame never changes
+   height. Phones: the steps as a row of five numbered buttons over the panel,
+   and no photo. See docs/sections.md. */
+
+interface Props {
+  copy: { eyebrow: string; headline: string[]; coversLabel: string; steps: Step[]; cta: string };
+  photo: Photo;
+}
+
+const { copy, photo } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-steps id="how">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={copy.eyebrow} headline={copy.headline} accent={1} />
+
+    <div data-ac-sec-frame data-ac-steps-frame data-ac-tabs-root>
+      <Joints />
+      <div data-ac-steps-tabs role="tablist" aria-label={copy.eyebrow} aria-orientation="vertical">
+        {copy.steps.map((step, i) => (
+          <button
+            type="button"
+            role="tab"
+            data-ac-tab
+            data-ac-steps-tab
+            id={`step-tab-${i}`}
+            aria-controls={`step-panel-${i}`}
+            aria-selected={i === 0 ? "true" : "false"}
+            tabindex={i === 0 ? 0 : -1}
+          >
+            <span data-ac-steps-num>{pad(i + 1)}</span>
+            <span data-ac-steps-tab-title>{step.title}</span>
+            <Arrow direction="right" />
+          </button>
+        ))}
+      </div>
+
+      <div data-ac-tab-stack data-ac-steps-panels>
+        {copy.steps.map((step, i) => (
+          <div
+            data-ac-tab-panel
+            data-ac-steps-panel
+            data-active={i === 0 || undefined}
+            role="tabpanel"
+            id={`step-panel-${i}`}
+            aria-labelledby={`step-tab-${i}`}
+          >
+            <p class="mono-label-sm" data-ac-steps-kicker>{step.kicker}</p>
+            <h3 data-ac-steps-title>{step.title}</h3>
+            <p data-ac-steps-body>{step.body}</p>
+            <p class="mono-label-sm" data-ac-steps-label>{copy.coversLabel}</p>
+            <ul data-ac-checks>
+              {step.covers.map((c) => (
+                <li>
+                  <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+                  {c}
+                </li>
+              ))}
+            </ul>
+            <a data-ac-link class="mono-label" href="#contact">
+              {copy.cta}
+              <Arrow direction="right" />
+            </a>
+          </div>
+        ))}
+      </div>
+
+      <div data-ac-steps-photo>
+        <Image
+          src={photo.image}
+          alt={photo.alt}
+          widths={[480, 800, 1200]}
+          sizes="(max-width: 991px) 1px, 46vw"
+          quality={78}
+          style={photo.focus ? `object-position:${photo.focus}` : undefined}
+        />
+        <span data-ac-steps-badge class="mono-label-sm">Step <b data-ac-steps-current>01</b></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page5/lib/in-view";
+  import { initTabs } from "@pg/page5/lib/tabs";
+
+  const section = document.querySelector<HTMLElement>("[data-ac-steps]")!;
+  const current = section.querySelector<HTMLElement>("[data-ac-steps-current]")!;
+  toggleInView(section);
+  initTabs(section.querySelector<HTMLElement>("[data-ac-tabs-root]")!, (i) => {
+    current.textContent = String(i + 1).padStart(2, "0");
+  });
+</script>

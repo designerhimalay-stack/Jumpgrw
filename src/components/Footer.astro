@@ -2,12 +2,13 @@
 import { Image } from "astro:assets";
 import GridRules from "@/components/GridRules.astro";
 import RevealText from "@/components/RevealText.astro";
+import { withBase } from "@/lib/paths";
 import jumpgrowthLogoDark from "@/assets/jumpgrowth-logo-dark.webp";
 
 /* Footer: the sign-off line set large across the columns, then the wordmark
-   and three link columns on the same four-column grid as the page. Link
-   targets are this page's sections until the other pages exist. The address
-   is the brief's (its city was cut off; Dallas matches the navbar). See
+   and three link columns on the same four-column grid as the page. Shared by
+   every page: on the home page the section links scroll in-page, on any other
+   page they jump to the home page and its anchor. See
    docs/components/cta-footer.md. */
 
 const SIGN_OFF = ["The team", "behind the build."];
@@ -34,8 +35,12 @@ const COLUMNS = [
   },
 ];
 
-const ADDRESS = ["1200 Innovation Dr, Ste 400", "Dallas, TX"];
+const ADDRESS = ["801 E Campbell Rd, Ste 365", "Richardson, TX 75081"];
 const year = new Date().getFullYear();
+
+const isHome = Astro.url.pathname.replace(/\/$/, "") === withBase("/").replace(/\/$/, "");
+const fixHref = (href: string): string =>
+  !isHome && href.startsWith("#") && href !== "#top" ? withBase(href) : href;
 ---
 
 <footer data-ac-footer>
@@ -68,7 +73,7 @@ const year = new Date().getFullYear();
         <p class="mono-label">{COLUMNS[0].title}</p>
         <ul>
           {COLUMNS[0].links.map((link) => (
-            <li><a href={link.href}>{link.label}</a></li>
+            <li><a href={fixHref(link.href)}>{link.label}</a></li>
           ))}
         </ul>
       </nav>
@@ -88,7 +93,7 @@ const year = new Date().getFullYear();
         <p class="mono-label">{COLUMNS[1].title}</p>
         <ul>
           {COLUMNS[1].links.map((link) => (
-            <li><a href={link.href}>{link.label}</a></li>
+            <li><a href={fixHref(link.href)}>{link.label}</a></li>
           ))}
         </ul>
       </nav>

@@ -1,0 +1,70 @@
+---
+import { Image } from "astro:assets";
+import RevealText from "@pg/page10/components/RevealText.astro";
+import Joints from "@pg/page10/components/process/Joints.astro";
+import type { SectionPhoto } from "@pg/page10/types/page";
+
+/* The header every section below X-Shore opens with: a "+" eyebrow, a display
+   headline set one sentence per line that fills in per character, and an
+   optional lede in the last column. Anything passed as children (controls, a
+   call to action) joins the same grid. Styled by [data-ac-sec-head] in
+   globals.css; the entrance runs on the section's data-ac-in.
+
+   With `media` (the subpages), the header splits: headline and lede in
+   columns 1–2, a framed photo of people at work in columns 3–4. */
+
+interface Props {
+  eyebrow: string;
+  /** One line each. */
+  headline?: string[];
+  /** Index of a line set in the accent colour. */
+  accent?: number;
+  lede?: string;
+  media?: SectionPhoto;
+}
+
+const { eyebrow, headline = [], accent, lede, media } = Astro.props;
+
+/* Each line's first character index, so the stagger keeps counting across
+   the break (+1 for the space the break stands in for). */
+const offsets = headline.map((_, i) =>
+  headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0),
+);
+---
+
+<div data-ac-sec-head data-media={media ? "" : undefined}>
+  <p data-ac-sec-eyebrow class="mono-label">
+    <span aria-hidden="true">+</span>
+    {eyebrow}
+  </p>
+  {headline.length > 0 && (
+    <h2 data-ac-sec-headline aria-label={headline.join(" ")}>
+      {headline.map((line, i) => (
+        <Fragment>
+          {/* The space keeps the words apart where phones drop the break. */}
+          {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+          <span data-ac-sec-line data-accent={i === accent || undefined}>
+            <RevealText text={line} offset={offsets[i]} />
+          </span>
+        </Fragment>
+      ))}
+    </h2>
+  )}
+  {lede && <p data-ac-sec-lede>{lede}</p>}
+  <slot />
+  {media && (
+    <div data-ac-sec-media>
+      <Joints />
+      <div data-ac-sec-media-photo>
+        <Image
+          src={media.image}
+          alt={media.alt}
+          widths={[480, 800, 1200, media.image.width]}
+          sizes="(max-width: 991px) 100vw, 46vw"
+          quality={78}
+          style={media.focus ? `object-position:${media.focus}` : undefined}
+        />
+      </div>
+    </div>
+  )}
+</div>

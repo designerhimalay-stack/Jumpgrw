@@ -1,0 +1,71 @@
+---
+import GridRules from "@pg/page4/components/GridRules.astro";
+import SectionHead from "@pg/page4/components/SectionHead.astro";
+import Joints from "@pg/page4/components/process/Joints.astro";
+
+/* What a production team watches, on the dark tone: four delivery signals,
+   one per column, each with a trend line that draws itself as the section
+   arrives and the direction it should move in. The lines show the
+   direction of travel, not a client's figures. See docs/sections.md. */
+
+interface Signal {
+  label: string;
+  goal: string;
+  direction: "up" | "down";
+  note: string;
+  /** Eight points, 0–1, left to right. */
+  trend: number[];
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  signals: Signal[];
+}
+
+const { id, eyebrow, headline, accent, lede, signals } = Astro.props;
+
+/* 200 × 80 box, a little padding top and bottom. */
+const path = (trend: number[]) =>
+  trend.map((v, i) => `${i === 0 ? "M" : "L"}${(i * 200) / (trend.length - 1)} ${72 - v * 64}`).join(" ");
+const area = (trend: number[]) => `${path(trend)} L200 80 L0 80 Z`;
+const last = (trend: number[]) => 72 - trend[trend.length - 1] * 64;
+---
+
+<section data-ac-sec="dark" data-ac-signals id={id}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <ul data-ac-sec-frame data-ac-signals-frame>
+      {signals.map((signal, i) => (
+        <li data-ac-signal style={`--ac-i:${i}`}>
+          <Joints />
+          <p data-ac-signal-label class="mono-label">{signal.label}</p>
+          <svg data-ac-signal-chart viewBox="0 0 200 80" preserveAspectRatio="none" aria-hidden="true">
+            <path data-ac-signal-area d={area(signal.trend)} />
+            <path data-ac-signal-line d={path(signal.trend)} pathLength="1" />
+            <circle data-ac-signal-dot cx="200" cy={last(signal.trend)} r="4" />
+          </svg>
+          <p data-ac-signal-goal>
+            <span data-ac-signal-arrow data-direction={signal.direction} aria-hidden="true">
+              <svg viewBox="0 0 16 16"><path d="M8 13V3M8 3 4 7M8 3l4 4" /></svg>
+            </span>
+            {signal.goal}
+          </p>
+          <p data-ac-signal-note>{signal.note}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page4/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-signals]").forEach(toggleInView);
+</script>

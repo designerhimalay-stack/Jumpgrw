@@ -33,9 +33,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            templates/*/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Is GitHub Pages switched on?
         id: pages
@@ -76,13 +74,15 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      # The home page, then every template (npm ci, type-check, lint, build and
-      # its own check-site), copied in at /<name>/, then the whole site checked.
-      - name: Build and check the home page and the page templates
+      # Builds the whole site — the home page and every /pageN/ route — into
+      # dist/, then checks the built output.
+      - name: Build and check the site
         env:
           SITE_URL: ${{ steps.base.outputs.origin }}
           BASE_PATH: ${{ steps.base.outputs.path }}
-        run: npm run build:all
+        run: |
+          npm run build
+          node scripts/check-site.mjs
 
       - name: Upload the site
         if: steps.pages.outputs.enabled == 'true' && github.event_name != 'pull_request'

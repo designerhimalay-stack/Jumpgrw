@@ -1,0 +1,79 @@
+---
+import GridRules from "@pg/page9/components/GridRules.astro";
+import SectionHead from "@pg/page9/components/SectionHead.astro";
+import Joints from "@pg/page9/components/process/Joints.astro";
+import type { SectionPhoto } from "@pg/page9/types/page";
+import { BRAND } from "@pg/page9/lib/brand";
+
+/* Build, operate, transfer. The header splits around a photo of a
+   leadership team; under it the three phases on the columns, and running
+   under all three an ownership bar: AgentCraft's share and yours, the line
+   between them sliding from left to right across the phases as the section
+   arrives, until the center is entirely yours. See docs/sections.md. */
+
+interface Phase {
+  name: string;
+  when: string;
+  body: string;
+  /** Your share of ownership at the end of the phase, 0–100. */
+  yours: number;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  phases: Phase[];
+}
+
+const { id, eyebrow, headline, accent, lede, media, phases } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-bot id={id} style={`--ac-n:${phases.length}`}>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} media={media} />
+
+    <div data-ac-sec-frame data-ac-bot-frame>
+      <Joints />
+      <ol data-ac-bot-phases>
+        {phases.map((phase, i) => (
+          <li style={`--ac-i:${i}`}>
+            <p data-ac-bot-meta class="mono-label">
+              <span>{pad(i + 1)}</span>
+              <span>{phase.when}</span>
+            </p>
+            <p data-ac-bot-name>{phase.name}</p>
+            <p data-ac-bot-body>{phase.body}</p>
+          </li>
+        ))}
+      </ol>
+
+      <div data-ac-bot-own>
+        <p data-ac-bot-legend class="mono-label-sm">
+          <span data-who="us">{BRAND.name} runs it</span>
+          <span data-who="you">You own it</span>
+        </p>
+        <div data-ac-bot-bars>
+          {phases.map((phase, i) => (
+            <span data-ac-bot-bar style={`--ac-i:${i};--ac-yours:${phase.yours}%`} role="img" aria-label={`${phase.name}: ${phase.yours}% yours`}>
+              <i />
+              <b class="mono-label-sm">{phase.yours}% yours</b>
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page9/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-bot]").forEach(toggleInView);
+</script>

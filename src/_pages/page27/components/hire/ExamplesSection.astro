@@ -1,0 +1,68 @@
+---
+import GridRules from "@pg/page27/components/GridRules.astro";
+import SectionHead from "@pg/page27/components/SectionHead.astro";
+import Joints from "@pg/page27/components/process/Joints.astro";
+import type { Example } from "@pg/page27/types/hire";
+
+/* Real examples: three engagements as case files in one frame. Each cell:
+   the kind of client and its number, the team model, what the team did, the
+   roles we brought in and the stack, then two outcomes set large in the
+   accent. A line under the frame says why the clients aren't named.
+   Phones: the three files side by side in a row that swipes, so the
+   section is one card tall. See docs/sections.md. */
+
+interface Props {
+  copy: { eyebrow: string; headline: string[]; lede: string; rolesLabel: string; note: string[] };
+  examples: Example[];
+}
+
+const { copy, examples } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-ex id="examples">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={copy.eyebrow} headline={copy.headline} accent={1} lede={copy.lede} />
+
+    <div data-ac-sec-frame data-ac-ex-frame>
+      <Joints />
+      <ul data-ac-ex-row tabindex="0" aria-label={copy.eyebrow}>
+        {examples.map((ex, i) => (
+          <li data-ac-ex-cell style={`--ac-i:${i}`}>
+            <div data-ac-ex-head class="mono-label-sm">
+              <span>{ex.client}</span>
+              <span data-ac-ex-num>{pad(i + 1)}</span>
+            </div>
+            <p data-ac-ex-model class="mono-label-sm">{ex.model}</p>
+            <h3 data-ac-ex-title>{ex.title}</h3>
+            <p data-ac-ex-body>{ex.body}</p>
+            <p data-ac-ex-label class="mono-label-sm">{copy.rolesLabel}</p>
+            <ul data-ac-chips>{ex.roles.map((r) => <li>{r}</li>)}</ul>
+            <p data-ac-ex-stack>{ex.stack.join(" · ")}</p>
+            <dl data-ac-ex-outcomes>
+              {ex.outcomes.map((o) => (
+                <div>
+                  <dt>{o.value}</dt>
+                  <dd>{o.label}</dd>
+                </div>
+              ))}
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <p data-ac-kit-note>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="4" y="10.5" width="16" height="11" rx="2" /><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" /></svg>
+      <span><b>{copy.note[0]}</b> {copy.note[1]}</span>
+    </p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page27/lib/in-view";
+
+  toggleInView(document.querySelector<HTMLElement>("[data-ac-ex]")!);
+</script>

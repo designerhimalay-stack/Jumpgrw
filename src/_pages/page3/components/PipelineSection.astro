@@ -1,0 +1,73 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@pg/page3/components/GridRules.astro";
+import SectionHead from "@pg/page3/components/SectionHead.astro";
+import type { PageStat, Phase, SectionPhoto } from "@pg/page3/types/page";
+
+/* The build, as a delivery pipeline, over a full-bleed photo of the team
+   inked deep navy. Four stages sit on one line across the columns; as the
+   section arrives the line runs through them and each stage's check lights
+   as it passes. Three numbers close it, set in type on a rule rather than
+   in cards. See docs/sections.md. */
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  media: SectionPhoto;
+  stages: Phase[];
+  stats: PageStat[];
+}
+
+const { id, eyebrow, headline, accent, lede, media, stages, stats } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="dark" data-ac-pipeline id={id}>
+  <div data-ac-pipeline-backdrop aria-hidden="true">
+    <Image
+      src={media.image}
+      alt=""
+      widths={[800, 1280, media.image.width]}
+      sizes="100vw"
+      quality={70}
+      style={media.focus ? `object-position:${media.focus}` : undefined}
+    />
+  </div>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+    <p class="sr-only">{media.alt}</p>
+
+    <ol data-ac-pipeline-track>
+      {stages.map((stage, i) => (
+        <li data-ac-pipeline-stage style={`--ac-i:${i}`}>
+          <span data-ac-pipeline-node aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+          </span>
+          <span data-ac-pipeline-label class="mono-label">Stage {pad(i + 1)}</span>
+          <span data-ac-pipeline-title>{stage.title}</span>
+          <span data-ac-pipeline-body>{stage.body}</span>
+        </li>
+      ))}
+    </ol>
+
+    <dl data-ac-pipeline-stats>
+      {stats.map((stat) => (
+        <div data-featured={stat.featured || undefined}>
+          <dt>{stat.label}</dt>
+          <dd>{stat.value}{stat.suffix}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page3/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-pipeline]").forEach(toggleInView);
+</script>

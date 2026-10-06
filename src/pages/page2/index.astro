@@ -1,0 +1,167 @@
+---
+import "@pg/page2/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page2/layouts/Layout.astro";
+import ChecklistSection from "@pg/page2/components/ChecklistSection.astro";
+import ClaritySection from "@pg/page2/components/ClaritySection.astro";
+import BlueprintSection from "@pg/page2/components/BlueprintSection.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import Footer from "@/components/Footer.astro";
+import LedgerSection from "@pg/page2/components/LedgerSection.astro";
+import Navbar from "@/components/Navbar.astro";
+import NumeralsSection from "@pg/page2/components/NumeralsSection.astro";
+import PageHero from "@pg/page2/components/PageHero.astro";
+import FaqSection from "@pg/page2/components/FaqSection.astro";
+import SmoothScroll from "@pg/page2/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@pg/page2/types/page";
+import discoveryPhoto from "@pg/page2/assets/pages/discovery.jpg";
+import clarityPhoto from "@pg/page2/assets/pages/p2-clarity.jpg";
+import stepsPhoto from "@pg/page2/assets/pages/p2-steps.jpg";
+import assumptionsPhoto from "@pg/page2/assets/pages/p2-assumptions.jpg";
+import faqPhoto from "@pg/page2/assets/pages/p2-faq.jpg";
+import { BRAND } from "@pg/page2/lib/brand";
+
+/* Product discovery. The copy is the brief's, cut down to what a reader
+   needs; the readiness plan lengths (two weeks a phase, a one-week review
+   when every phase is covered), the outcomes and the FAQ answers are
+   drafts. Have them checked before launch. Photos alternate with the
+   sections that carry an interaction or a list. See docs/sections.md. */
+
+const HERO: PageHeroContent = {
+  trail: ["Launch phase", "Product discovery"],
+  headline: ["Product", "discovery."],
+  lede: "Reduce uncertainty before you invest in engineering. We define the problem, validate the solution and map the architecture first.",
+  ctas: [
+    { label: "Book a discovery session", href: "#contact", arrow: "diagonal" },
+    { label: "Check your readiness", href: "#readiness", arrow: "right" },
+  ],
+  image: discoveryPhoto,
+  imageAlt: "A product lead listens, pen in hand, as a client talks through her idea in front of a wall of sticky notes.",
+  specs: [
+    { label: "Stage", value: "Before engineering" },
+    { label: "Length", value: "One to six weeks" },
+    { label: "Team", value: "Product leads, architects" },
+    { label: "You keep", value: "The full blueprint" },
+  ],
+};
+
+const FAQS = [
+  {
+    q: `Do I have to build with ${BRAND.name}?`,
+    a: "No. The blueprint is yours, written so any engineering team can execute it.",
+  },
+  {
+    q: "How much of my team’s time will it take?",
+    a: "Mostly the first week, in interviews and workshops. Then a few hours a week for reviews.",
+  },
+  {
+    q: "Can we skip discovery if we have designs?",
+    a: "Partly. Use the readiness check above: validated designs cover the UX phase.",
+  },
+];
+---
+
+<Layout
+  title={`Product discovery · ${BRAND.name}`}
+  description="Define the problem, validate the solution and map the architecture before engineering starts, and keep the blueprint."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <ClaritySection
+      id="clarity"
+      eyebrow="Why discovery"
+      headline={["Clarity", "before code."]}
+      lede="Building the wrong product efficiently is still building the wrong product. Our product leads and architects turn your vision into a plan you can execute with us, or with anyone."
+      media={{ image: clarityPhoto, alt: "A product lead maps ideas on a wall of sticky notes while the team works through them at their laptops.", focus: "55% 40%" }}
+      resultLabel="The result"
+      outcomes={[
+        { title: "Defined scope", note: "Every feature agreed." },
+        { title: "A precise budget", note: "A hard estimate, by sprint." },
+        { title: "Ready architecture", note: "Stack and infrastructure mapped." },
+      ]}
+    />
+    <ChecklistSection
+      id="readiness"
+      eyebrow="Discovery readiness check"
+      headline={["What kind of discovery", "do you need?"]}
+      accent={1}
+      lede="Tick what you already have. You only pay for the validation you need."
+      resultLabel="Your discovery"
+      assets={[
+        {
+          label: "Validated market research",
+          phase: { title: "Market & problem definition", note: "Personas, friction points and KPIs." },
+        },
+        {
+          label: "Wireframes or UI designs",
+          phase: { title: "UX & prototyping", note: "Journeys, wireframes and a validated interface." },
+        },
+        {
+          label: "Locked technical architecture",
+          phase: { title: "Technical blueprinting", note: "APIs, frameworks, data and the budget." },
+        },
+      ]}
+      weeksPerPhase={2}
+      plans={{
+        full: "The complete programme: problem, experience and architecture.",
+        partial: "A targeted deep-dive that closes your remaining gaps.",
+        none: { value: 1, unit: "week review", summary: "You have the essentials. We pressure-test them and price the build." },
+      }}
+    />
+    <NumeralsSection
+      id="how-it-works"
+      eyebrow="The engine"
+      headline={["How discovery", "works."]}
+      lede="Four steps from a vision to a plan engineering can start on day one."
+      media={{ image: stepsPhoto, alt: "A product team reviews a design on screen, sticky notes on the wall behind them.", focus: "50% 45%" }}
+      steps={[
+        { title: "Stakeholder alignment", body: "Everyone agreed on one north star metric." },
+        { title: "Technical feasibility", body: "Integrations, compliance and performance checked against your budget." },
+        { title: "Wireframing & mapping", body: "Requirements turned into clickable workflows to sign off." },
+        { title: "Release planning", body: "Stack, sprint plan and a hard estimate for the build." },
+      ]}
+    />
+    <BlueprintSection
+      id="deliverables"
+      eyebrow="Tangible deliverables"
+      headline={["Not conversations.", "A blueprint."]}
+      accent={1}
+      lede="Documentation you keep, not meetings you sat through."
+      items={[
+        { icon: "document", title: "Requirements document", body: "User stories and acceptance criteria.", format: "PRD" },
+        { icon: "diagram", title: "Architecture diagrams", body: "Systems, data and cloud, ready to provision.", format: "Diagrams" },
+        { icon: "pointer", title: "Clickable prototypes", body: "Every core journey and edge case.", format: "Figma" },
+        { icon: "calendar", title: "Timeline & budget", body: "Sprint by sprint, and what it costs.", format: "Sprint plan" },
+      ]}
+      files={["requirements.md", "architecture.fig", "prototype.fig", "budget-and-plan.xlsx"]}
+    />
+    <LedgerSection
+      id="assumptions"
+      eyebrow="The cost of assumptions"
+      headline={["Assumptions", "cost more."]}
+      accent={1}
+      lede="Diving straight into code feels fast. It is the most expensive way to validate an idea."
+      media={{ image: assumptionsPhoto, alt: "A leadership team reviews a plan together around a boardroom table with laptops open.", focus: "40% 55%" }}
+      before={{ label: "Skipping discovery", verdict: "Guessing in code." }}
+      after={{ label: "With discovery", verdict: "Building on proof." }}
+      rows={[
+        { label: "User experience", before: "Features rebuilt", after: "Zero ambiguity on day one" },
+        { label: "Technology", before: "Dead ends from unvetted APIs", after: "A proven stack" },
+        { label: "Budget", before: "Constant scope creep", after: "A number for the board" },
+        { label: "Timeline", before: "Late launches", after: "A protected launch date" },
+      ]}
+    />
+    <FaqSection
+      eyebrow="Discovery questions"
+      headline={["Before", "you commit."]}
+      cta="Talk to a product lead"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "Two teammates map a plan on a wall of sticky notes.", focus: "50% 40%" }}
+    />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

@@ -1,0 +1,129 @@
+---
+import Arrow from "@pg/page27/components/icons/Arrow.astro";
+import GridRules from "@pg/page27/components/GridRules.astro";
+import SectionHead from "@pg/page27/components/SectionHead.astro";
+import Joints from "@pg/page27/components/process/Joints.astro";
+import { Image } from "astro:assets";
+import type { SectionPhoto } from "@pg/page27/types/page";
+import { BRAND } from "@pg/page27/lib/brand";
+
+/* Frequently asked: the header holds its place on the left while the answers
+   scroll past on the right. Native <details> sharing one name, so only one
+   answer is open at a time and it all works without scripts. See
+   docs/components/faq.md.
+
+   Questions are the brief's. The answers are drafts written from what the
+   page already says (the stats, the team models, X-Shore); have them
+   checked before launch. */
+
+interface Props {
+  /** A subpage's own questions; the home page uses the defaults below. */
+  eyebrow?: string;
+  headline?: string[];
+  accent?: number;
+  cta?: string;
+  faqs?: { q: string; a: string }[];
+  /** A photo under the button, in the sticky aside. */
+  media?: SectionPhoto;
+}
+
+const DEFAULT_COPY = {
+  eyebrow: "Frequently asked",
+  headline: ["Straight answers", "about building", "your team."],
+  cta: "Ask a team specialist",
+};
+
+const DEFAULT_FAQS = [
+  {
+    q: `Can ${BRAND.name} provide individual developers or a complete team?`,
+    a: "Both. You can add individual developers through team extension, or bring in a complete team: an MVP team for a first release, or a production team for a product already in market.",
+  },
+  {
+    q: "What is included in an MVP team?",
+    a: "A compact, cross-functional team sized for a first release: product and technical leadership, design, and full-stack engineers who work with AI tools every day, with QA and DevOps brought in as the build needs them.",
+  },
+  {
+    q: "How quickly can a team start?",
+    a: "Teams typically make their first commit within two weeks of kickoff.",
+  },
+  {
+    q: "How does AI assistance change delivery?",
+    a: "AI tools speed up work across the delivery cycle, from first draft to review, while experienced engineers make the decisions and own the result. AI adds speed; people own the outcome.",
+  },
+  {
+    q: "What is the X-shore delivery model?",
+    a: "Choose one region or combine all three: onshore in the United States, nearshore in Mexico and Canada, and offshore in India. We design the team around collaboration, capability, continuity, and the work.",
+  },
+  {
+    q: "Can developers work within our existing process and tools?",
+    a: "Yes. Developers join your rituals, work in your tools and follow your roadmap, so the team extends the way you already work.",
+  },
+  {
+    q: `Is ${BRAND.name} based in the US?`,
+    a: `Yes. ${BRAND.name} is headquartered in Dallas, with teammates across the United States, Mexico, Canada, and India.`,
+  },
+];
+
+const {
+  eyebrow = DEFAULT_COPY.eyebrow,
+  headline = DEFAULT_COPY.headline,
+  accent = headline.length - 1,
+  cta = DEFAULT_COPY.cta,
+  faqs: FAQS = DEFAULT_FAQS,
+  media,
+} = Astro.props;
+
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-faq id="faq">
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-faq-layout>
+    <div data-ac-faq-aside>
+      <SectionHead eyebrow={`${eyebrow} / ${pad(FAQS.length)}`} headline={headline} accent={accent}>
+        <a data-ac-faq-cta data-ac-sec-rise class="mono-label" href="#contact">
+          {cta}
+          <Arrow direction="diagonal" />
+        </a>
+      </SectionHead>
+      {media && (
+        <div data-ac-sec-media data-ac-faq-media>
+          <Joints />
+          <div data-ac-sec-media-photo>
+            <Image
+              src={media.image}
+              alt={media.alt}
+              widths={[480, 800, 1200]}
+              sizes="(max-width: 991px) 100vw, 44vw"
+              quality={78}
+              style={media.focus ? `object-position:${media.focus}` : undefined}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+
+    <div data-ac-sec-frame data-ac-faq-list>
+      <Joints />
+      {FAQS.map((item, i) => (
+        <details data-ac-faq-item name="faq" open={i === 0}>
+          <summary data-ac-faq-question>
+            <span data-ac-faq-number>{pad(i + 1)}</span>
+            <span data-ac-faq-text>{item.q}</span>
+            <span data-ac-faq-toggle aria-hidden="true" />
+          </summary>
+          <div data-ac-faq-answer>
+            <p>{item.a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page27/lib/in-view";
+
+  toggleInView(document.querySelector<HTMLElement>("[data-ac-faq]")!);
+</script>

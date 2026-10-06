@@ -1,0 +1,101 @@
+---
+import Arrow from "@pg/page31/components/icons/Arrow.astro";
+import GridRules from "@pg/page31/components/GridRules.astro";
+import SectionHead from "@pg/page31/components/SectionHead.astro";
+import Joints from "@pg/page31/components/process/Joints.astro";
+import type { HireHead, HireLead, HireLink, HirePodMember } from "@pg/page31/components/hire/types";
+
+/* Your pod. Columns 1–2: how the pod works, as lines with a bold opening,
+   and the call to action. Columns 3–4: the pod roster, a framed list of the
+   roles (number, initials, role, the layer it owns) under a status bar, with
+   the pod's terms (Rituals / Ownership / Start) along its foot. The roster
+   rows check in one by one as the section arrives.
+
+   Phones: the copy, then the roster at full width with smaller rows. */
+
+interface Props extends HireHead {
+  points: HireLead[];
+  /** e.g. "Delivery pod / 01". */
+  rosterLabel: string;
+  /** e.g. "Active". */
+  status: string;
+  members: HirePodMember[];
+  /** Three reads best. */
+  terms: { label: string; value: string }[];
+  cta: HireLink;
+  /** "tint" is a light section on a pale blue ground. */
+  tone?: "light" | "tint" | "dark";
+}
+
+const {
+  id,
+  eyebrow,
+  headline,
+  accent,
+  lede,
+  points,
+  rosterLabel,
+  status,
+  members,
+  terms,
+  cta,
+  tone = "dark",
+} = Astro.props;
+---
+
+<section data-ac-sec={tone === "tint" ? "light" : tone} data-ac-hire-tint={tone === "tint" || undefined} data-ac-hire="pod" id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent ?? headline.length - 1} />
+
+    <div data-ac-hire-pod>
+      <div data-ac-hire-pod-copy data-ac-sec-rise>
+        {lede && <p data-ac-hire-pod-lede>{lede}</p>}
+        <ul data-ac-hire-checks role="list">
+          {points.map((point) => (
+            <li><strong>{point.lead}</strong> {point.rest}</li>
+          ))}
+        </ul>
+        <a data-ac-hire-button class="mono-label" href={cta.href}>
+          {cta.label}
+          <Arrow direction="right" />
+        </a>
+      </div>
+
+      <div data-ac-sec-frame data-ac-hire-roster>
+        <Joints />
+        <p data-ac-hire-roster-head class="mono-label">
+          <span>{rosterLabel}</span>
+          <span data-ac-hire-roster-status>{status}</span>
+        </p>
+        <ol data-ac-hire-roster-list role="list">
+          {members.map((member, i) => (
+            <li style={`--i:${i}`}>
+              <span data-ac-hire-roster-num class="mono-label" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+              <span data-ac-hire-roster-initials aria-hidden="true">{member.initials}</span>
+              <span data-ac-hire-roster-role>
+                <strong>{member.role}</strong>
+                <span>{member.layer}</span>
+              </span>
+              <span data-ac-hire-roster-check aria-hidden="true" />
+            </li>
+          ))}
+        </ol>
+        <dl data-ac-hire-roster-terms>
+          {terms.map((term) => (
+            <div>
+              <dt class="mono-label">{term.label}</dt>
+              <dd>{term.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page31/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>('[data-ac-hire="pod"]').forEach(toggleInView);
+</script>

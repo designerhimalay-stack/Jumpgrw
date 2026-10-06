@@ -1,0 +1,110 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@pg/page30/components/icons/Arrow.astro";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import HireSwitch from "@pg/page30/components/hire/HireSwitch.astro";
+import type { HireHead, HireLink, HireProcessStep } from "@pg/page30/components/hire/types";
+
+/* How it works. One frame in three parts: the steps as a numbered list
+   (column 1), the chosen step's detail (column 2: title, line, "what we
+   cover" checklist and the call to action), and its photo of people at work
+   (columns 3–4) with the step number set on it. Built on HireSwitch, so it
+   works by keyboard and without JavaScript; details and photos each share
+   one grid cell, so a change of step never moves the page.
+
+   Phones: the steps become a row of five numbered buttons, then a short
+   photo strip and the detail. */
+
+interface Props extends HireHead {
+  /** Up to eight; five reads best. */
+  steps: HireProcessStep[];
+  /** Mono label over each detail, e.g. "Onboarding". */
+  detailLabel: string;
+  coverLabel?: string;
+  /** "Step" in "Step 01". */
+  stepWord?: string;
+  cta: HireLink;
+  pickLabel?: string;
+  /** "tint" is a light section on a pale blue ground. */
+  tone?: "light" | "tint" | "dark";
+}
+
+const {
+  id,
+  eyebrow,
+  headline,
+  accent,
+  lede,
+  steps,
+  detailLabel,
+  coverLabel = "What we cover",
+  stepWord = "Step",
+  cta,
+  pickLabel = "Pick a step",
+  tone = "light",
+} = Astro.props;
+const name = `${id}-step`;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec={tone === "tint" ? "light" : tone} data-ac-hire-tint={tone === "tint" || undefined} data-ac-hire="process" id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent ?? headline.length - 1} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-hire-switch data-ac-hire-process data-ac-sec-rise>
+      <Joints />
+      <fieldset data-ac-hire-switch-list data-ac-hire-process-list>
+        <legend class="sr-only">{pickLabel}</legend>
+        {steps.map((step, i) => (
+          <HireSwitch name={name} index={i + 1} checked={i === 0}>
+            <span data-ac-hire-process-num class="mono-label" aria-hidden="true">{pad(i + 1)}</span>
+            <span data-ac-hire-opt-text>{step.title}</span>
+          </HireSwitch>
+        ))}
+      </fieldset>
+
+      <div data-ac-hire-panes data-ac-hire-process-detail>
+        {steps.map((step, i) => (
+          <article data-ac-hire-pane={i + 1}>
+            <p data-ac-hire-index class="mono-label">{detailLabel} · {pad(i + 1)}</p>
+            <h3 data-ac-hire-pane-title>{step.title}</h3>
+            <p data-ac-hire-pane-body>{step.body}</p>
+            <p data-ac-hire-sub class="mono-label">{coverLabel}</p>
+            <ul data-ac-hire-checks role="list">
+              {step.covers.map((item) => <li>{item}</li>)}
+            </ul>
+            <a data-ac-hire-link class="mono-label" href={cta.href}>
+              {cta.label}
+              <Arrow direction="right" />
+            </a>
+          </article>
+        ))}
+      </div>
+
+      <div data-ac-hire-panes data-ac-hire-process-photos>
+        {steps.map((step, i) => (
+          <div data-ac-hire-pane={i + 1} data-ac-hire-photo>
+            <Image
+              src={step.photo.image}
+              alt={step.photo.alt}
+              widths={[480, 800, 1200]}
+              sizes="(max-width: 991px) 100vw, 46vw"
+              quality={78}
+              style={step.photo.focus ? `object-position:${step.photo.focus}` : undefined}
+            />
+            <span data-ac-hire-tag class="mono-label" aria-hidden="true">{stepWord} {pad(i + 1)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>('[data-ac-hire="process"]').forEach(toggleInView);
+</script>

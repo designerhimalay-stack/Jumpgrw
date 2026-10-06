@@ -1,0 +1,43 @@
+---
+import { Image } from "astro:assets";
+import { BRAND } from "@pg/page27/lib/brand";
+
+/* The wordmark, from src/lib/brand.ts: the logo image if one is set, and
+   the name beside it (or the name alone). Used by the navbar and the footer,
+   so both always match the brand file. The name keeps whatever type style
+   the wrapper around it sets. */
+
+interface Props {
+  /** Logo height in px; the width follows the file's own proportions. */
+  size?: number;
+}
+
+const { size = 28 } = Astro.props;
+const showName = !BRAND.logo || BRAND.showName;
+---
+
+<span data-ac-brand>
+  {BRAND.logo && (
+    <Image
+      src={BRAND.logo}
+      alt={showName ? "" : BRAND.name}
+      height={size}
+      data-ac-brand-logo
+      style={`height:${size}px;width:auto`}
+    />
+  )}
+  {showName && <span data-ac-brand-name>{BRAND.name}</span>}
+</span>
+
+<style>
+  [data-ac-brand] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+
+  [data-ac-brand-logo] {
+    display: block;
+    flex: none;
+  }
+</style>

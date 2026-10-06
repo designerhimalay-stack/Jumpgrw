@@ -1,0 +1,314 @@
+---
+import GridRules from "@/components/GridRules.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Arrow from "@/components/icons/Arrow.astro";
+
+/* The shared lead form, placed before the footer on every page. Each page's
+   form carries a hidden `source` (its path) so the CRM can tell which page a
+   lead came from. The site is static: with FORM_ACTION set the form posts
+   there; otherwise the script opens a mailto: to CONTACT_EMAIL with the brief.
+
+   Replace CONTACT_PHONE with the number from the current JumpGrowth site, and
+   set FORM_ACTION to the form service / CRM endpoint when there is one. */
+const CONTACT_EMAIL = "hello@jumpgrowth.com";
+const CONTACT_PHONE = "+1 (512) 837-2200";
+const FORM_ACTION = "";
+
+/* Hemant's options. "What do you need?" = type of team; "Preferred shore"
+   replaces the old "When do you need help?". */
+const TEAM_TYPES = [
+  "New Launch (MVP)",
+  "Small Team Extension",
+  "Dev Pod (Scale)",
+  "Single Developer",
+  "Specialist Developers",
+  "Not Sure Yet",
+];
+const SHORES = [
+  "Onshore (USA)",
+  "Nearshore (Mexico / Canada)",
+  "Offshore (India)",
+  "Hybrid",
+  "Not Sure",
+];
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  headline?: string[];
+  body?: string;
+}
+const {
+  id = "contact",
+  eyebrow = "Build your team",
+  headline = ["Tell us what", "you’re building."],
+  body = "Share where the roadmap is blocked and the capabilities you need. We’ll map a practical team and delivery model.",
+} = Astro.props;
+
+const source = Astro.url.pathname;
+const tel = `tel:${CONTACT_PHONE.replace(/[^\d+]/g, "")}`;
+const action = FORM_ACTION || `mailto:${CONTACT_EMAIL}`;
+const f = (name: string) => `${id}-${name}`;
+---
+
+<section
+  data-ac-sec="accent"
+  data-ac-contact
+  id={id}
+  data-email={CONTACT_EMAIL}
+  data-has-action={FORM_ACTION ? "" : undefined}
+>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-contact-grid>
+    <div data-ac-contact-copy>
+      <SectionHead eyebrow={eyebrow} headline={headline} accent={headline.length - 1} />
+      <div data-ac-sec-rise data-ac-contact-ways>
+        <p data-ac-contact-body>{body}</p>
+        <ul role="list">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" />
+            </svg>
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" />
+            </svg>
+            <a href={tel}>{CONTACT_PHONE}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <form
+      data-ac-sec-frame
+      data-ac-contact-form
+      data-ac-sec-rise
+      action={action}
+      method="post"
+      enctype={FORM_ACTION ? undefined : "text/plain"}
+    >
+      <input type="hidden" name="source" value={source} />
+
+      <div data-ac-contact-fields>
+        <div data-ac-field>
+          <label for={f("name")}>Your name</label>
+          <input id={f("name")} name="name" type="text" autocomplete="name" placeholder="Full name" required />
+        </div>
+        <div data-ac-field>
+          <label for={f("company")}>Company <span>(optional)</span></label>
+          <input id={f("company")} name="company" type="text" autocomplete="organization" placeholder="Company name" />
+        </div>
+        <div data-ac-field>
+          <label for={f("email")}>Work email</label>
+          <input id={f("email")} name="email" type="email" autocomplete="email" placeholder="you@company.com" required />
+        </div>
+        <div data-ac-field>
+          <label for={f("phone")}>Phone <span>(optional)</span></label>
+          <input id={f("phone")} name="phone" type="tel" autocomplete="tel" placeholder="Phone number" />
+        </div>
+        <div data-ac-field>
+          <label for={f("need")}>What do you need?</label>
+          <select id={f("need")} name="need" required>
+            <option value="">Select one</option>
+            {TEAM_TYPES.map((t) => <option>{t}</option>)}
+          </select>
+        </div>
+        <div data-ac-field>
+          <label for={f("shore")}>Preferred shore</label>
+          <select id={f("shore")} name="shore">
+            <option value="">Select one</option>
+            {SHORES.map((s) => <option>{s}</option>)}
+          </select>
+        </div>
+        <div data-ac-field data-wide>
+          <label for={f("message")}>The role or skill you need <span>(optional)</span></label>
+          <textarea id={f("message")} name="message" rows="3" placeholder="Share the role, tech stack or team gap"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" data-ac-contact-submit class="mono-label">
+        Plan my team
+        <Arrow direction="right" />
+      </button>
+    </form>
+  </div>
+</section>
+
+<style>
+  [data-ac-contact-grid] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: clamp(32px, 4vw, 64px);
+    align-items: start;
+  }
+
+  [data-ac-contact-ways] {
+    margin-top: clamp(20px, 2vw, 28px);
+  }
+
+  [data-ac-contact-body] {
+    margin: 0 0 clamp(18px, 2vw, 26px);
+    max-width: 42ch;
+    font-size: clamp(15px, 1.15vw, 17px);
+    line-height: 1.55;
+    color: rgb(255 255 255 / 0.9);
+  }
+
+  [data-ac-contact-ways] ul {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-contact-ways] li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgb(255 255 255 / 0.75);
+  }
+
+  [data-ac-contact-ways] a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  [data-ac-contact-ways] a:hover {
+    text-decoration: underline;
+  }
+
+  [data-ac-contact-form] {
+    background: #fff;
+    border-radius: 12px;
+    padding: clamp(20px, 2.4vw, 34px);
+    box-shadow: 0 24px 50px -30px rgb(10 16 34 / 0.5);
+  }
+
+  [data-ac-contact-fields] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(14px, 1.4vw, 18px);
+  }
+
+  [data-ac-field] {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+  }
+
+  [data-ac-field][data-wide] {
+    grid-column: 1 / -1;
+  }
+
+  [data-ac-field] label {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    color: #0a1022;
+  }
+
+  [data-ac-field] label span {
+    color: rgb(10 16 34 / 0.45);
+    font-weight: 400;
+  }
+
+  [data-ac-field] input,
+  [data-ac-field] select,
+  [data-ac-field] textarea {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid rgb(10 16 34 / 0.16);
+    border-radius: 8px;
+    background: #fff;
+    font: inherit;
+    font-size: 15px;
+    color: #0a1022;
+    transition: border-color 0.18s, box-shadow 0.18s;
+  }
+
+  [data-ac-field] textarea {
+    resize: vertical;
+    min-height: 74px;
+  }
+
+  [data-ac-field] input::placeholder,
+  [data-ac-field] textarea::placeholder {
+    color: rgb(10 16 34 / 0.38);
+  }
+
+  [data-ac-field] input:focus-visible,
+  [data-ac-field] select:focus-visible,
+  [data-ac-field] textarea:focus-visible {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent);
+  }
+
+  [data-ac-contact-submit] {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    justify-content: center;
+    margin-top: clamp(16px, 1.8vw, 22px);
+    padding: 14px 20px;
+    border: 0;
+    background: var(--color-accent);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  [data-ac-contact-submit]:hover {
+    background: var(--color-accent-dark);
+  }
+
+  @media (max-width: 860px) {
+    [data-ac-contact-grid] {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 479px) {
+    [data-ac-contact-fields] {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-contact]").forEach((section) => {
+    toggleInView(section);
+
+    /* With a form service set the browser posts normally. */
+    if (section.hasAttribute("data-has-action")) return;
+
+    const form = section.querySelector<HTMLFormElement>("[data-ac-contact-form]")!;
+    const email = section.dataset.email ?? "";
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const lines: string[] = [];
+      form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input, select, textarea").forEach((field) => {
+        if (field.type === "hidden") {
+          if (field.value.trim()) lines.push(`Page: ${field.value.trim()}`);
+          return;
+        }
+        const label = form.querySelector(`label[for="${field.id}"]`)?.firstChild?.textContent?.trim() ?? field.name;
+        if (field.value.trim()) lines.push(`${label}: ${field.value.trim()}`);
+      });
+      const need = form.querySelector<HTMLSelectElement>("select[name='need']")?.value ?? "";
+      const subject = encodeURIComponent(need ? `Team brief: ${need}` : "Team brief");
+      window.location.href = `mailto:${email}?subject=${subject}&body=${encodeURIComponent(lines.join("\n"))}`;
+    });
+  });
+</script>

@@ -1,5 +1,4 @@
 ---
-import Arrow from "@/components/icons/Arrow.astro";
 import GridRules from "@/components/GridRules.astro";
 import SectionHead from "@/components/SectionHead.astro";
 import Joints from "@/components/process/Joints.astro";
@@ -13,14 +12,6 @@ import Joints from "@/components/process/Joints.astro";
 type Story = { client: string; quote: string; name?: string; role: string; videoId: string };
 
 const STORIES: Story[] = [
-  {
-    client: "Ethnomet",
-    quote:
-      "Ethnomet's blend of telemedicine and digital health-as-a-service calls for product thinking that understands both technology and healthcare. JumpGrowth helped bring those worlds together.",
-    name: "Mike Amanyi",
-    role: "Chief Product Officer",
-    videoId: "0c-BfY8DQes",
-  },
   {
     client: "SindyXR",
     quote: "They treated our XR roadmap like their own. Every sprint ended with something we could put in front of users.",
@@ -38,6 +29,14 @@ const STORIES: Story[] = [
     quote: "A steady, senior team that raised the quality bar early and kept it there, release after release.",
     role: "Engineering Director",
     videoId: "JFXWTm4BseA",
+  },
+  {
+    client: "Ethnomet",
+    quote:
+      "Ethnomet's blend of telemedicine and digital health-as-a-service calls for product thinking that understands both technology and healthcare. JumpGrowth helped bring those worlds together.",
+    name: "Mike Amanyi",
+    role: "Chief Product Officer",
+    videoId: "0c-BfY8DQes",
   },
   {
     client: "ShipITPro",
@@ -99,11 +98,14 @@ const pad = (n: number) => String(n).padStart(2, "0");
                 data-ac-story-play
                 aria-label={`Play ${story.client} testimonial video`}
               >
+                {/* Starts at maxresdefault (1280x720, sharp on large screens).
+                    The script steps it down to sddefault → hqdefault when a
+                    video has no HD frame — see the quality fallback below. */}
                 <img
-                  src={`https://i.ytimg.com/vi/${story.videoId}/hqdefault.jpg`}
+                  src={`https://i.ytimg.com/vi/${story.videoId}/maxresdefault.jpg`}
                   alt={`${story.client} testimonial`}
-                  width="480"
-                  height="360"
+                  width="1280"
+                  height="720"
                   loading="lazy"
                   decoding="async"
                 />
@@ -144,10 +146,6 @@ const pad = (n: number) => String(n).padStart(2, "0");
                   <span data-ac-story-name>{story.name ?? story.client}</span>
                   <span data-ac-story-role>{story.name ? `${story.role} · ${story.client}` : story.role}</span>
                 </span>
-                <a data-ac-story-link class="mono-label" href="#case-studies">
-                  Read case study
-                  <Arrow direction="diagonal" />
-                </a>
               </div>
             </div>
           ))}
@@ -182,6 +180,28 @@ const pad = (n: number) => String(n).padStart(2, "0");
   const counter = section.querySelector<HTMLElement>("[data-ac-stories-current]")!;
   const reduce  = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let active = 0;
+
+  /* ── thumbnail quality fallback ──────────────────────────────────────────────
+     YouTube serves a 120×90 gray placeholder (HTTP 200, not a 404) for
+     maxresdefault when a video has no HD frame, so an onerror handler never
+     fires. Detect it by the loaded width and step the src down the chain. */
+  const THUMB_QUALITIES = ["maxresdefault", "sddefault", "hqdefault"];
+  for (const photo of photos) {
+    const img = photo.querySelector<HTMLImageElement>("img");
+    const id = photo.dataset.videoId;
+    if (!img || !id) continue;
+    let qi = 0;
+    const step = () => {
+      if (qi >= THUMB_QUALITIES.length - 1) return;
+      qi += 1;
+      img.src = `https://i.ytimg.com/vi/${id}/${THUMB_QUALITIES[qi]}.jpg`;
+    };
+    img.addEventListener("error", step);
+    img.addEventListener("load", () => {
+      if (img.naturalWidth && img.naturalWidth <= 120) step();
+    });
+    if (img.complete && img.naturalWidth && img.naturalWidth <= 120) step();
+  }
 
   /* ── video ───────────────────────────────────────────────────────────────── */
 

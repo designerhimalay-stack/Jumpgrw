@@ -1,0 +1,158 @@
+---
+import GridRules from "@pg/page7/components/GridRules.astro";
+import SectionHead from "@pg/page7/components/SectionHead.astro";
+import Joints from "@pg/page7/components/process/Joints.astro";
+
+/* Working hours, overlapped, on the dark tone. Choose where your team sits;
+   a 24-hour ruler in your local time then shows your working day and each
+   of our regions' working day as bars, the hours you all share lit as a
+   band down the chart, and the count of shared hours at the top. Hours are
+   worked out from real time-zone offsets today, so they follow daylight
+   saving; a working day that crosses midnight is drawn in two parts. Every
+   bar is always drawn; only its position changes. See
+   docs/sections.md. */
+
+interface Office {
+  label: string;
+  zone: string;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  headline: string[];
+  accent?: number;
+  lede: string;
+  label: string;
+  offices: Office[];
+  start: number;
+  ours: { name: string; city: string; zone: string; from: number; to: number }[];
+  workFrom: number;
+  workTo: number;
+}
+
+const { id, eyebrow, headline, accent, lede, label, offices, start, ours, workFrom, workTo } = Astro.props;
+const hours = [0, 3, 6, 9, 12, 15, 18, 21, 24];
+---
+
+<section
+  data-ac-sec="dark"
+  data-ac-overlap
+  id={id}
+  data-work-from={workFrom}
+  data-work-to={workTo}
+>
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent} lede={lede} />
+
+    <div data-ac-overlap-pick role="radiogroup" aria-label={label}>
+      <span class="mono-label">{label}</span>
+      {offices.map((office, i) => (
+        <label data-ac-overlap-option>
+          <input type="radio" name={`${id}-office`} value={office.zone} checked={i === start} data-ac-overlap-input />
+          <span>{office.label}</span>
+        </label>
+      ))}
+    </div>
+
+    <div data-ac-sec-frame data-ac-overlap-chart>
+      <Joints />
+      <header data-ac-overlap-head>
+        <p data-ac-overlap-total aria-live="polite">
+          <span data-ac-overlap-hours>4</span>
+          <span data-ac-overlap-unit>shared hours a day</span>
+        </p>
+        <ol data-ac-overlap-ruler aria-hidden="true">
+          {hours.map((h) => <li style={`--ac-h:${h}`}>{String(h % 24).padStart(2, "0")}</li>)}
+        </ol>
+      </header>
+
+      <div data-ac-overlap-rows>
+        <span data-ac-overlap-band aria-hidden="true" />
+        <div data-ac-overlap-row data-kind="you">
+          <p><span>Your team</span><span class="mono-label-sm" data-ac-overlap-zone>—</span></p>
+          <span data-ac-overlap-track><i data-ac-overlap-bar data-from={workFrom} data-to={workTo} /><i data-ac-overlap-wrap /></span>
+        </div>
+        {ours.map((region) => (
+          <div data-ac-overlap-row data-kind="ours" data-zone={region.zone}>
+            <p><span>{region.name}</span><span class="mono-label-sm">{region.city}</span></p>
+            <span data-ac-overlap-track><i data-ac-overlap-bar data-from={region.from} data-to={region.to} /><i data-ac-overlap-wrap /></span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page7/lib/in-view";
+
+  /* A zone's offset from UTC right now, in hours, from the platform's own
+     time-zone data. */
+  const offset = (zone: string) => {
+    const now = new Date();
+    const local = new Date(now.toLocaleString("en-US", { timeZone: zone }));
+    const utc = new Date(now.toLocaleString("en-US", { timeZone: "UTC" }));
+    return (local.getTime() - utc.getTime()) / 3_600_000;
+  };
+  const wrap = (h: number) => ((h % 24) + 24) % 24;
+
+  document.querySelectorAll<HTMLElement>("[data-ac-overlap]").forEach((section) => {
+    toggleInView(section);
+
+    const inputs = Array.from(section.querySelectorAll<HTMLInputElement>("[data-ac-overlap-input]"));
+    const you = section.querySelector<HTMLElement>('[data-kind="you"]')!;
+    const rows = Array.from(section.querySelectorAll<HTMLElement>('[data-kind="ours"]'));
+    const zoneLabel = section.querySelector<HTMLElement>("[data-ac-overlap-zone]")!;
+    const total = section.querySelector<HTMLElement>("[data-ac-overlap-hours]")!;
+    const band = section.querySelector<HTMLElement>("[data-ac-overlap-band]")!;
+
+    /* Places a working day on the 24-hour ruler. A day that crosses
+       midnight is drawn in two parts: to the end of the ruler, and on from
+       its start. */
+    const place = (bar: HTMLElement, from: number, to: number) => {
+      const start = wrap(from);
+      const length = to - from;
+      const first = Math.min(length, 24 - start);
+      bar.style.setProperty("--ac-from", String(start));
+      bar.style.setProperty("--ac-len", String(first));
+      const rest = bar.nextElementSibling as HTMLElement;
+      rest.style.setProperty("--ac-from", "0");
+      rest.style.setProperty("--ac-len", String(Math.max(0, length - first)));
+    };
+
+    const update = () => {
+      const zone = inputs.find((i) => i.checked)?.value ?? "UTC";
+      const home = offset(zone);
+      const yourFrom = Number(section.dataset.workFrom);
+      const yourTo = Number(section.dataset.workTo);
+      place(you.querySelector("[data-ac-overlap-bar]")!, yourFrom, yourTo);
+      zoneLabel.textContent = inputs.find((i) => i.checked)?.nextElementSibling?.textContent ?? "";
+
+      /* Each region's working day in the reader's local time, and the hours
+         when the reader's team and at least one region are both at work. */
+      const covered = new Set<number>();
+      rows.forEach((row) => {
+        const bar = row.querySelector<HTMLElement>("[data-ac-overlap-bar]")!;
+        const shift = home - offset(row.dataset.zone ?? "UTC");
+        const from = Number(bar.dataset.from) + shift;
+        const to = Number(bar.dataset.to) + shift;
+        place(bar, from, to);
+        for (let h = Math.ceil(from); h < to; h++) {
+          const hour = wrap(h);
+          if (hour >= yourFrom && hour < yourTo) covered.add(hour);
+        }
+      });
+      total.textContent = String(covered.size);
+      /* The band runs from the first shared hour to the end of the last. */
+      const shared = [...covered].sort((a, b) => a - b);
+      band.style.setProperty("--ac-from", String(shared[0] ?? yourFrom));
+      band.style.setProperty("--ac-len", String(shared.length ? shared[shared.length - 1] + 1 - shared[0] : 0));
+    };
+
+    inputs.forEach((input) => input.addEventListener("change", update));
+    update();
+  });
+</script>

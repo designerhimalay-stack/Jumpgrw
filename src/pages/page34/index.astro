@@ -1,0 +1,593 @@
+---
+import "@pg/page34/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page34/layouts/Layout.astro";
+import FaqSection from "@pg/page34/components/FaqSection.astro";
+import Footer from "@/components/Footer.astro";
+import Navbar from "@/components/Navbar.astro";
+import PageHero from "@pg/page34/components/PageHero.astro";
+import SmoothScroll from "@pg/page34/components/SmoothScroll.astro";
+import HireStack from "@pg/page34/components/hire/HireStack.astro";
+import HireServices from "@pg/page34/components/hire/HireServices.astro";
+import HireWhy from "@pg/page34/components/hire/HireWhy.astro";
+import HireWays from "@pg/page34/components/hire/HireWays.astro";
+import HirePlanner from "@pg/page34/components/hire/HirePlanner.astro";
+import HireEngineers from "@pg/page34/components/hire/HireEngineers.astro";
+import HireColumns from "@pg/page34/components/hire/HireColumns.astro";
+import HireSteps from "@pg/page34/components/hire/HireSteps.astro";
+import HireCases from "@pg/page34/components/hire/HireCases.astro";
+import HirePod from "@pg/page34/components/hire/HirePod.astro";
+import HireFit from "@pg/page34/components/hire/HireFit.astro";
+import HireProcess from "@pg/page34/components/hire/HireProcess.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import type { PageHeroContent } from "@pg/page34/types/page";
+import { BRAND } from "@pg/page34/lib/brand";
+
+import heroPhoto from "@pg/page34/assets/pages/p34-hero.jpg";
+import faqPhoto from "@pg/page34/assets/pages/p34-faq.jpg";
+import waysPod from "@pg/page34/assets/pages/p34-ways-pod.jpg";
+import waysCenter from "@pg/page34/assets/pages/p34-ways-center.jpg";
+import waysTransfer from "@pg/page34/assets/pages/p34-team.jpg";
+import engHead from "@pg/page34/assets/pages/p34-director.jpg";
+import engLead from "@pg/page34/assets/pages/p34-eng-lead.jpg";
+import engFullstack from "@pg/page34/assets/pages/p34-eng-fullstack.jpg";
+import engBackend from "@pg/page34/assets/pages/p34-eng-backend.jpg";
+import engData from "@pg/page34/assets/pages/p34-eng-data.jpg";
+import engMl from "@pg/page34/assets/pages/p34-eng-ml.jpg";
+import engQa from "@pg/page34/assets/pages/p34-eng-qa.jpg";
+import engDevops from "@pg/page34/assets/pages/p34-eng-devops.jpg";
+import stepCall from "@pg/page34/assets/pages/p34-step-call.jpg";
+import stepKickoff from "@pg/page34/assets/pages/p34-step-kickoff.jpg";
+
+/* GCC from India: your own global capability center in India, which the
+   company helps you set up, hire and run, with the option to take it over
+   (build-operate-transfer). The center hires across the stack (web and app,
+   back end, data, AI/ML, QA, DevOps and cloud) plus its leaders. Built from
+   the shared hire kit in src/components/hire/; every word on the page lives
+   here. Figures, rates, example results and FAQ answers are the owner's
+   figures or drafts: have them checked before launch (see docs/sections.md,
+   "Copy to check before launch"). */
+
+const HERO: PageHeroContent = {
+  trail: ["X-Shore", "Offshore", "GCC from India"],
+  audience: "For companies that build to own",
+  headline: ["Build your own", "engineering center", "in India."],
+  accent: 2,
+  size: "long",
+  lede: "Stand up a dedicated engineering center in India under your name: we recruit it, run it with you and hand you the keys when you are ready.",
+  ctas: [
+    { label: "Plan your India center", href: "#contact", arrow: "diagonal" },
+    { label: "Explore ways to start", href: "#ways", arrow: "right" },
+  ],
+  assurances: [
+    { icon: "shield", label: "Senior engineering oversight" },
+    { icon: "clock", label: "US workday overlap" },
+    { icon: "lock", label: "Your stack and controls" },
+  ],
+  image: heroPhoto,
+  imageAlt: "An engineer works on a laptop in a bright loft office.",
+  card: {
+    status: "Build context / Active",
+    place: "Your India center",
+    note: "Start with a founding pod. Transfer the whole center later.",
+    kicker: "Your name on the door.",
+    statement: "An engineering center that is yours, run inside your standards.",
+    foot: { label: "Built for the long view", value: "From first pod to full transfer" },
+  },
+  specs: [
+    { label: "Years engineering software", value: "20+" },
+    { label: "Engineers under one roof", value: "200+" },
+    { label: "Clients served", value: "300+" },
+    { label: "Global delivery locations", value: "4+" },
+  ],
+  base: { title: "Dallas headquartered", line: "Delivery across the USA, India, Canada and Mexico" },
+};
+
+const FAQS = [
+  {
+    q: "What is a GCC, and how is it different from outsourcing?",
+    a: "A global capability center is your own team in India: your roles, your leaders, your roadmap. We set it up and run the site around it.",
+  },
+  {
+    q: "Can we start with one pod before a full center?",
+    a: "Yes. Most centers start as one managed pod, then grow once the work and the ways of working are proven.",
+  },
+  {
+    q: "What roles can the center hire for?",
+    a: "Center and engineering leaders, web and app, back end, data, AI and ML, QA, and DevOps and cloud.",
+  },
+  {
+    q: "Who leads the center in India?",
+    a: "A center head you choose, who reports to your leadership. We help hire them first, before the pods grow.",
+  },
+  {
+    q: "Do we interview every hire?",
+    a: "Yes. Your leaders interview every candidate, from the center head down, and make each offer decision.",
+  },
+  {
+    q: "How does the center work with our US team?",
+    a: "Pods plan overlap hours with your workday for stand-ups and reviews, and written handoffs keep work moving between time zones.",
+  },
+  {
+    q: "Can the center work inside our cloud, tools and security controls?",
+    a: "Yes. Engineers use your repositories, cloud accounts and access policies from their first week; nothing sits outside your controls.",
+  },
+  {
+    q: "Who owns the code, IP and people?",
+    a: "You own the code and the IP from day one. The people move to your entity when you take the center over.",
+  },
+  {
+    q: "When can we take the center over?",
+    a: "When you’re ready, often after two or three years. The entity, people and contracts move on terms agreed up front.",
+  },
+  {
+    q: "What does it cost to start?",
+    a: `A one-time set-up fee, then the team at cost plus a management fee. ${BRAND.name} models it with you before you commit.`,
+  },
+];
+---
+
+<Layout
+  title={`GCC from India · ${BRAND.name}`}
+  description="Set up and run your own global capability center in India: leaders and engineers across the stack, the entity and the office, with an option to take it over."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+
+    <HireStack
+      id="stack"
+      tone="tint"
+      eyebrow="Tech we use"
+      headline={["Engineers who", "fit your stack."]}
+      lede="Your center hires for the languages, platforms and tools your teams already run."
+      groups={[
+        { name: "Web and app", logos: ["react", "nextdotjs", "angular", "typescript", "nodedotjs"] },
+        { name: "Mobile", logos: ["swift", "kotlin", "flutter"], named: ["iOS", "React Native"] },
+        { name: "Back end", logos: ["python", "openjdk", "go", "dotnet", "postgresql", "mongodb", "redis"] },
+        { name: "Data", logos: ["snowflake", "databricks", "apacheairflow", "apachekafka"], named: ["dbt", "Power BI"] },
+        { name: "AI and ML", logos: ["pytorch", "tensorflow", "huggingface", "langchain", "mlflow"], named: ["OpenAI"] },
+        { name: "QA and testing", logos: ["selenium", "cypress", "jest", "postman"], named: ["Playwright"] },
+        { name: "DevOps and cloud", logos: ["docker", "kubernetes", "terraform", "githubactions", "googlecloud"], named: ["AWS", "Azure"] },
+        { name: "Center tools", logos: ["jira", "confluence", "okta", "1password", "zoom"], named: ["Slack"] },
+      ]}
+      note="The center works in your tools, accounts and security controls, not ours."
+    />
+
+    <HireServices
+      id="help"
+      tone="tint"
+      eyebrow="What your center can own"
+      headline={["Choose the work", "your center takes on."]}
+      lede="Start with one area and add more as the center grows. We run the site around the team."
+      services={[
+        {
+          name: "Product engineering",
+          body: "A team that owns whole product areas, from customer screens to the services behind them, on your roadmap.",
+          work: ["Product features", "Customer portals", "Design systems"],
+          tools: ["React", "Next.js", "TypeScript", "Node.js"],
+        },
+        {
+          name: "Back end and platforms",
+          body: "Engineers who build and run the services, APIs and integrations your products stand on.",
+          work: ["APIs and integrations", "Microservices", "Performance"],
+          tools: ["Java", "Python", "Go", ".NET", "PostgreSQL"],
+        },
+        {
+          name: "Mobile apps",
+          body: "iOS and Android apps, native or cross-platform, kept in step with your web product.",
+          work: ["New apps", "App upkeep", "Offline and sync"],
+          tools: ["Swift", "Kotlin", "Flutter", "React Native"],
+        },
+        {
+          name: "Data and analytics",
+          body: "A data team that owns your pipelines, warehouse and reporting, so the numbers are trusted everywhere.",
+          work: ["Pipelines", "Data warehouse", "Reporting"],
+          tools: ["Snowflake", "Databricks", "Airflow", "dbt", "Kafka"],
+        },
+        {
+          name: "AI and machine learning",
+          body: "A standing AI team for assistants, search, predictions and agents, tested before they reach your users.",
+          work: ["LLM features", "RAG and search", "Predictive models"],
+          tools: ["PyTorch", "Hugging Face", "LangChain", "MLflow"],
+        },
+        {
+          name: "Quality engineering",
+          body: "A QA practice for the whole center: test strategy, automated suites and release gates.",
+          work: ["Test automation", "Regression suites", "Release checks"],
+          tools: ["Playwright", "Cypress", "Selenium", "Postman"],
+        },
+        {
+          name: "Cloud, DevOps and SRE",
+          body: "Engineers who automate builds and infrastructure and keep production observable, around the clock if you need it.",
+          work: ["CI/CD", "Infrastructure as code", "On-call cover"],
+          tools: ["Kubernetes", "Terraform", "AWS", "GitHub Actions"],
+        },
+        {
+          name: "Center set-up and operations",
+          body: "Everything around the team: the entity, the office, payroll, compliance and IT, so your leaders only manage the work.",
+          work: ["Entity and office", "Payroll and HR", "IT and security"],
+          tools: ["Jira", "Okta", "1Password", "Zoom"],
+        },
+      ]}
+    />
+
+    <HireWhy
+      id="why"
+      eyebrow={`Why ${BRAND.name}`}
+      headline={["Why teams build", `with ${BRAND.name}.`]}
+      lede="Your own engineers in India, hired to your bar, without setting up a company there yourself."
+      reasons={[
+        {
+          title: "Your team, inside your center",
+          body: "Engineers are hired into your center, for your roles, and report to your leaders. You review every profile and make every hiring call.",
+          points: ["Your roles and bar", "Your leaders", "Your final say"],
+        },
+        {
+          title: "Set up without the overhead",
+          body: "We handle the entity, office, payroll, compliance and IT, so the first pod ships in weeks while the center takes shape.",
+          points: ["Entity to payroll", "Office and IT", "Senior oversight"],
+        },
+        {
+          title: "A clear path to ownership",
+          body: "Build-operate-transfer is agreed up front: when you’re ready, the entity, people and contracts move to you.",
+          points: ["Terms set early", "People kept", "No lock-in"],
+        },
+      ]}
+      figures={[
+        { value: "20+", label: "Years building software" },
+        { value: "200+", label: "Engineers in one team" },
+        { value: "300+", label: "Clients served" },
+      ]}
+      cta={{ label: "Talk to our team", href: "#contact" }}
+    />
+
+    <HireWays
+      id="ways"
+      eyebrow="Ways to work together"
+      headline={["Start with a pod.", "Grow a center.", "Own it when ready."]}
+      accent={2}
+      lede="Three stages, taken at your pace. Many teams move through all three."
+      models={[
+        {
+          kind: "Start with a pod",
+          size: "5–8 engineers",
+          title: "Prove it with one pod",
+          body: "A managed pod with its own lead ships on your roadmap while the center is planned.",
+          skills: ["Pod lead", "Product work", "Your sprints"],
+          photo: { image: waysPod, alt: "Three engineers work through a problem together at one laptop.", focus: "55% 45%" },
+        },
+        {
+          kind: "Scale to a center",
+          size: "25–150+ people",
+          title: "Grow your own center",
+          body: "Add leaders and pods across the stack in your own office, with the site run by us.",
+          skills: ["Center head", "Several pods", "Your office"],
+          photo: { image: waysCenter, alt: "Engineers work at rows of desks in a bright open-plan office.", focus: "40% 60%" },
+        },
+        {
+          kind: "Build-operate-transfer",
+          size: "Your entity",
+          title: "Take the center over",
+          body: "When you’re ready, the entity, people and contracts move to you on agreed terms.",
+          skills: ["Entity transfer", "People kept", "Clean handover"],
+          photo: { image: waysTransfer, alt: "A team lead presents to colleagues around a meeting table.", focus: "60% 35%" },
+        },
+      ]}
+      cta={{ label: "Plan this team shape", href: "#plan" }}
+      control={{ lead: "You stay in control.", rest: `Your leaders set the roadmap and choose every hire; ${BRAND.name} runs the site around them.` }}
+    />
+
+    <HirePlanner
+      id="plan"
+      tone="tint"
+      eyebrow="Cost savings calculator"
+      headline={["Estimate your", "monthly savings."]}
+      lede="Move the slider to compare a senior US engineering team with a team of the same size in your India center."
+      rate={32}
+      compare={{ rate: 90, label: "US onshore at $90/hr" }}
+      hours={160}
+      max={12}
+      start={3}
+      panelLabel="Monthly team cost"
+      tagLabel="{n} senior {people}"
+      teamLabel="India center at $32/hr"
+      saveLabel="Estimated monthly savings"
+      saveNote="About {pct}% lower than the US onshore planning estimate."
+      sizeLabel="Your team size"
+      unit={["engineer", "engineers"]}
+      cta={{ label: "Build my center plan", href: "#contact" }}
+      disclaimer="Get a tailored cost view for your center, its roles and its ramp."
+      note={`Planning estimate at $90 an hour US onshore and $32 an hour offshore, with 160 hours per engineer each month. Team cost only, before center set-up. This is not a ${BRAND.name} quote.`}
+    />
+
+    <HireEngineers
+      id="engineers"
+      eyebrow="Roles you hire into the center"
+      headline={["Find the people", "your center needs."]}
+      lede={`Pick a specialty to see the roles ${BRAND.name} hires into your India center.`}
+      allLabel="All roles"
+      filters={[
+        { key: "lead", label: "Leadership" },
+        { key: "build", label: "Product & back end" },
+        { key: "data", label: "Data & AI" },
+        { key: "qa", label: "QA" },
+        { key: "cloud", label: "DevOps & cloud" },
+      ]}
+      engineers={[
+        {
+          level: "Leadership role",
+          role: "GCC center head",
+          for: "For running the India center day to day and reporting to your leadership.",
+          years: "15+ years",
+          skills: ["Site leadership", "Hiring plans", "Governance", "Budgets"],
+          tags: ["lead"],
+          photo: { image: engHead, alt: "A center head sits at her desk beside a laptop.", focus: "52% 40%" },
+        },
+        {
+          level: "Leadership role",
+          role: "Engineering manager",
+          for: "For leading pods, setting standards and owning delivery on your roadmap.",
+          years: "12+ years",
+          skills: ["Architecture", "Code review", "Delivery", "Mentoring"],
+          tags: ["lead", "build"],
+          photo: { image: engLead, alt: "An engineering manager works at a laptop in an open office.", focus: "55% 40%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "Full-stack engineer",
+          for: "For product screens, APIs and the features your customers use every day.",
+          years: "8+ years",
+          skills: ["React", "Node.js", "TypeScript", "PostgreSQL"],
+          tags: ["build"],
+          photo: { image: engFullstack, alt: "A developer in glasses works on a laptop at a wooden table.", focus: "45% 35%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "Back-end engineer",
+          for: "For services, integrations and the platforms your products run on.",
+          years: "9+ years",
+          skills: ["Java", "Go", ".NET", "Microservices"],
+          tags: ["build"],
+          photo: { image: engBackend, alt: "An engineer works at a desktop computer in a wood-panelled office.", focus: "35% 45%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "Data engineer",
+          for: "For pipelines, the warehouse, data quality and reporting.",
+          years: "7+ years",
+          skills: ["Snowflake", "Airflow", "dbt", "Kafka"],
+          tags: ["data"],
+          photo: { image: engData, alt: "A data engineer types on a laptop by a bright window.", focus: "50% 30%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "AI/ML engineer",
+          for: "For models, LLM features, evaluation and deployment.",
+          years: "7+ years",
+          skills: ["PyTorch", "LLM apps", "MLflow", "Python"],
+          tags: ["data"],
+          photo: { image: engMl, alt: "An engineer in glasses works on a laptop in a lounge chair.", focus: "45% 25%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "QA automation engineer",
+          for: "For test strategy, automated suites and release gates.",
+          years: "7+ years",
+          skills: ["Playwright", "Cypress", "Selenium", "API tests"],
+          tags: ["qa"],
+          photo: { image: engQa, alt: "A QA engineer smiles as he works at a desktop computer.", focus: "40% 40%" },
+        },
+        {
+          level: "Senior specialty role",
+          role: "DevOps and SRE engineer",
+          for: "For CI/CD, infrastructure as code, monitoring and on-call cover.",
+          years: "8+ years",
+          skills: ["Kubernetes", "Terraform", "Google Cloud", "GitHub Actions"],
+          tags: ["cloud"],
+          photo: { image: engDevops, alt: "An engineer in headphones works at a large monitor.", focus: "70% 45%" },
+        },
+      ]}
+      cta={{ label: "Discuss this engineering hire", href: "#contact" }}
+      footnote={`These are example roles. ${BRAND.name} confirms availability and fit before you decide.`}
+    />
+
+    <HireColumns
+      id="do"
+      eyebrow="What the center does"
+      headline={["Get help across", "your whole stack."]}
+      lede="One center for product, data and operations, growing a team at a time."
+      columns={[
+        {
+          label: "Build",
+          title: "Own product areas",
+          body: "Pods that build web and mobile features, APIs and the screens your users touch.",
+          tags: ["Web apps", "Mobile apps", "APIs", "Platforms"],
+        },
+        {
+          label: "Data and AI",
+          title: "Put data and AI to work",
+          body: "Teams that own pipelines, models and AI features, and test them properly.",
+          tags: ["Data pipelines", "Analytics", "ML models", "GenAI"],
+        },
+        {
+          label: "Operate",
+          title: "Run it every day",
+          body: `QA, cloud and SRE engineers keep releases steady; ${BRAND.name} runs HR, payroll, IT and the office.`,
+          tags: ["QA automation", "Cloud and SRE", "IT and security", "Facilities"],
+        },
+      ]}
+    />
+
+    <HireSteps
+      id="how"
+      eyebrow="How the center helps"
+      headline={["Build, ship and", "improve from India."]}
+      lede="From one pod to a center that owns whole parts of your product."
+      steps={[
+        {
+          title: "Build inside your product",
+          body: "Features, apps and APIs that sit inside your existing architecture.",
+          focus: "Features, APIs and interfaces",
+        },
+        {
+          title: "Own whole areas",
+          body: "As pods settle in, they take products and platforms end to end.",
+          focus: "Ownership, roadmap and quality",
+        },
+        {
+          title: "Integrate and release",
+          body: "Work inside your services, quality gates, cloud and release process.",
+          focus: "Integration, testing and release",
+        },
+        {
+          title: "Operate and improve",
+          body: "Keep it reliable with monitoring, on-call cover and steady improvement.",
+          focus: "Observability and evolution",
+        },
+      ]}
+      close={{
+        text: `Need one part of your center first? ${BRAND.name} can staff it.`,
+        cta: { label: "Find the right role", href: "#engineers" },
+      }}
+    />
+
+    <HireCases
+      id="cases"
+      eyebrow="How teams use us"
+      headline={["Real examples of", "centers in action."]}
+      lede="The centers we helped set up, the roles inside them, and what they achieved."
+      cases={[
+        {
+          sector: "US healthcare software company",
+          team: "Pod to center",
+          title: "From one pod to a product center",
+          body: "One product pod proved the work; we then set up the entity, office and hiring for a center that now owns two product lines.",
+          roles: ["Center head", "Engineering managers", "Full-stack engineers", "QA engineers"],
+          tools: ["React", "Java", "Agile pods"],
+          results: [
+            { value: "60", label: "people in 14 months" },
+            { value: "2", label: "product lines owned" },
+          ],
+        },
+        {
+          sector: "US fintech platform",
+          team: "Data and AI center",
+          title: "A data and AI hub in India",
+          body: "We built a data and ML team inside the client’s India center to run its risk models, pipelines and reporting.",
+          roles: ["Data engineers", "ML engineers", "MLOps engineer"],
+          tools: ["Snowflake", "Airflow", "MLflow"],
+          results: [
+            { value: "35%", label: "lower data platform cost" },
+            { value: "24h", label: "model monitoring cover" },
+          ],
+        },
+        {
+          sector: "US industrial equipment maker",
+          team: "Build-operate-transfer",
+          title: "A center the client now owns",
+          body: "We ran a 45-person engineering center for three years, then moved the entity, people and contracts to the client as agreed.",
+          roles: ["Center head", "Platform engineers", "Data engineers"],
+          tools: ["Kubernetes", "Terraform", "IoT data"],
+          results: [
+            { value: "45", label: "people transferred" },
+            { value: "95%", label: "kept through handover" },
+          ],
+        },
+      ]}
+      footnote={`Client details are kept private. Team roles show the skills used on each ${BRAND.name} engagement. Results are examples, not guarantees.`}
+    />
+
+    <HirePod
+      id="pod"
+      eyebrow="One team. Two locations."
+      headline={["How does your", "India center", `look with ${BRAND.name}?`]}
+      lede={`Your leaders own the product and the architecture. A center head runs the India team day to day, and ${BRAND.name} runs the site around it: hiring, payroll, IT and the office.`}
+      points={[
+        { lead: "Start small", rest: "with one pod and a center head." },
+        { lead: "Work your way", rest: "in your codebase, tools and security controls." },
+        { lead: "Take it over", rest: "when the center is ready, on terms set up front." },
+      ]}
+      rosterLabel="India center / 01"
+      status="Active"
+      members={[
+        { initials: "CH", role: "Center head", layer: "Site leadership" },
+        { initials: "EM", role: "Engineering manager", layer: "Delivery" },
+        { initials: "FS", role: "Full-stack engineer", layer: "Product layer" },
+        { initials: "DE", role: "Data engineer", layer: "Data systems" },
+        { initials: "QA", role: "QA engineer", layer: "Quality gates" },
+      ]}
+      terms={[
+        { label: "Rituals", value: "Daily overlap" },
+        { label: "Ownership", value: "Your IP" },
+        { label: "Option", value: "Transfer" },
+      ]}
+      cta={{ label: "Talk about your center", href: "#contact" }}
+    />
+
+    <HireFit
+      id="fit"
+      tone="tint"
+      eyebrow="Is this a good fit?"
+      headline={["Built for teams", "ready for their", "own India center."]}
+      items={[
+        "You need a long-term engineering team, not a one-off project.",
+        "You want your own people, culture and IP in India.",
+        "You’d rather not set up the entity, office and payroll yourself.",
+        "You want the option to own the center outright later.",
+      ]}
+    />
+
+    <HireProcess
+      id="process"
+      eyebrow="How it works"
+      headline={["Five simple steps", "to your India center."]}
+      lede="From the first call to a pod shipping in your sprint, and a center that grows from it."
+      detailLabel={`${BRAND.name} GCC set-up`}
+      steps={[
+        {
+          title: "Discovery call",
+          body: "Tell us about your roadmap, the roles you need and how far you want the center to grow.",
+          covers: ["Your goals", "Roles and scale", "Timeline"],
+          photo: { image: stepCall, alt: "A team lead talks through a plan at a whiteboard while colleagues listen.", focus: "50% 45%" },
+        },
+        {
+          title: "Pick the suitable model",
+          body: "Start with a pod, plan a full center, or agree a build-operate-transfer path from day one.",
+          covers: ["Pod, center or BOT", "City and office", "Ramp plan"],
+        },
+        {
+          title: "Receive pre-vetted options",
+          body: "Get profiles for the center head and the first engineers, matched to your stack and bar.",
+          covers: ["Leaders first", "Skills", "Experience"],
+        },
+        {
+          title: "Interview & selection",
+          body: "Meet the candidates, test the fit and choose who joins your center.",
+          covers: ["Technical interview", "Team fit", "Your decision"],
+          photo: { image: stepKickoff, alt: "Engineers sketch a system on a whiteboard together.", focus: "55% 40%" },
+        },
+        {
+          title: "Onboarding & kickoff",
+          body: "Access, rituals and a first sprint for the pod, while we set up the entity and office.",
+          covers: ["Access and tools", "Team rituals", "First sprint"],
+        },
+      ]}
+      cta={{ label: "Plan your India center", href: "#contact" }}
+    />
+
+    <FaqSection
+      eyebrow="Common questions"
+      headline={["Before you build", "your center."]}
+      accent={1}
+      cta="Talk to our team"
+      faqs={FAQS}
+      media={{ image: faqPhoto, alt: "A leader in a white blazer sits at her desk with a laptop.", focus: "50% 35%" }}
+    />
+
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

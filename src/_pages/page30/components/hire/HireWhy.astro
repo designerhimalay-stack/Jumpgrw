@@ -1,0 +1,86 @@
+---
+import Arrow from "@pg/page30/components/icons/Arrow.astro";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import HireSwitch from "@pg/page30/components/hire/HireSwitch.astro";
+import type { HireFigure, HireHead, HireLink, HireReason } from "@pg/page30/components/hire/types";
+
+/* Why teams choose us. The reasons as numbered options in columns 1–2, the
+   chosen one's detail panel (title, body, proof points) in columns 3–4.
+   Under them, a strip of proof figures across columns 1–3 and the call to
+   action in column 4. Built on HireSwitch: keyboard and no-JS safe, every
+   panel in one grid cell.
+
+   Phones: the options are three short rows over the panel; the figures sit
+   three across. */
+
+interface Props extends HireHead {
+  /** Three reads best. */
+  reasons: HireReason[];
+  figures: HireFigure[];
+  cta: HireLink;
+  pickLabel?: string;
+  /** "tint" is a light section on a pale blue ground. */
+  tone?: "light" | "tint" | "dark";
+}
+
+const { id, eyebrow, headline, accent, lede, reasons, figures, cta, pickLabel = "Pick a reason", tone = "light" } =
+  Astro.props;
+const name = `${id}-reason`;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec={tone === "tint" ? "light" : tone} data-ac-hire-tint={tone === "tint" || undefined} data-ac-hire="why" id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent ?? headline.length - 1} lede={lede} />
+
+    <div data-ac-hire-switch data-ac-hire-why data-ac-sec-rise>
+      <fieldset data-ac-hire-switch-list data-ac-hire-why-list>
+        <legend class="sr-only">{pickLabel}</legend>
+        {reasons.map((reason, i) => (
+          <HireSwitch name={name} index={i + 1} checked={i === 0}>
+            <span data-ac-hire-why-num class="mono-label" aria-hidden="true">{pad(i + 1)}</span>
+            <span data-ac-hire-opt-text>{reason.title}</span>
+          </HireSwitch>
+        ))}
+      </fieldset>
+
+      <div data-ac-sec-frame data-ac-hire-panes data-ac-hire-why-panes>
+        <Joints />
+        {reasons.map((reason, i) => (
+          <article data-ac-hire-pane={i + 1}>
+            <p data-ac-hire-index class="mono-label">{pad(i + 1)} / {pad(reasons.length)}</p>
+            <h3 data-ac-hire-pane-title>{reason.title}</h3>
+            <p data-ac-hire-pane-body>{reason.body}</p>
+            <ul data-ac-hire-checks role="list">
+              {reason.points.map((point) => <li>{point}</li>)}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </div>
+
+    <div data-ac-hire-why-foot data-ac-sec-rise>
+      <dl data-ac-hire-figures>
+        {figures.map((figure) => (
+          <div>
+            <dt>{figure.label}</dt>
+            <dd>{figure.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <a data-ac-hire-button class="mono-label" href={cta.href}>
+        {cta.label}
+        <Arrow direction="right" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>('[data-ac-hire="why"]').forEach(toggleInView);
+</script>

@@ -1,0 +1,86 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@pg/page26/components/icons/Arrow.astro";
+import GridRules from "@pg/page26/components/GridRules.astro";
+import SectionHead from "@pg/page26/components/SectionHead.astro";
+import Joints from "@pg/page26/components/process/Joints.astro";
+import type { Role } from "@pg/page26/types/hire";
+
+/* The heart of the page: the engineers. On navy, four framed photo cards, one
+   per column, each a senior specialty with what they do for you and their
+   skills. A row of skill buttons above picks one: the others dim and lose
+   their colour, nothing moves or disappears, so the page never jumps.
+   Phones: the cards two by two with shorter copy. See docs/sections.md. */
+
+interface Props {
+  copy: { eyebrow: string; headline: string[]; lede: string; all: string; kicker: string; cta: string; note: string };
+  roles: Role[];
+}
+
+const { copy, roles } = Astro.props;
+---
+
+<section data-ac-sec="dark" data-ac-roles id="roles">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={copy.eyebrow} headline={copy.headline} accent={1} lede={copy.lede} />
+
+    <div data-ac-roles-filter role="group" aria-label={copy.eyebrow} data-ac-sec-rise>
+      <button type="button" data-ac-roles-pick="all" aria-pressed="true">{copy.all}</button>
+      {roles.map((role, i) => (
+        <button type="button" data-ac-roles-pick={i} aria-pressed="false">{role.title}</button>
+      ))}
+    </div>
+
+    <ul data-ac-roles-grid>
+      {roles.map((role, i) => (
+        <li data-ac-roles-card data-index={i} style={`--ac-i:${i}`}>
+          <Joints />
+          <div data-ac-roles-photo>
+            <Image
+              src={role.photo.image}
+              alt={role.photo.alt}
+              widths={[320, 480, 720]}
+              sizes="(max-width: 767px) 50vw, 25vw"
+              quality={78}
+              style={role.photo.focus ? `object-position:${role.photo.focus}` : undefined}
+            />
+          </div>
+          <div data-ac-roles-copy>
+            <p data-ac-roles-kicker class="mono-label-sm">{copy.kicker}</p>
+            <h3 data-ac-roles-title>{role.title}</h3>
+            <p data-ac-roles-body>{role.body}</p>
+            <ul data-ac-chips data-ac-roles-skills>{role.skills.map((s) => <li>{s}</li>)}</ul>
+            <a data-ac-link class="mono-label" href="#contact">
+              {copy.cta}
+              <Arrow direction="right" />
+            </a>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <p data-ac-roles-note>{copy.note}</p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page26/lib/in-view";
+
+  const section = document.querySelector<HTMLElement>("[data-ac-roles]")!;
+  toggleInView(section);
+
+  const picks = [...section.querySelectorAll<HTMLButtonElement>("[data-ac-roles-pick]")];
+  const cards = [...section.querySelectorAll<HTMLElement>("[data-ac-roles-card]")];
+
+  picks.forEach((pick) =>
+    pick.addEventListener("click", () => {
+      const chosen = pick.dataset.acRolesPick!;
+      picks.forEach((p) => p.setAttribute("aria-pressed", String(p === pick)));
+      cards.forEach((card) =>
+        card.toggleAttribute("data-dim", chosen !== "all" && card.dataset.index !== chosen),
+      );
+    }),
+  );
+</script>

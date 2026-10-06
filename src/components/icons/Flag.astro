@@ -1,0 +1,36 @@
+---
+/* Small rounded country flags drawn inline (no external files), for the region
+   switcher. Simplified to read clearly at ~18px wide. */
+interface Props {
+  code: "US" | "IN" | "AE";
+  class?: string;
+}
+const { code, class: className } = Astro.props;
+---
+{code === "US" && (
+  <svg class={className} viewBox="0 0 20 14" width="20" height="14" aria-hidden="true" role="img">
+    <rect width="20" height="14" rx="2" fill="#b22234" />
+    <g fill="#fff">
+      <rect y="2" width="20" height="2" />
+      <rect y="6" width="20" height="2" />
+      <rect y="10" width="20" height="2" />
+    </g>
+    <rect width="9" height="8" rx="0" fill="#3c3b6e" />
+  </svg>
+)}
+{code === "IN" && (
+  <svg class={className} viewBox="0 0 20 14" width="20" height="14" aria-hidden="true" role="img">
+    <rect width="20" height="14" rx="2" fill="#fff" />
+    <rect width="20" height="4.67" fill="#ff9933" />
+    <rect y="9.33" width="20" height="4.67" fill="#138808" />
+    <circle cx="10" cy="7" r="1.7" fill="none" stroke="#000080" stroke-width="0.7" />
+  </svg>
+)}
+{code === "AE" && (
+  <svg class={className} viewBox="0 0 20 14" width="20" height="14" aria-hidden="true" role="img">
+    <rect width="20" height="14" rx="2" fill="#fff" />
+    <rect width="20" height="4.67" fill="#00732f" />
+    <rect y="9.33" width="20" height="4.67" fill="#000" />
+    <rect width="6" height="14" fill="#ff0000" />
+  </svg>
+)}

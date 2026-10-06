@@ -1,0 +1,85 @@
+---
+import GridRules from "@pg/page25/components/GridRules.astro";
+import SectionHead from "@pg/page25/components/SectionHead.astro";
+import Joints from "@pg/page25/components/process/Joints.astro";
+import type { Benefit } from "@pg/page25/types/hire";
+
+/* Choose the work your team needs: four kinds of work as a 2×2 of tabs in
+   columns 1–2, and the chosen one in columns 3–4 (what it is, the work it
+   covers, the tools). All four panels share one grid cell, so the frame
+   never changes height. Phones: the tabs stay 2×2 and compact over the
+   panel. See docs/sections.md. */
+
+interface Props {
+  copy: { eyebrow: string; headline: string[]; lede: string; workLabel: string; toolsLabel: string };
+  benefits: Benefit[];
+}
+
+const { copy, benefits } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-work id="work">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={copy.eyebrow} headline={copy.headline} accent={1} lede={copy.lede} />
+
+    <div data-ac-sec-frame data-ac-work-frame data-ac-tabs-root>
+      <Joints />
+      <div data-ac-work-tabs role="tablist" aria-label={copy.eyebrow}>
+        {benefits.map((benefit, i) => (
+          <button
+            type="button"
+            role="tab"
+            data-ac-tab
+            data-ac-work-tab
+            id={`work-tab-${i}`}
+            aria-controls={`work-panel-${i}`}
+            aria-selected={i === 0 ? "true" : "false"}
+            tabindex={i === 0 ? 0 : -1}
+          >
+            <span data-ac-work-num>{pad(i + 1)}</span>
+            <span data-ac-work-tab-title>{benefit.title}</span>
+            <svg data-ac-work-check viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+          </button>
+        ))}
+      </div>
+
+      <div data-ac-tab-stack data-ac-work-panels>
+        {benefits.map((benefit, i) => (
+          <div
+            data-ac-tab-panel
+            data-ac-work-panel
+            data-active={i === 0 || undefined}
+            role="tabpanel"
+            id={`work-panel-${i}`}
+            aria-labelledby={`work-tab-${i}`}
+          >
+            <h3 data-ac-work-title>{benefit.title}</h3>
+            <p data-ac-work-body>{benefit.body}</p>
+            <div data-ac-work-lists>
+              <div>
+                <p class="mono-label-sm" data-ac-work-label>{copy.workLabel}</p>
+                <ul data-ac-chips data-tone="accent">{benefit.work.map((w) => <li>{w}</li>)}</ul>
+              </div>
+              <div>
+                <p class="mono-label-sm" data-ac-work-label>{copy.toolsLabel}</p>
+                <ul data-ac-chips>{benefit.tools.map((w) => <li>{w}</li>)}</ul>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page25/lib/in-view";
+  import { initTabs } from "@pg/page25/lib/tabs";
+
+  const section = document.querySelector<HTMLElement>("[data-ac-work]")!;
+  toggleInView(section);
+  initTabs(section.querySelector<HTMLElement>("[data-ac-tabs-root]")!);
+</script>

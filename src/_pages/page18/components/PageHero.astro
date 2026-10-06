@@ -1,0 +1,197 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@pg/page18/components/icons/Arrow.astro";
+import GridRules from "@pg/page18/components/GridRules.astro";
+import RevealText from "@pg/page18/components/RevealText.astro";
+import Joints from "@pg/page18/components/process/Joints.astro";
+import type { PageHeroContent } from "@pg/page18/types/page";
+
+/* The opening of every subpage, on the home hero's navy field and the page's
+   four columns. Columns 1–2: breadcrumb, the page's name as a two-tone
+   headline, lede and buttons, the buttons on the column's floor. Columns 3–4:
+   the photo, framed, the same height as the copy. Along the foot, four spec
+   cells, one per column, closing the hero on the grid. The navbar goes dark
+   while this is under it (Layout's navTone, then the script below). See
+   docs/components/subpages.md.
+
+   Optional parts, for the hiring pages: an audience line over the headline,
+   a smaller headline size for a full-sentence headline (size: "long"), a row
+   of assurances under the buttons, a card laid over the photo (status bar,
+   kicker, statement, foot strip) and a base line under the specs. A page
+   that sets none of them renders exactly as before. */
+
+interface Props {
+  content: PageHeroContent;
+}
+
+const { content } = Astro.props;
+const {
+  trail,
+  headline,
+  accent = headline.length - 1,
+  lede,
+  ctas,
+  image,
+  imageAlt,
+  specs,
+  audience,
+  size,
+  assurances,
+  card,
+  base,
+} = content;
+
+/* 16px line icons for the assurances, drawn on a 24 grid in currentColor. */
+const assuranceIcons: Record<string, string> = {
+  shield: "M12 3l7 3v5c0 4.4-3 8.3-7 10-4-1.7-7-5.6-7-10V6l7-3z M9 12l2 2 4-4",
+  clock: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2",
+  lock: "M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3",
+  users: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5 M16 5.5a3 3 0 0 1 0 5.6 M18 15.3c1.8.6 3 2 3 4.7",
+  globe: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M3 12h18 M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z",
+};
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/* Each line's first character index, so the stagger keeps counting across
+   the break (+1 for the space the break stands in for). */
+const offsets = headline.map((_, i) =>
+  headline.slice(0, i).reduce((n, line) => n + Array.from(line).length + 1, 0),
+);
+---
+
+<section data-ac-sec="dark" data-ac-phero id="top" data-ac-phero-size={size}>
+  <GridRules />
+
+  <div data-ac-sec-container data-ac-phero-grid>
+    <div data-ac-phero-copy>
+      <nav data-ac-phero-trail class="mono-label" aria-label="Breadcrumb">
+        <span aria-hidden="true">+</span>
+        <ol>
+          {trail.map((step, i) => (
+            <li aria-current={i === trail.length - 1 ? "page" : undefined}>{step}</li>
+          ))}
+        </ol>
+      </nav>
+
+      {audience && <p data-ac-phero-audience class="mono-label">{audience}</p>}
+
+      <h1 data-ac-phero-headline aria-label={headline.join(" ")}>
+        {headline.map((line, i) => (
+          <Fragment>
+            {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+            <span data-ac-sec-line data-accent={i === accent || undefined}>
+              <RevealText text={line} offset={offsets[i]} />
+            </span>
+          </Fragment>
+        ))}
+      </h1>
+
+      <div data-ac-phero-foot>
+        <p data-ac-phero-lede data-ac-sec-rise>{lede}</p>
+        <div data-ac-phero-ctas data-ac-sec-rise>
+          {ctas.map((cta, i) => (
+            <a href={cta.href} data-ac-phero-cta={i === 0 ? "primary" : "ghost"} class="mono-label">
+              {cta.label}
+              <Arrow direction={cta.arrow} />
+            </a>
+          ))}
+        </div>
+        {assurances && assurances.length > 0 && (
+          <ul data-ac-phero-assure data-ac-sec-rise>
+            {assurances.map((item) => (
+              <li>
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <path d={assuranceIcons[item.icon]} />
+                </svg>
+                {item.label}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+
+    <div data-ac-phero-media>
+      <Joints />
+      <div data-ac-phero-photo>
+        <Image
+          src={image}
+          alt={imageAlt}
+          widths={[320, 480, image.width]}
+          sizes="(max-width: 991px) 100vw, 45vw"
+          quality={82}
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+      {card && (
+        <div data-ac-phero-card>
+          <div data-ac-phero-card-bar class="mono-label">
+            <span data-ac-phero-card-status>{card.status}</span>
+            <span>{card.place}</span>
+          </div>
+          {card.note && <p data-ac-phero-card-note class="mono-label">{card.note}</p>}
+          <div data-ac-phero-card-body>
+            <p data-ac-phero-card-kicker class="mono-label">{card.kicker}</p>
+            <p data-ac-phero-card-statement>{card.statement}</p>
+          </div>
+          <div data-ac-phero-card-foot>
+            <span data-ac-phero-card-mark aria-hidden="true"></span>
+            <p>
+              <span>{card.foot.label}</span>
+              <strong>{card.foot.value}</strong>
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+
+    <dl data-ac-phero-specs>
+      {specs.map((spec, i) => (
+        <div data-ac-phero-spec style={`--ac-i:${i}`}>
+          <dt class="mono-label">
+            <span>{pad(i + 1)}</span>
+            {spec.label}
+          </dt>
+          <dd>{spec.value}</dd>
+        </div>
+      ))}
+    </dl>
+
+    {base && (
+      <p data-ac-phero-base>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z M12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+        </svg>
+        <strong>{base.title}</strong>
+        <span>{base.line}</span>
+      </p>
+    )}
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page18/lib/in-view";
+
+  const hero = document.querySelector<HTMLElement>("[data-ac-phero]")!;
+  const nav = document.querySelector<HTMLElement>(".ac-nav");
+  const root = document.documentElement;
+
+  toggleInView(hero);
+
+  /* The navbar is fixed, so its tone follows what is under it: dark while
+     the hero is behind the bar, light once the page has moved past it. Same
+     attribute the home page's Hero writes. */
+  let frame = 0;
+  const apply = () => {
+    frame = 0;
+    const under = hero.getBoundingClientRect().bottom > (nav?.offsetHeight ?? 0);
+    const phase = under ? "field" : "paper";
+    if (root.dataset.portalPhase !== phase) root.dataset.portalPhase = phase;
+  };
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(apply);
+  };
+  apply();
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", schedule, { passive: true });
+</script>

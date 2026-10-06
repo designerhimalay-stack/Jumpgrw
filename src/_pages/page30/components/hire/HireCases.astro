@@ -1,0 +1,68 @@
+---
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import type { HireCase, HireHead } from "@pg/page30/components/hire/types";
+
+/* Real examples. Three case cards side by side: the sector and number, the
+   team type, a title and what we did, the "illustrative capability mix"
+   (roles), the tools, and two result figures on the card's floor. A
+   footnote says client details are private and results are examples.
+
+   Phones: the cards become a sideways rail (scroll-snap). */
+
+interface Props extends HireHead {
+  /** Three reads best. */
+  cases: HireCase[];
+  mixLabel?: string;
+  footnote: string;
+  /** "tint" is a light section on a pale blue ground. */
+  tone?: "light" | "tint" | "dark";
+}
+
+const { id, eyebrow, headline, accent, lede, cases, mixLabel = "Illustrative capability mix", footnote, tone = "light" } =
+  Astro.props;
+---
+
+<section data-ac-sec={tone === "tint" ? "light" : tone} data-ac-hire-tint={tone === "tint" || undefined} data-ac-hire="cases" id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={accent ?? headline.length - 1} lede={lede} />
+
+    <ul data-ac-hire-rail data-ac-hire-case-cards role="list">
+      {cases.map((item, i) => (
+        <li data-ac-sec-frame data-ac-hire-case style={`--i:${i}`}>
+          <Joints />
+          <p data-ac-hire-case-sector class="mono-label">
+            <span>{item.sector}</span>
+            <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+          </p>
+          <p data-ac-hire-tag data-variant="inline" class="mono-label">{item.team}</p>
+          <h3 data-ac-hire-card-title>{item.title}</h3>
+          <p data-ac-hire-card-body>{item.body}</p>
+          <p data-ac-hire-sub class="mono-label">{mixLabel}</p>
+          <ul data-ac-hire-chips role="list">
+            {item.roles.map((role) => <li>{role}</li>)}
+          </ul>
+          <p data-ac-hire-case-tools>{item.tools.join(" · ")}</p>
+          <dl data-ac-hire-case-results>
+            {item.results.map((result) => (
+              <div>
+                <dt>{result.label}</dt>
+                <dd>{result.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </li>
+      ))}
+    </ul>
+
+    <p data-ac-hire-note data-ac-sec-rise>{footnote}</p>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>('[data-ac-hire="cases"]').forEach(toggleInView);
+</script>

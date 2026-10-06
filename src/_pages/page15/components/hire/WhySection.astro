@@ -1,0 +1,105 @@
+---
+import Arrow from "@pg/page15/components/icons/Arrow.astro";
+import GridRules from "@pg/page15/components/GridRules.astro";
+import SectionHead from "@pg/page15/components/SectionHead.astro";
+import Joints from "@pg/page15/components/process/Joints.astro";
+import type { Figure, Reason } from "@pg/page15/types/hire";
+
+/* Why teams choose us. Columns 1–2: three figures, one above the other, each
+   a large number on a hairline, and a link to the brief. Columns 3–4: the
+   three reasons as tabs along the top of a frame, the chosen one below with
+   its proof points. Phones: the figures in one row, then the reasons. See
+   docs/sections.md. */
+
+interface Props {
+  copy: {
+    eyebrow: string;
+    headline: string[];
+    lede: string;
+    figures: Figure[];
+    reasons: Reason[];
+    cta: string;
+  };
+}
+
+const { copy } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-why id="why">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={copy.eyebrow} headline={copy.headline} accent={1} lede={copy.lede} />
+
+    <div data-ac-why-grid>
+      <div data-ac-why-figures>
+        <dl>
+          {copy.figures.map((figure, i) => (
+            <div data-ac-why-figure style={`--ac-i:${i}`}>
+              <dt class="mono-label-sm">{figure.label}</dt>
+              <dd>{figure.value}</dd>
+            </div>
+          ))}
+        </dl>
+        <a data-ac-link class="mono-label" href="#contact">
+          {copy.cta}
+          <Arrow direction="right" />
+        </a>
+      </div>
+
+      <div data-ac-sec-frame data-ac-why-frame data-ac-tabs-root>
+        <Joints />
+        <div data-ac-why-tabs role="tablist" aria-label={copy.eyebrow}>
+          {copy.reasons.map((reason, i) => (
+            <button
+              type="button"
+              role="tab"
+              data-ac-tab
+              data-ac-why-tab
+              id={`why-tab-${i}`}
+              aria-controls={`why-panel-${i}`}
+              aria-selected={i === 0 ? "true" : "false"}
+              tabindex={i === 0 ? 0 : -1}
+            >
+              <span data-ac-why-num>{pad(i + 1)}</span>
+              <span data-ac-why-tab-title>{reason.title}</span>
+            </button>
+          ))}
+        </div>
+        <div data-ac-tab-stack>
+          {copy.reasons.map((reason, i) => (
+            <div
+              data-ac-tab-panel
+              data-ac-why-panel
+              data-active={i === 0 || undefined}
+              role="tabpanel"
+              id={`why-panel-${i}`}
+              aria-labelledby={`why-tab-${i}`}
+            >
+              <h3 data-ac-why-title>{reason.title}</h3>
+              <p data-ac-why-body>{reason.body}</p>
+              <ul data-ac-checks>
+                {reason.tags.map((tag) => (
+                  <li>
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+                    {tag}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page15/lib/in-view";
+  import { initTabs } from "@pg/page15/lib/tabs";
+
+  const section = document.querySelector<HTMLElement>("[data-ac-why]")!;
+  toggleInView(section);
+  initTabs(section.querySelector<HTMLElement>("[data-ac-tabs-root]")!);
+</script>

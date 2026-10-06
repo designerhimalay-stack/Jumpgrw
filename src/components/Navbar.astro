@@ -1,6 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import Chevron from "@/components/icons/Chevron.astro";
+import Flag from "@/components/icons/Flag.astro";
 import { withBase } from "@/lib/paths";
 import type { NavLink } from "@/types/hero";
 import jumpgrowthLogo from "@/assets/jumpgrowth-logo.webp";
@@ -179,9 +180,9 @@ const NAV_LINKS: NavLink[] = [
         {
           title: "COMPANY",
           items: [
-            { label: "About Us", href: "#why-agentcraft" },
-            { label: "Leadership", href: "#why-agentcraft" },
-            { label: "Locations", href: "#x-shore" },
+            { label: "About Us", href: withBase("/about/") },
+            { label: "Leadership", href: withBase("/about/#leadership") },
+            { label: "Locations", href: withBase("/about/#locations") },
             { label: "Careers", href: "#contact" },
           ],
         },
@@ -240,13 +241,44 @@ const NAV_LINKS: NavLink[] = [
   },
 ];
 
+/* The navbar is shared by every page. On the home page its section links scroll
+   in-page ("#teams"); on any other page they jump to the home page and its
+   anchor (withBase("#teams") → "/#teams"), so the same menu works everywhere.
+   "#top" is left alone — it means "the top of this page". */
+const isHome = Astro.url.pathname.replace(/\/$/, "") === withBase("/").replace(/\/$/, "");
+const fixHref = (href: string): string =>
+  !isHome && href.startsWith("#") && href !== "#top" ? withBase(href) : href;
+const NAV: NavLink[] = NAV_LINKS.map((link) => ({
+  ...link,
+  ...(link.href ? { href: fixHref(link.href) } : {}),
+  menu: link.menu && {
+    ...link.menu,
+    overview: { ...link.menu.overview, href: fixHref(link.menu.overview.href) },
+    columns: link.menu.columns.map((col) => ({
+      ...col,
+      ...(col.href ? { href: fixHref(col.href) } : {}),
+      items: col.items.map((item) => ({ ...item, href: fixHref(item.href) })),
+    })),
+  },
+}));
+
 /* The links that open the dropdown, in bar order; trigger n fills pane n. */
-const MENUS = NAV_LINKS.filter((link): link is NavLink & Required<Pick<NavLink, "menu">> => Boolean(link.menu));
+const MENUS = NAV.filter((link): link is NavLink & Required<Pick<NavLink, "menu">> => Boolean(link.menu));
 const paneId = (link: NavLink) => `nav-pane-${link.label.toLowerCase().replace(/\W+/g, "-")}`;
 
 const ARROW = '<path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" />';
 
-const REGIONS = ["US", "Mexico", "Canada", "India"];
+/* Region switcher in the meta strip. This build is the US site; India and UAE
+   have their own sites — replace the two placeholder URLs with the live ones. */
+const REGIONS = [
+  { code: "US", label: "US", href: withBase("/"), external: false },
+  { code: "IN", label: "India", href: "https://jumpgrowth.com/in/", external: true },
+  { code: "AE", label: "UAE", href: "https://jumpgrowth.com/uae/", external: true },
+] as const;
+
+/* Phone shown in the header. Replace with the number from the current site. */
+const CONTACT_PHONE = "+1 (512) 837-2200";
+const CONTACT_TEL = `tel:${CONTACT_PHONE.replace(/[^\d+]/g, "")}`;
 
 /* Tighter between 992 and 1199, where six links, the logo and the button
    otherwise wrap. An open menu's trigger keeps the hover state. */
@@ -274,16 +306,48 @@ const MOBILE_MENU_LINK_CLASS =
         X-Shore
       </span>
 
-      <span class="mono-label flex items-center gap-[8px] text-white/45">
-        <span>Delivery</span>
-        <span class="text-white/25">:</span>
-        {REGIONS.map((region, i) => (
-          <span class="flex items-center gap-[8px]">
-            {i > 0 ? <span class="text-white/20">·</span> : null}
-            <span class="text-white/80">{region}</span>
-          </span>
-        ))}
-      </span>
+      <div class="flex items-center gap-[16px]">
+        <a
+          href={CONTACT_TEL}
+          class="mono-label flex items-center gap-[7px] text-white/80 transition-colors hover:text-white"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" />
+          </svg>
+          {CONTACT_PHONE}
+        </a>
+        <span aria-hidden="true" class="h-[12px] w-px bg-white/15"></span>
+        <div class="relative group mono-label">
+        <button
+          type="button"
+          data-ac-region-btn
+          aria-haspopup="true"
+          class="flex items-center gap-[7px] py-[4px] text-white/80 transition-colors hover:text-white group-focus-within:text-white"
+        >
+          <Flag code="US" class="h-[12px] w-auto rounded-[2px]" />
+          <span>US</span>
+          <svg width="9" height="9" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="opacity-70">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <ul
+          class="invisible absolute right-0 top-full z-[30] mt-[6px] min-w-[132px] border border-white/10 bg-[#0a0d14] py-[6px] opacity-0 shadow-[0_18px_34px_-18px_rgba(0,0,0,0.8)] transition-[opacity,visibility] duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+        >
+          {REGIONS.map((region) => (
+            <li>
+              <a
+                href={region.href}
+                {...(region.external ? { target: "_blank", rel: "noopener" } : {})}
+                class="flex items-center gap-[9px] px-[14px] py-[7px] text-white/75 no-underline transition-colors hover:bg-white/[0.06] hover:text-white"
+              >
+                <Flag code={region.code} class="h-[13px] w-auto rounded-[2px]" />
+                {region.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -299,19 +363,19 @@ const MOBILE_MENU_LINK_CLASS =
           <Image
             src={jumpgrowthLogo}
             alt="JumpGrowth"
-            class="h-[28px] w-auto object-contain sdown:h-[22px] ac-nav-logo-light"
+            class="h-[34px] w-auto object-contain sdown:h-[26px] ac-nav-logo-light"
             loading="eager"
           />
           <Image
             src={jumpgrowthLogoDark}
             alt="JumpGrowth"
-            class="h-[28px] w-auto object-contain sdown:h-[22px] ac-nav-logo-dark"
+            class="h-[34px] w-auto object-contain sdown:h-[26px] ac-nav-logo-dark"
             loading="eager"
           />
         </a>
 
         <nav aria-label="Primary" class="flex gap-[2px] mdown:hidden">
-          {NAV_LINKS.map((link) =>
+          {NAV.map((link) =>
             link.menu ? (
               <button
                 type="button"
@@ -334,7 +398,7 @@ const MOBILE_MENU_LINK_CLASS =
         <div class="flex items-center">
           <div class="xsdown:hidden">
             <a
-              href="#contact"
+              href={fixHref("#contact")}
               data-ac-nav-cta
               class="mono-label flex items-center gap-[9px] whitespace-nowrap bg-[var(--color-accent)] px-[20px] py-[11px] text-white no-underline hover:bg-[var(--color-accent-dark)] max-[1199px]:px-[14px]"
             >
@@ -442,7 +506,7 @@ const MOBILE_MENU_LINK_CLASS =
     class="absolute left-0 top-full hidden h-screen w-full overflow-y-auto bg-white px-[var(--gutter)] pb-[160px] pt-[28px] transition-[opacity,transform] duration-[300ms] ease-[ease] mdown:block pointer-events-none -translate-y-[12px] opacity-0"
   >
     <span class="mono-label mb-[14px] block text-[#0e121a]/40">Menu</span>
-    {NAV_LINKS.map((link) =>
+    {NAV.map((link) =>
       link.menu ? (
         <details data-ac-mnav-group name="mobile-nav">
           <summary class={MOBILE_MENU_LINK_CLASS}>
@@ -471,7 +535,7 @@ const MOBILE_MENU_LINK_CLASS =
       ),
     )}
     <a
-      href="#contact"
+      href={fixHref("#contact")}
       class="mono-label mt-[28px] inline-flex items-center gap-[9px] bg-[var(--color-accent)] px-[20px] py-[14px] text-white no-underline"
     >
       Build your team
@@ -479,6 +543,31 @@ const MOBILE_MENU_LINK_CLASS =
         <path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
     </a>
+
+    <a href={CONTACT_TEL} class="mono-label mt-[20px] inline-flex items-center gap-[9px] text-[18px] text-[#0e121a] no-underline">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" />
+      </svg>
+      {CONTACT_PHONE}
+    </a>
+
+    <div class="mt-[32px] border-t border-[#0e121a]/10 pt-[20px]">
+      <span class="mono-label mb-[12px] block text-[#0e121a]/40">Region</span>
+      <ul class="flex flex-col">
+        {REGIONS.map((region) => (
+          <li>
+            <a
+              href={region.href}
+              {...(region.external ? { target: "_blank", rel: "noopener" } : {})}
+              class="flex items-center gap-[11px] py-[10px] text-[18px] text-[#0e121a] no-underline"
+            >
+              <Flag code={region.code} class="h-[15px] w-auto rounded-[2px]" />
+              {region.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
   </nav>
 </header>
 

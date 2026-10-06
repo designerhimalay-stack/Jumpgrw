@@ -1,0 +1,274 @@
+---
+import "@pg/page1/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page1/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import PageHero from "@pg/page1/components/PageHero.astro";
+import SectionHead from "@pg/page1/components/SectionHead.astro";
+import GridRules from "@pg/page1/components/GridRules.astro";
+import SmoothScroll from "@pg/page1/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@pg/page1/types/page";
+import heroPhoto from "@/assets/team-photo.webp";
+
+/* About JumpGrowth. Content from the company's live site (jumpgrowth.com/about),
+   rebuilt in the site's own design. */
+
+const HERO: PageHeroContent = {
+  trail: ["Company", "About"],
+  headline: ["A digital studio", "built to ship."],
+  lede: "JumpGrowth is a digital studio by OTS Solutions, helping startups and businesses build scalable web and mobile apps. Since 2018 we have served 300+ clients, specialising in agile development, intuitive design, and emerging tech like AI, AR/VR and IoT.",
+  ctas: [
+    { label: "Build your team", href: "#contact", arrow: "diagonal" },
+    { label: "See our work", href: "#case-studies", arrow: "right" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A JumpGrowth product team collaborating around a laptop.",
+  specs: [
+    { label: "Years of experience", value: "20+" },
+    { label: "Clients served", value: "300+" },
+    { label: "Engineers under one roof", value: "200+" },
+    { label: "Global delivery locations", value: "4+" },
+  ],
+};
+
+const DIFFERENTIATORS = [
+  {
+    title: "20 years of proven processes",
+    body: "With a customer-centric approach and a deep understanding of industry needs, JumpGrowth has consistently delivered innovative, tailored solutions through a proven process refined over two decades.",
+  },
+  {
+    title: "Cutting-edge tech expertise",
+    body: "We stay at the forefront of technology. A team of highly skilled professionals, with a commitment to quality and timely delivery, builds long-term relationships with clients across diverse industries.",
+  },
+  {
+    title: "X-Shore delivery model",
+    body: "Our delivery is directed towards efficient project execution for clients across the globe, from multiple delivery locations chosen around each client's needs.",
+  },
+];
+
+const LEADERS = [
+  { name: "Hemant Madaan", role: "CEO", initials: "HM" },
+  { name: "Naval Madaan", role: "Chief Operating Officer", initials: "NM" },
+  { name: "Jignesh Jayaswal", role: "Financial Controller", initials: "JJ" },
+];
+
+const LOCATIONS = [
+  { country: "USA", city: "Richardson, TX", lines: ["801 E Campbell Rd, Ste 365", "Richardson, TX 75081"] },
+  { country: "India", city: "Gurugram", lines: ["Platinum Tower, Unit 1024", "Gurugram, Haryana 122018"] },
+  { country: "India", city: "Pune", lines: ["Almonte IT Park, “SPRINT COWORKS”", "6th Floor, Unit 622, Kharadi, Pune 411014"] },
+  { country: "Canada", city: "Toronto", lines: ["Toronto, Ontario"] },
+  { country: "Mexico", city: "Mexico City", lines: ["Mexico City"] },
+  { country: "Australia", city: "Sydney", lines: ["Sydney, NSW"] },
+];
+---
+
+<Layout
+  title="About · JumpGrowth"
+  description="JumpGrowth is a digital studio by OTS Solutions — 300+ clients since 2018, building scalable web, mobile and AI products across four delivery locations."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+
+    <section data-ac-sec="light" data-ac-about-why id="why">
+      <GridRules />
+      <div data-ac-sec-container>
+        <SectionHead
+          eyebrow="Why we're different"
+          headline={["Twenty years of", "proven delivery."]}
+          accent={1}
+          lede="A customer-centric studio that pairs senior engineering with a delivery model shaped around each client."
+        />
+        <div data-ac-about-cards data-ac-sec-rise>
+          {DIFFERENTIATORS.map((item, i) => (
+            <article data-ac-about-card>
+              <span data-ac-about-card-num class="mono-label">{String(i + 1).padStart(2, "0")}</span>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section data-ac-sec="light" data-ac-about-team id="leadership">
+      <GridRules />
+      <div data-ac-sec-container>
+        <SectionHead
+          eyebrow="Leadership"
+          headline={["Meet the team", "leading the work."]}
+          accent={1}
+        />
+        <div data-ac-about-leaders data-ac-sec-rise>
+          {LEADERS.map((person) => (
+            <article data-ac-about-leader>
+              <span data-ac-about-avatar aria-hidden="true">{person.initials}</span>
+              <div>
+                <h3>{person.name}</h3>
+                <p class="mono-label">{person.role} · JumpGrowth</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section data-ac-sec="dark" data-ac-about-locations id="locations">
+      <GridRules />
+      <div data-ac-sec-container>
+        <SectionHead
+          eyebrow="Our global presence"
+          headline={["Teams across", "four countries."]}
+          accent={1}
+          lede="Dallas-headquartered, with delivery teams across the US, India, Canada and Mexico."
+        />
+        <div data-ac-about-locs data-ac-sec-rise>
+          {LOCATIONS.map((loc) => (
+            <article data-ac-about-loc>
+              <span class="mono-label" data-ac-about-loc-country>{loc.country}</span>
+              <h3>{loc.city}</h3>
+              <address>{loc.lines.map((line, i) => (<Fragment>{i > 0 && <br />}{line}</Fragment>))}</address>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  /* Reveal each section's rising content as it scrolls into view, the same way
+     the home sections do. */
+  import { toggleInView } from "@pg/page1/lib/in-view";
+  for (const section of document.querySelectorAll<HTMLElement>("[data-ac-about-why], [data-ac-about-team], [data-ac-about-locations]")) {
+    toggleInView(section);
+  }
+</script>
+
+<style>
+  [data-ac-about-cards] {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(20px, 2.4vw, 32px);
+    margin-top: clamp(32px, 4vw, 56px);
+  }
+
+  [data-ac-about-card] {
+    padding: clamp(22px, 2.2vw, 30px);
+    border: 1px solid var(--ac-line, rgb(10 16 34 / 0.1));
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  [data-ac-about-card-num] {
+    color: var(--color-accent);
+  }
+
+  [data-ac-about-card] h3 {
+    margin: 14px 0 10px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(19px, 1.5vw, 23px);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    color: #0a1022;
+  }
+
+  [data-ac-about-card] p {
+    margin: 0;
+    font-size: clamp(14px, 1.05vw, 16px);
+    line-height: 1.6;
+    color: rgb(10 16 34 / 0.62);
+  }
+
+  [data-ac-about-leaders] {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(18px, 2vw, 28px);
+    margin-top: clamp(32px, 4vw, 56px);
+  }
+
+  [data-ac-about-leader] {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: clamp(18px, 1.8vw, 24px);
+    border: 1px solid var(--ac-line, rgb(10 16 34 / 0.1));
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  [data-ac-about-avatar] {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-accent) 14%, #fff);
+    color: var(--color-accent);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  [data-ac-about-leader] h3 {
+    margin: 0 0 2px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(17px, 1.3vw, 20px);
+    font-weight: 500;
+    color: #0a1022;
+  }
+
+  [data-ac-about-leader] p {
+    margin: 0;
+    color: rgb(10 16 34 / 0.5);
+  }
+
+  [data-ac-about-locs] {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(18px, 2vw, 28px);
+    margin-top: clamp(32px, 4vw, 56px);
+  }
+
+  [data-ac-about-loc] {
+    padding: clamp(20px, 2vw, 28px);
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: 12px;
+    background: rgb(255 255 255 / 0.02);
+  }
+
+  [data-ac-about-loc-country] {
+    color: var(--color-accent);
+  }
+
+  [data-ac-about-loc] h3 {
+    margin: 10px 0 12px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(18px, 1.4vw, 22px);
+    font-weight: 500;
+    color: #fff;
+  }
+
+  [data-ac-about-loc] address {
+    font-style: normal;
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgb(255 255 255 / 0.62);
+  }
+
+  @media (max-width: 860px) {
+    [data-ac-about-cards],
+    [data-ac-about-leaders],
+    [data-ac-about-locs] {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

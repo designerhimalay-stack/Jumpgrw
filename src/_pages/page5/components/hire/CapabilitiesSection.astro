@@ -1,0 +1,53 @@
+---
+import GridRules from "@pg/page5/components/GridRules.astro";
+import SectionHead from "@pg/page5/components/SectionHead.astro";
+import Joints from "@pg/page5/components/process/Joints.astro";
+import { LINE_ICONS } from "@pg/page5/lib/line-icons";
+import type { Capability } from "@pg/page5/types/hire";
+
+/* What our engineers do: build, integrate, run. One frame in three cells,
+   each with its area in the accent over a line icon, what the engineers
+   take on, and the tools as chips on the cell's floor. A rule along each
+   cell's top fills in on arrival. Phones: three compact rows. See
+   docs/sections.md. */
+
+interface Props {
+  copy: { eyebrow: string; headline: string[]; lede: string };
+  items: Capability[];
+}
+
+const { copy, items } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-cap id="capabilities">
+  <GridRules />
+
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={copy.eyebrow} headline={copy.headline} accent={1} lede={copy.lede} />
+
+    <div data-ac-sec-frame data-ac-cap-frame>
+      <Joints />
+      <ul data-ac-cap-cells>
+      {items.map((item, i) => (
+        <li data-ac-cap-cell style={`--ac-i:${i}`}>
+          <div data-ac-cap-top>
+            <p class="mono-label" data-ac-cap-label>{item.label}</p>
+            <span data-ac-cap-icon>
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" set:html={LINE_ICONS[item.icon]} />
+            </span>
+          </div>
+          <h3 data-ac-cap-title>{item.title}</h3>
+          <p data-ac-cap-body>{item.body}</p>
+          <ul data-ac-chips data-tone="accent">{item.chips.map((c) => <li>{c}</li>)}</ul>
+        </li>
+      ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { toggleInView } from "@pg/page5/lib/in-view";
+
+  toggleInView(document.querySelector<HTMLElement>("[data-ac-cap]")!);
+</script>
