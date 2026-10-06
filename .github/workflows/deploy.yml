@@ -92,7 +92,9 @@ jobs:
 
   deploy:
     needs: build
-    if: needs.build.outputs.publish == 'true' && github.event_name != 'pull_request'
+    # Only main deploys — the github-pages environment protection rule rejects
+    # any other branch, so a master (or other) push just builds and checks.
+    if: needs.build.outputs.publish == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
