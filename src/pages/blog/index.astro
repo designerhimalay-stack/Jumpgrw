@@ -1,0 +1,69 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import BlogIndex from "@/components/insights/BlogIndex.astro";
+import PageHero from "@pg/page30/components/PageHero.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@pg/page30/types/page";
+import heroPhoto from "@/assets/teams/specialist.jpg";
+import { BLOG_POSTS, BLOG_CATEGORIES } from "@/lib/insights";
+
+/* Blog: every article on the company blog (jumpgrowth.com/blog), newest
+   first, filterable by topic. Each card opens the full article on the
+   company site. */
+
+const latest = BLOG_POSTS[0];
+
+const HERO: PageHeroContent = {
+  trail: ["Insights", "Blog"],
+  audience: "The JumpGrowth blog",
+  headline: ["Notes from", "the build."],
+  size: "long",
+  lede: "Guides on AI MVPs, custom software costs, nearshore teams and hiring, written by the people who plan and ship the work.",
+  ctas: [
+    { label: "Read the articles", href: "#articles", arrow: "right" },
+    { label: "Talk to our team", href: "#contact", arrow: "diagonal" },
+  ],
+  assurances: [
+    { icon: "users", label: "Written by our delivery team" },
+    { icon: "clock", label: "Costs, timelines and stacks" },
+    { icon: "globe", label: "Onshore, nearshore and offshore" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A developer in headphones works across two monitors of code.",
+  card: {
+    status: "Latest article",
+    place: latest.category,
+    note: `${BLOG_POSTS.length} articles across ${BLOG_CATEGORIES.length} topics.`,
+    kicker: "Latest.",
+    statement: "How to build an AI-powered MVP in 30 days.",
+    foot: { label: "Written by", value: latest.author ?? "The JumpGrowth team" },
+  },
+  specs: [
+    { label: "Articles", value: `${BLOG_POSTS.length}+` },
+    { label: "Topics", value: String(BLOG_CATEGORIES.length) },
+    { label: "Years of experience", value: "20+" },
+    { label: "Clients served", value: "300+" },
+  ],
+  base: { title: "Practical guides", line: "AI, MVPs, custom software, nearshore teams and hiring" },
+};
+---
+
+<Layout
+  title="Blog · JumpGrowth"
+  description="Practical guides from JumpGrowth on AI MVPs, custom software costs, nearshore and offshore teams, and hiring developers."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <BlogIndex />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

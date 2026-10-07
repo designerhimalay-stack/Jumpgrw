@@ -32,17 +32,41 @@ const SHORES = [
   "Not Sure",
 ];
 
+/* The Careers page's variant asks an applicant for their area and location
+   instead of a team brief. */
+const CAREER_AREAS = [
+  "Engineering",
+  "QA & Testing",
+  "DevOps & Cloud",
+  "Product & Design",
+  "Sales & Business Development",
+  "Other",
+];
+const CAREER_LOCATIONS = [
+  "Dallas, USA",
+  "Toronto, Canada",
+  "Mexico City, Mexico",
+  "Delhi NCR, India",
+  "Pune, India",
+  "Sydney, Australia",
+  "Other",
+];
+
 interface Props {
   id?: string;
+  variant?: "team" | "careers";
   eyebrow?: string;
   headline?: string[];
   body?: string;
 }
+const { id = "contact", variant = "team" } = Astro.props;
+const careers = variant === "careers";
 const {
-  id = "contact",
-  eyebrow = "Build your team",
-  headline = ["Tell us what", "you’re building."],
-  body = "Share where the roadmap is blocked and the capabilities you need. We’ll map a practical team and delivery model.",
+  eyebrow = careers ? "Join the team" : "Build your team",
+  headline = careers ? ["Send us", "your details."] : ["Tell us what", "you’re building."],
+  body = careers
+    ? "Share the work you do and where you’d like to do it, with a link to your CV or profile. We’ll get in touch when a role fits."
+    : "Share where the roadmap is blocked and the capabilities you need. We’ll map a practical team and delivery model.",
 } = Astro.props;
 
 const source = Astro.url.pathname;
@@ -89,48 +113,84 @@ const f = (name: string) => `${id}-${name}`;
       action={action}
       method="post"
       enctype={FORM_ACTION ? undefined : "text/plain"}
+      data-subject={careers ? "Careers" : "Team brief"}
     >
       <input type="hidden" name="source" value={source} />
 
-      <div data-ac-contact-fields>
-        <div data-ac-field>
-          <label for={f("name")}>Your name</label>
-          <input id={f("name")} name="name" type="text" autocomplete="name" placeholder="Full name" required />
+      {careers ? (
+        <div data-ac-contact-fields>
+          <div data-ac-field>
+            <label for={f("name")}>Your name</label>
+            <input id={f("name")} name="name" type="text" autocomplete="name" placeholder="Full name" required />
+          </div>
+          <div data-ac-field>
+            <label for={f("email")}>Email</label>
+            <input id={f("email")} name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+          </div>
+          <div data-ac-field>
+            <label for={f("need")}>Area of work</label>
+            <select id={f("need")} name="need" required>
+              <option value="">Select one</option>
+              {CAREER_AREAS.map((a) => <option>{a}</option>)}
+            </select>
+          </div>
+          <div data-ac-field>
+            <label for={f("location")}>Preferred location</label>
+            <select id={f("location")} name="location">
+              <option value="">Select one</option>
+              {CAREER_LOCATIONS.map((l) => <option>{l}</option>)}
+            </select>
+          </div>
+          <div data-ac-field data-wide>
+            <label for={f("profile")}>CV, LinkedIn or portfolio link <span>(optional)</span></label>
+            <input id={f("profile")} name="profile" type="url" placeholder="https://" />
+          </div>
+          <div data-ac-field data-wide>
+            <label for={f("message")}>About you <span>(optional)</span></label>
+            <textarea id={f("message")} name="message" rows="3" placeholder="Your experience, skills and the role you’re looking for"></textarea>
+          </div>
         </div>
-        <div data-ac-field>
-          <label for={f("company")}>Company <span>(optional)</span></label>
-          <input id={f("company")} name="company" type="text" autocomplete="organization" placeholder="Company name" />
+      ) : (
+        <div data-ac-contact-fields>
+          <div data-ac-field>
+            <label for={f("name")}>Your name</label>
+            <input id={f("name")} name="name" type="text" autocomplete="name" placeholder="Full name" required />
+          </div>
+          <div data-ac-field>
+            <label for={f("company")}>Company <span>(optional)</span></label>
+            <input id={f("company")} name="company" type="text" autocomplete="organization" placeholder="Company name" />
+          </div>
+          <div data-ac-field>
+            <label for={f("email")}>Work email</label>
+            <input id={f("email")} name="email" type="email" autocomplete="email" placeholder="you@company.com" required />
+          </div>
+          <div data-ac-field>
+            <label for={f("phone")}>Phone <span>(optional)</span></label>
+            <input id={f("phone")} name="phone" type="tel" autocomplete="tel" placeholder="Phone number" />
+          </div>
+          <div data-ac-field>
+            <label for={f("need")}>What do you need?</label>
+            <select id={f("need")} name="need" required>
+              <option value="">Select one</option>
+              {TEAM_TYPES.map((t) => <option>{t}</option>)}
+            </select>
+          </div>
+          <div data-ac-field>
+            <label for={f("shore")}>Preferred shore</label>
+            <select id={f("shore")} name="shore">
+              <option value="">Select one</option>
+              {SHORES.map((s) => <option>{s}</option>)}
+            </select>
+          </div>
+          <div data-ac-field data-wide>
+            <label for={f("message")}>The role or skill you need <span>(optional)</span></label>
+            <textarea id={f("message")} name="message" rows="3" placeholder="Share the role, tech stack or team gap"></textarea>
+          </div>
         </div>
-        <div data-ac-field>
-          <label for={f("email")}>Work email</label>
-          <input id={f("email")} name="email" type="email" autocomplete="email" placeholder="you@company.com" required />
-        </div>
-        <div data-ac-field>
-          <label for={f("phone")}>Phone <span>(optional)</span></label>
-          <input id={f("phone")} name="phone" type="tel" autocomplete="tel" placeholder="Phone number" />
-        </div>
-        <div data-ac-field>
-          <label for={f("need")}>What do you need?</label>
-          <select id={f("need")} name="need" required>
-            <option value="">Select one</option>
-            {TEAM_TYPES.map((t) => <option>{t}</option>)}
-          </select>
-        </div>
-        <div data-ac-field>
-          <label for={f("shore")}>Preferred shore</label>
-          <select id={f("shore")} name="shore">
-            <option value="">Select one</option>
-            {SHORES.map((s) => <option>{s}</option>)}
-          </select>
-        </div>
-        <div data-ac-field data-wide>
-          <label for={f("message")}>The role or skill you need <span>(optional)</span></label>
-          <textarea id={f("message")} name="message" rows="3" placeholder="Share the role, tech stack or team gap"></textarea>
-        </div>
-      </div>
+      )}
 
       <button type="submit" data-ac-contact-submit class="mono-label">
-        Plan my team
+        {careers ? "Send my details" : "Plan my team"}
         <Arrow direction="right" />
       </button>
     </form>
@@ -307,7 +367,8 @@ const f = (name: string) => `${id}-${name}`;
         if (field.value.trim()) lines.push(`${label}: ${field.value.trim()}`);
       });
       const need = form.querySelector<HTMLSelectElement>("select[name='need']")?.value ?? "";
-      const subject = encodeURIComponent(need ? `Team brief: ${need}` : "Team brief");
+      const prefix = form.dataset.subject ?? "Team brief";
+      const subject = encodeURIComponent(need ? `${prefix}: ${need}` : prefix);
       window.location.href = `mailto:${email}?subject=${subject}&body=${encodeURIComponent(lines.join("\n"))}`;
     });
   });

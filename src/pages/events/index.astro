@@ -1,0 +1,68 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import EventsIndex from "@/components/insights/EventsIndex.astro";
+import PageHero from "@pg/page30/components/PageHero.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@pg/page30/types/page";
+import heroPhoto from "@/assets/insights/events/events-hero.jpg";
+import { UPCOMING_EVENTS, PAST_EVENTS } from "@/lib/insights";
+
+/* Events: the company's Events page (jumpgrowth.com/events). Upcoming dates
+   first (none at the moment), then the events the team has taken part in. */
+
+const last = PAST_EVENTS[0];
+
+const HERO: PageHeroContent = {
+  trail: ["Insights", "Events"],
+  audience: "JumpGrowth events",
+  headline: ["Meet the team", "in person."],
+  size: "long",
+  lede: "The startup weeks and tech conferences our team takes part in. Upcoming dates are posted on this page.",
+  ctas: [
+    { label: "See the events", href: "#events", arrow: "right" },
+    { label: "Book a discovery call", href: "#contact", arrow: "diagonal" },
+  ],
+  assurances: [
+    { icon: "globe", label: "Dallas headquartered" },
+    { icon: "users", label: "Founders, startups and tech teams" },
+    { icon: "clock", label: "New dates posted here" },
+  ],
+  image: heroPhoto,
+  imageAlt: "Two developers work together at a laptop and a monitor.",
+  card: {
+    status: UPCOMING_EVENTS.length ? "Upcoming" : "Most recent",
+    place: last.place.split(",")[0],
+    note: last.dates,
+    kicker: "Last event.",
+    statement: `${last.title}: ${last.tagline}.`,
+    foot: { label: last.category, value: last.place },
+  },
+  specs: [
+    { label: "Upcoming events", value: String(UPCOMING_EVENTS.length).padStart(2, "0") },
+    { label: "Past events", value: String(PAST_EVENTS.length).padStart(2, "0") },
+    { label: "Years of experience", value: "20+" },
+    { label: "Clients served", value: "300+" },
+  ],
+  base: { title: "Dallas headquartered", line: "Startup and tech conferences across Texas and beyond" },
+};
+---
+
+<Layout
+  title="Events · JumpGrowth"
+  description="Events JumpGrowth takes part in, from DFW Startup Week to tech conferences. Upcoming dates are posted here."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <EventsIndex />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

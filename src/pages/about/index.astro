@@ -8,14 +8,26 @@ import ContactForm from "@/components/ContactForm.astro";
 import PageHero from "@pg/page30/components/PageHero.astro";
 import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
 import HireWhy from "@pg/page30/components/hire/HireWhy.astro";
-import HirePod from "@pg/page30/components/hire/HirePod.astro";
-import HireColumns from "@pg/page30/components/hire/HireColumns.astro";
+import LeadershipSection from "@/components/about/LeadershipSection.astro";
+import RecognitionSection from "@/components/about/RecognitionSection.astro";
+import InsightsSection from "@/components/about/InsightsSection.astro";
+import LocationsSection from "@/components/about/LocationsSection.astro";
 import type { PageHeroContent } from "@pg/page30/types/page";
 import heroPhoto from "@/assets/why/people.jpg";
+import hemant from "@/assets/about/leader-hemant-madaan.jpg";
+import naval from "@/assets/about/leader-naval-madaan.jpg";
+import jignesh from "@/assets/about/leader-jignesh-jayaswal.jpg";
+import awardFinance from "@/assets/about/award-clutch-app-dev-financial-texas.png";
+import awardAi from "@/assets/about/award-clutch-ai-texas-2025.webp";
+import awardMedical from "@/assets/about/award-clutch-software-medical-texas-2025.png";
+import partnerMicrosoft from "@/assets/about/partner-microsoft.webp";
+import partnerNetsuite from "@/assets/about/partner-netsuite.webp";
+import partnerAws from "@/assets/about/partner-aws.webp";
 
-/* About JumpGrowth. Built from the same section kit as every other subpage;
-   the words are the company's own (jumpgrowth.com/about): Our Story, why we
-   are different, the leadership team and our locations. Leadership and
+/* About JumpGrowth: everything on the company's own About page
+   (jumpgrowth.com/about) in this site's design — Our Story and the figures
+   (hero), why we are different, the leadership team, achievements and
+   partners, white papers / blogs / events, and every office. Leadership and
    Locations are sections of this page, as on the company site. */
 
 const HERO: PageHeroContent = {
@@ -93,57 +105,42 @@ const HERO: PageHeroContent = {
       cta={{ label: "Talk to our team", href: "#contact" }}
     />
 
-    <HirePod
-      id="leadership"
-      tone="dark"
+    <LeadershipSection
       eyebrow="Leadership"
-      headline={["The people", "leading JumpGrowth."]}
-      lede="JumpGrowth was established in 2018 as a separate brand of OTS Solutions, focused on high-quality digital development for mid-sized businesses and enterprises."
-      points={[
-        { lead: "300+ clients", rest: " served since 2018." },
-        { lead: "Agile delivery", rest: " with intuitive design and senior engineering." },
-        { lead: "Emerging tech", rest: " across AI, AR/VR and IoT." },
+      headline={["Meet our", "leadership team."]}
+      lede="JumpGrowth was established in 2018 as a separate brand of OTS Solutions, and is led by a team with more than two decades of building software and the teams behind it."
+      leaders={[
+        { name: "Hemant Madaan", role: "CEO", photo: hemant, linkedin: "https://www.linkedin.com/in/hemantmadaan/" },
+        { name: "Naval Madaan", role: "Chief Operating Officer", photo: naval, linkedin: "https://www.linkedin.com/in/navalmadaan/" },
+        { name: "Jignesh Jayaswal", role: "Financial Controller", photo: jignesh, linkedin: "https://www.linkedin.com/in/jignesh-jayaswal-078a5854/" },
+        { name: "Ketki Naidu", role: "HR Manager" },
       ]}
-      rosterLabel="Leadership team / 03"
-      status="Dallas HQ"
-      members={[
-        { initials: "HM", role: "Hemant Madaan", layer: "CEO" },
-        { initials: "NM", role: "Naval Madaan", layer: "Chief Operating Officer" },
-        { initials: "JJ", role: "Jignesh Jayaswal", layer: "Financial Controller" },
-      ]}
-      terms={[
-        { label: "Founded", value: "2018" },
-        { label: "Part of", value: "OTS Solutions" },
-        { label: "Headquarters", value: "Dallas, TX" },
-      ]}
-      cta={{ label: "Talk to our team", href: "#contact" }}
     />
 
-    <HireColumns
-      id="locations"
-      eyebrow="Our global presence"
-      headline={["One team,", "three talent regions."]}
-      lede="Dallas-headquartered, with delivery teams across the US, India, Canada and Mexico."
-      columns={[
-        {
-          label: "Onshore",
-          title: "United States",
-          body: "Headquarters: 801 E Campbell Rd, Ste 365, Richardson, TX 75081.",
-          tags: ["Dallas, TX", "Headquarters"],
-        },
-        {
-          label: "Nearshore",
-          title: "Mexico + Canada",
-          body: "Delivery teams in Toronto and Mexico City, with strong working-hour overlap with US teams.",
-          tags: ["Toronto", "Mexico City"],
-        },
-        {
-          label: "Offshore",
-          title: "India",
-          body: "Engineering centres in Delhi NCR (Platinum Tower, Gurugram) and Pune (Almonte IT Park, Kharadi).",
-          tags: ["Delhi NCR", "Pune"],
-        },
+    <RecognitionSection
+      eyebrow="Achievements & partners"
+      headline={["Recognised for the work.", "Partnered for scale."]}
+      lede="Named among Texas's top development companies on Clutch, and partnering with leading tech providers to deliver smart, scalable, and impactful solutions."
+      awards={[
+        { badge: awardFinance, source: "Clutch", title: "Top App Development Company — Financial Services, Texas" },
+        { badge: awardAi, source: "Clutch · 2025", title: "Top Artificial Intelligence Company — Texas" },
+        { badge: awardMedical, source: "Clutch · 2025", title: "Top Software Developers — Medical, Texas" },
       ]}
+      partnersLabel="Our partners"
+      partnersLine="Partnering with leading tech providers to deliver smart, scalable, and impactful solutions."
+      partners={[
+        { logo: partnerMicrosoft, name: "Microsoft", height: 34 },
+        { logo: partnerNetsuite, name: "Oracle NetSuite", height: 20 },
+        { logo: partnerAws, name: "Amazon Web Services", height: 40 },
+      ]}
+    />
+
+    <InsightsSection />
+
+    <LocationsSection
+      eyebrow="Our global presence"
+      headline={["Teams across", "the globe."]}
+      lede="With teams across the US, India, and beyond, we deliver seamless collaboration and round-the-clock support—no matter where you are."
     />
 
     <ContactForm />

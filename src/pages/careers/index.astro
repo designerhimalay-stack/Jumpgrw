@@ -1,0 +1,105 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import PageHero from "@pg/page30/components/PageHero.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import HireWhy from "@pg/page30/components/hire/HireWhy.astro";
+import LocationsSection from "@/components/about/LocationsSection.astro";
+import type { PageHeroContent } from "@pg/page30/types/page";
+import heroPhoto from "@/assets/careers/hero.jpg";
+import { OFFICES } from "@/lib/offices";
+
+/* Careers. The company site lists no open roles, so this page says what
+   working here is like (from the About page's facts), where the offices are,
+   and takes an applicant's details through the shared form's careers
+   variant. */
+
+const HERO: PageHeroContent = {
+  trail: ["Company", "Careers"],
+  audience: "Careers at JumpGrowth",
+  headline: ["Build products", "with us."],
+  size: "long",
+  lede: "A digital studio of 200+ engineers building web, mobile and AI products for startups and growing businesses, with offices in the US, Canada, Mexico, India and Australia.",
+  ctas: [
+    { label: "Send your details", href: "#apply", arrow: "right" },
+    { label: "Why JumpGrowth", href: "#why", arrow: "diagonal" },
+  ],
+  assurances: [
+    { icon: "users", label: "200+ engineers under one roof" },
+    { icon: "globe", label: `${OFFICES.length} offices worldwide` },
+    { icon: "shield", label: "Part of OTS Solutions" },
+  ],
+  image: heroPhoto,
+  imageAlt: "Two engineers review code together on a monitor.",
+  card: {
+    status: "Careers / Open applications",
+    place: "Dallas headquartered",
+    note: "No roles listed right now. Send your details and we’ll be in touch.",
+    kicker: "Join us.",
+    statement: "Real products, senior teams, four delivery countries.",
+    foot: { label: "Offices", value: OFFICES.map((o) => o.city.split(",")[0]).join(", ") },
+  },
+  specs: [
+    { label: "Engineers under one roof", value: "200+" },
+    { label: "Offices", value: String(OFFICES.length) },
+    { label: "Years of experience", value: "20+" },
+    { label: "Clients served", value: "300+" },
+  ],
+  base: { title: "Dallas headquartered", line: "Offices in the USA, Canada, Mexico, India and Australia" },
+};
+---
+
+<Layout
+  title="Careers · JumpGrowth"
+  description="Careers at JumpGrowth: build web, mobile and AI products with 200+ engineers across the US, Canada, Mexico, India and Australia."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+
+    <HireWhy
+      id="why"
+      eyebrow="Why JumpGrowth"
+      headline={["Why build", "your career here."]}
+      lede="What the work looks like: real products, senior colleagues and teams that span four delivery countries."
+      reasons={[
+        {
+          title: "Real products, start to finish",
+          body: "Our teams take web and mobile products from discovery to release for startups and growing businesses, in fintech, security, AI, real estate and wellness.",
+          points: ["Discovery to release", "Web, iOS and Android", "AI, AR/VR and IoT"],
+        },
+        {
+          title: "Senior people around you",
+          body: "Work alongside 200+ engineers under one roof, on a delivery process refined over two decades and backed by OTS Solutions.",
+          points: ["200+ engineers", "20 years of proven process", "Part of OTS Solutions"],
+        },
+        {
+          title: "Teams across four countries",
+          body: "Onshore in the US, nearshore in Mexico and Canada, offshore in India: work with colleagues and clients across time zones.",
+          points: ["USA, Canada, Mexico and India", "Onshore, nearshore and offshore", "Clients across the globe"],
+        },
+      ]}
+      figures={[
+        { value: "20+", label: "Years of experience" },
+        { value: "200+", label: "Engineers under one roof" },
+        { value: "300+", label: "Clients served" },
+      ]}
+      cta={{ label: "Send your details", href: "#apply" }}
+    />
+
+    <LocationsSection
+      eyebrow="Where we work"
+      headline={["Offices across", "the globe."]}
+      lede="Join a team in Dallas, Toronto, Mexico City, Delhi NCR, Pune or Sydney."
+    />
+
+    <ContactForm id="apply" variant="careers" />
+  </main>
+  <Footer />
+</Layout>

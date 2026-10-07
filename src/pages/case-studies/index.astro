@@ -1,0 +1,70 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import CaseStudiesSection from "@/components/CaseStudiesSection.astro";
+import ProjectsGrid from "@/components/cases/ProjectsGrid.astro";
+import PageHero from "@pg/page30/components/PageHero.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@pg/page30/types/page";
+import heroPhoto from "@/assets/cases/portfolio-hero.jpg";
+import { PROJECTS } from "@/lib/projects";
+
+/* Case Studies: every product on the company's Our Portfolio page
+   (jumpgrowth.com/portfolio). The home page's featured four play first, then
+   the full portfolio; each card links to its full write-up on the company
+   site. */
+
+const HERO: PageHeroContent = {
+  trail: ["Company", "Case Studies"],
+  audience: "Our portfolio",
+  headline: ["Products we", "took to market."],
+  size: "long",
+  lede: "Web and mobile products our teams designed, built and shipped for startups and growing businesses, from fintech and security to AI and wellness.",
+  ctas: [
+    { label: "See the portfolio", href: "#projects", arrow: "right" },
+    { label: "Build your team", href: "#contact", arrow: "diagonal" },
+  ],
+  assurances: [
+    { icon: "users", label: "Product teams from discovery to release" },
+    { icon: "globe", label: "Web, iOS and Android" },
+    { icon: "shield", label: "300+ clients served" },
+  ],
+  image: heroPhoto,
+  imageAlt: "The Fireflies, GunLox and VoiceStar.ai apps on three phones.",
+  card: {
+    status: "Portfolio / Live products",
+    place: "Built across four delivery countries",
+    note: `${PROJECTS.length} products featured, each with its full case study.`,
+    kicker: "Proof in the product.",
+    statement: "From the brief to the app store, with one team.",
+    foot: { label: "Featured", value: "GunLox, Loan Mantra, VowTimer, Greenaider" },
+  },
+  specs: [
+    { label: "Products featured", value: String(PROJECTS.length) },
+    { label: "Clients served", value: "300+" },
+    { label: "Years of experience", value: "20+" },
+    { label: "Engineers under one roof", value: "200+" },
+  ],
+  base: { title: "Web, iOS & Android", line: "Fintech, security, AI, real estate, wellness and more" },
+};
+---
+
+<Layout
+  title="Case Studies · JumpGrowth"
+  description="JumpGrowth's portfolio: web and mobile products designed, built and shipped for startups and growing businesses, from fintech and smart security to AI and wellness."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <CaseStudiesSection />
+    <ProjectsGrid />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

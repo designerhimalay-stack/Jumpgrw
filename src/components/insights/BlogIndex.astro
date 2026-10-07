@@ -1,0 +1,429 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { BLOG_POSTS, BLOG_CATEGORIES } from "@/lib/insights";
+
+/* Every article, newest first. The newest runs full width; the rest sit
+   three to a row. The topic buttons narrow the list in place (the page
+   doesn't reload); every article links to its full text on the company site.
+   Rules are drawn by each card's right and bottom borders, and the frame clips
+   the outer ones, so the grid stays ruled whatever the filter leaves. */
+
+interface Props {
+  id?: string;
+}
+
+const { id = "articles" } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+const ARROW = '<path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" />';
+
+const counts = new Map<string, number>();
+for (const post of BLOG_POSTS) counts.set(post.category, (counts.get(post.category) ?? 0) + 1);
+const filters = [...counts].sort((a, b) => b[1] - a[1]);
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+---
+
+<section data-ac-sec="light" data-ac-blog id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead
+      eyebrow={`Articles / ${pad(BLOG_POSTS.length)}`}
+      headline={["Practical guides", "from the team."]}
+      accent={1}
+      lede="Cost breakdowns, technical roadmaps and hiring frameworks from the people who build the products."
+    />
+
+    <div data-ac-blog-filters role="group" aria-label="Filter articles by topic">
+      <button type="button" data-ac-blog-filter="all" aria-pressed="true">
+        All topics <span>{pad(BLOG_POSTS.length)}</span>
+      </button>
+      {filters.map(([name, n]) => (
+        <button type="button" data-ac-blog-filter={slug(name)} aria-pressed="false">
+          {name} <span>{pad(n)}</span>
+        </button>
+      ))}
+    </div>
+
+    <div data-ac-sec-frame data-ac-blog-frame>
+      <Joints />
+      <div data-ac-blog-clip>
+        <ul data-ac-blog-grid role="list" data-filter="all">
+          {BLOG_POSTS.map((post, i) => (
+            <li data-ac-blog-post data-topic={slug(post.category)} data-lead={i === 0 || undefined} style={`--i:${i < 1 ? 0 : (i - 1) % 3}`}>
+              <a href={post.url} target="_blank" rel="noopener" data-ac-blog-link>
+                <div data-ac-blog-cover>
+                  <Image
+                    src={post.cover}
+                    alt=""
+                    widths={i === 0 ? [640, 960, 1280] : [400, 640, 800]}
+                    sizes={i === 0 ? "(max-width: 809px) 92vw, 58vw" : "(max-width: 809px) 92vw, (max-width: 1199px) 46vw, 30vw"}
+                    quality={80}
+                    loading={i < 4 ? "eager" : "lazy"}
+                  />
+                </div>
+                <div data-ac-blog-text>
+                  <span class="mono-label" data-ac-blog-meta>
+                    {i === 0 && <span data-ac-blog-latest>Latest</span>}
+                    {post.category}
+                  </span>
+                  <h3 data-ac-blog-title>{post.title}</h3>
+                  <p data-ac-blog-excerpt>{post.excerpt}</p>
+                  {post.author && <span data-ac-blog-author>By {post.author}</span>}
+                  <span class="mono-label" data-ac-blog-read>
+                    Read article
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
+                  </span>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div data-ac-blog-foot>
+        <div data-ac-blog-topics>
+          <p class="mono-label">Topics we write about</p>
+          <ul role="list">
+            {BLOG_CATEGORIES.map((name) => <li>{name}</li>)}
+          </ul>
+        </div>
+        <a data-ac-blog-archive class="mono-label" href="https://jumpgrowth.com/blog/" target="_blank" rel="noopener">
+          Full archive
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Topic filters: a row of quiet pills above the frame. */
+  [data-ac-blog-filters] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: clamp(18px, 2vw, 26px);
+  }
+
+  [data-ac-blog-filter] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border: 1px solid rgb(10 16 34 / 0.14);
+    border-radius: 999px;
+    background: #ffffff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: #0a1022;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+  }
+
+  [data-ac-blog-filter] span {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: rgb(10 16 34 / 0.45);
+  }
+
+  [data-ac-blog-filter]:hover {
+    border-color: var(--color-accent);
+  }
+
+  [data-ac-blog-filter][aria-pressed="true"] {
+    border-color: #0a1022;
+    background: #0a1022;
+    color: #ffffff;
+  }
+
+  [data-ac-blog-filter][aria-pressed="true"] span {
+    color: rgb(255 255 255 / 0.6);
+  }
+
+  [data-ac-blog-filter]:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* The grid: cards draw their own right and bottom rules; the frame clips the
+     outer ones (the list runs 1px past the frame on those sides). */
+  [data-ac-blog-clip] {
+    overflow: clip;
+  }
+
+  [data-ac-blog-grid] {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 0 -1px -1px 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-blog-post] {
+    border-right: 1px solid var(--ac-line);
+    border-bottom: 1px solid var(--ac-line);
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+      transform 0.9s cubic-bezier(0.22, 0.68, 0.24, 1);
+    transition-delay: calc(var(--i) * 90ms);
+  }
+
+  [data-ac-blog][data-ac-in] [data-ac-blog-post] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-ac-blog-link] {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: clamp(12px, 1.2vw, 16px) clamp(12px, 1.2vw, 16px) clamp(20px, 2vw, 26px);
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.3s;
+  }
+
+  [data-ac-blog-link]:hover {
+    background: color-mix(in srgb, var(--color-accent) 4%, #ffffff);
+  }
+
+  [data-ac-blog-cover] {
+    display: block;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 18px;
+    border-radius: 10px;
+    overflow: clip;
+    background: #eef1f7;
+  }
+
+  [data-ac-blog-cover] img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s cubic-bezier(0.22, 0.68, 0.24, 1);
+  }
+
+  [data-ac-blog-link]:hover [data-ac-blog-cover] img {
+    transform: scale(1.04);
+  }
+
+  [data-ac-blog-text] {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 0 4px;
+  }
+
+  [data-ac-blog-meta] {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-blog-latest] {
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--color-accent);
+    color: #ffffff;
+  }
+
+  [data-ac-blog-title] {
+    margin: 0 0 10px;
+    font-family: var(--font-display-stack);
+    font-weight: 400;
+    font-size: clamp(18px, 1.35vw, 21px);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: #0a1022;
+  }
+
+  [data-ac-blog-excerpt] {
+    display: -webkit-box;
+    margin: 0 0 18px;
+    overflow: hidden;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgb(10 16 34 / 0.62);
+  }
+
+  [data-ac-blog-author] {
+    margin: -8px 0 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgb(10 16 34 / 0.55);
+  }
+
+  [data-ac-blog-read] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    color: #0a1022;
+  }
+
+  [data-ac-blog-link]:hover [data-ac-blog-read] {
+    color: var(--color-accent);
+  }
+
+  /* The newest article, while every topic shows: full width, cover beside
+     the text. */
+  [data-filter="all"] [data-ac-blog-post][data-lead] {
+    grid-column: 1 / -1;
+  }
+
+  [data-filter="all"] [data-lead] [data-ac-blog-link] {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+    gap: clamp(24px, 3vw, 48px);
+    align-items: center;
+  }
+
+  [data-filter="all"] [data-lead] [data-ac-blog-cover] {
+    margin: 0;
+  }
+
+  [data-filter="all"] [data-lead] [data-ac-blog-text] {
+    padding: clamp(8px, 1vw, 16px) clamp(4px, 1.2vw, 20px) clamp(8px, 1vw, 16px) 0;
+  }
+
+  [data-filter="all"] [data-lead] [data-ac-blog-title] {
+    margin: 0 0 14px;
+    font-size: clamp(24px, 2.3vw, 34px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  [data-filter="all"] [data-lead] [data-ac-blog-excerpt] {
+    -webkit-line-clamp: 4;
+    font-size: 15px;
+  }
+
+  [data-filter="all"] [data-lead] [data-ac-blog-read] {
+    margin-top: 8px;
+  }
+
+  /* Under the grid: every topic, then the full archive. */
+  [data-ac-blog-foot] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px 32px;
+    padding: clamp(18px, 1.8vw, 24px) clamp(22px, 2.2vw, 32px);
+    border-top: 1px solid var(--ac-line);
+  }
+
+  [data-ac-blog-topics] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px 18px;
+    flex: 1 1 520px;
+  }
+
+  [data-ac-blog-topics] p {
+    margin: 0;
+    color: var(--color-accent);
+  }
+
+  [data-ac-blog-topics] ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 14px;
+    color: rgb(10 16 34 / 0.66);
+  }
+
+  [data-ac-blog-topics] li:not(:last-child)::after {
+    content: "·";
+    margin: 0 9px;
+    color: rgb(10 16 34 / 0.3);
+  }
+
+  [data-ac-blog-archive] {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 18px;
+    border: 1px solid rgb(10 16 34 / 0.16);
+    color: #0a1022;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  [data-ac-blog-archive]:hover {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 6%, #ffffff);
+  }
+
+  @media (max-width: 1199px) {
+    [data-ac-blog-grid] {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 809px) {
+    [data-ac-blog-grid] {
+      grid-template-columns: 1fr;
+    }
+
+    [data-filter="all"] [data-lead] [data-ac-blog-link] {
+      display: flex;
+      gap: 0;
+    }
+
+    [data-filter="all"] [data-lead] [data-ac-blog-cover] {
+      margin-bottom: 18px;
+    }
+
+    [data-filter="all"] [data-lead] [data-ac-blog-text] {
+      padding: 0 4px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-blog-post] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    [data-ac-blog-cover] img {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-blog]").forEach((section) => {
+    toggleInView(section);
+
+    const grid = section.querySelector<HTMLElement>("[data-ac-blog-grid]")!;
+    const buttons = [...section.querySelectorAll<HTMLButtonElement>("[data-ac-blog-filter]")];
+    const posts = [...section.querySelectorAll<HTMLElement>("[data-ac-blog-post]")];
+
+    for (const button of buttons) {
+      button.addEventListener("click", () => {
+        const topic = button.dataset.acBlogFilter ?? "all";
+        for (const b of buttons) b.setAttribute("aria-pressed", String(b === button));
+        grid.dataset.filter = topic;
+        for (const post of posts) post.hidden = topic !== "all" && post.dataset.topic !== topic;
+      });
+    }
+  });
+</script>

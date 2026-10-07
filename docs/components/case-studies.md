@@ -42,10 +42,9 @@ study" button (the hero's ghost style). A 2px accent rule draws down its leading
 
 ## Copy and images
 
-GunLox's summary and stack are the brief's. Loan Mantra, VowTimer and Greenaider's
-summaries, tags and stacks are **placeholders**. All four images are Unsplash stand-ins
-(Unsplash License): smart lock and app (1558002038-1055907df827), loan paperwork
-(1554224155-6726b3ff858f), rings (1465495976277-4387d4b0b4c6), hands with a seedling
-(1542601906990-b4d3fb778b09). "View case study" links to `/case-studies` (through `withBase()`), which doesn't exist yet.
+GunLox's summary and stack are the brief's; the other three are condensed from JumpGrowth's
+own project write-ups (`src/lib/projects.ts`). Each image is its video's poster frame.
+"View case study" links to the project's card on the Case Studies page,
+`/case-studies/#<slug>` (through `withBase()`); see `company-pages.md`.
 It is drawn 42px tall; on touch screens a transparent `::before` makes the target 44.
 Images are served up to their full 1600px width.

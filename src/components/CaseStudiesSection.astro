@@ -18,8 +18,9 @@ import { withBase } from "@/lib/paths";
    panel on the right, and when it ends the next project opens. The ring on the
    open project mirrors that video's progress. See docs/components/case-studies.md.
 
-   GunLox's copy is the brief's. The other three projects' summaries, tags and
-   stacks are placeholders to replace. Each video's poster is its own .jpg. */
+   Summaries and stacks are the company's own (src/lib/projects.ts). Each
+   project links to its card on the Case Studies page. Each video's poster is
+   its own .jpg. */
 
 const CASES = [
   {
@@ -37,8 +38,8 @@ const CASES = [
     name: "Loan Mantra",
     tag: "Fintech",
     summary:
-      "A lending platform that takes borrowers from application to approval, with document checks and status updates in one place.",
-    stack: ["Ruby on Rails", "React", "PostgreSQL", "AWS"],
+      "Expert advisory and the BLUE™ lending platform, delivering tailored financing, from strategic advice to SBA loans, for small and middle-market businesses.",
+    stack: [".NET", "Azure", "MS SQL Server"],
     image: loanMantra,
     video: loanMantraVideo,
   },
@@ -47,8 +48,8 @@ const CASES = [
     name: "VowTimer",
     tag: "Weddings",
     summary:
-      "A planning companion that counts down to the big day and keeps every vendor, guest and task on one shared timeline.",
-    stack: ["Flutter", "Firebase", "Node.js"],
+      "An app for wedding guests to connect before the ceremony and bet on how long it will take.",
+    stack: ["Node.js", "React Native", "Angular", "MongoDB"],
     image: vowtimer,
     video: vowtimerVideo,
   },
@@ -57,8 +58,8 @@ const CASES = [
     name: "Greenaider",
     tag: "Sustainability",
     summary:
-      "A platform for planning green initiatives and reporting their impact across teams, sites and suppliers.",
-    stack: ["React", "Python", "PostgreSQL", "Google Cloud"],
+      "A footprint calculator for people and organizations to measure, track and reduce their carbon footprint, with goals and green challenges.",
+    stack: ["Node.js", "React Native", "Angular", "MongoDB"],
     image: greenaider,
     video: greenaiderVideo,
   },
@@ -110,7 +111,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
                 <div data-ac-case-details-inner>
                   <p data-ac-case-summary>{item.summary}</p>
                   <p data-ac-case-stack class="mono-label">{item.stack.join(" · ")}</p>
-                  <a data-ac-case-link class="mono-label" href={withBase("/case-studies")}>
+                  <a data-ac-case-link class="mono-label" href={withBase(`/case-studies/#${item.slug}`)}>
                     View case study
                     <Arrow direction="diagonal" />
                   </a>

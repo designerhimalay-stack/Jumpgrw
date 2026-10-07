@@ -1,0 +1,71 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import WhitePapersIndex from "@/components/insights/WhitePapersIndex.astro";
+import PageHero from "@pg/page30/components/PageHero.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@pg/page30/types/page";
+import heroPhoto from "@/assets/insights/whitepapers/papers-hero.jpg";
+import { WHITE_PAPERS } from "@/lib/insights";
+
+/* White Papers: every paper on the company's White Papers page
+   (jumpgrowth.com/whitepaper), filterable by topic. Each links to the paper's
+   download page on the company site. */
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const featured = WHITE_PAPERS[0];
+const topics = new Set(WHITE_PAPERS.map((p) => p.topic)).size;
+
+const HERO: PageHeroContent = {
+  trail: ["Insights", "White Papers"],
+  audience: "Thought leadership",
+  headline: ["Research for", "what you build next."],
+  size: "long",
+  lede: "In-depth papers on AI-assisted development, the business case for mobile apps and the business potential of AI, from the team that builds them.",
+  ctas: [
+    { label: "Browse the papers", href: "#papers", arrow: "right" },
+    { label: "Talk to our team", href: "#contact", arrow: "diagonal" },
+  ],
+  assurances: [
+    { icon: "shield", label: "In-depth guides" },
+    { icon: "users", label: "Written by our delivery team" },
+    { icon: "globe", label: "AI and mobile" },
+  ],
+  image: heroPhoto,
+  imageAlt: "The Vibe Coding white paper cover, with two more papers behind it.",
+  card: {
+    status: "Featured paper",
+    place: featured.topic,
+    note: `${WHITE_PAPERS.length} white papers across ${topics} topics.`,
+    kicker: "Featured.",
+    statement: "Vibe Coding: the future of AI-enhanced software development.",
+    foot: { label: "Topic", value: featured.topic },
+  },
+  specs: [
+    { label: "White papers", value: pad(WHITE_PAPERS.length) },
+    { label: "Topics", value: pad(topics) },
+    { label: "Years of experience", value: "20+" },
+    { label: "Clients served", value: "300+" },
+  ],
+  base: { title: "Thought leadership", line: "Valuable insights, industry trends and innovative solutions" },
+};
+---
+
+<Layout
+  title="White Papers · JumpGrowth"
+  description="JumpGrowth white papers on AI-enhanced software development, why your business needs a mobile app, and the business potential of AI."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <WhitePapersIndex />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

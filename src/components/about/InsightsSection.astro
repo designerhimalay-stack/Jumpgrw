@@ -1,0 +1,377 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { withBase } from "@/lib/paths";
+import { BLOG_POSTS, WHITE_PAPERS, UPCOMING_EVENTS, PAST_EVENTS } from "@/lib/insights";
+
+/* Insights on the About page: the white papers beside the three latest blog
+   posts, and an events line under them. Content from src/lib/insights.ts;
+   each block links on to its own page. */
+
+interface Props {
+  id?: string;
+}
+
+const { id = "insights" } = Astro.props;
+const posts = BLOG_POSTS.slice(0, 3);
+const lastEvent = PAST_EVENTS[0];
+const pad = (n: number) => String(n).padStart(2, "0");
+const ARROW = '<path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" />';
+---
+
+<section data-ac-sec="light" data-ac-insights id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead
+      eyebrow="Insights"
+      headline={["What we’re building,", "thinking and learning."]}
+      accent={1}
+      lede="Explore what we’re building, thinking, and learning: practical guides from the team, in-depth white papers and the events we take part in."
+    />
+
+    <div data-ac-sec-frame>
+      <Joints />
+      <div data-ac-insights-grid>
+        <aside data-ac-insights-papers>
+          <p class="mono-label" data-ac-insights-label>White papers / {pad(WHITE_PAPERS.length)}</p>
+          <h3 data-ac-insights-papers-title>Explore our white papers</h3>
+          <p data-ac-insights-papers-body>
+            Dive deeper into our expertise and thought leadership. Each paper is crafted to provide valuable insights, industry trends, and innovative solutions that reflect our commitment to excellence.
+          </p>
+          <ol data-ac-insights-paper-list role="list">
+            {WHITE_PAPERS.map((paper, i) => (
+              <li>
+                <a href={paper.url} target="_blank" rel="noopener">
+                  <span data-ac-insights-paper-n>{pad(i + 1)}</span>
+                  <span>{paper.title}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+          <a data-ac-insights-cta class="mono-label" href={withBase("/whitepaper/")}>
+            All white papers
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
+          </a>
+        </aside>
+
+        {posts.map((post, i) => (
+          <article data-ac-insights-post style={`--i:${i}`}>
+            <a href={post.url} target="_blank" rel="noopener" data-ac-insights-post-link>
+              <span data-ac-insights-cover>
+                <Image src={post.cover} alt="" widths={[400, 640, 800]} sizes="(max-width: 809px) 92vw, (max-width: 1199px) 46vw, 24vw" quality={80} />
+              </span>
+              <span class="mono-label" data-ac-insights-cat>{post.category}</span>
+              <h3 data-ac-insights-post-title>{post.title}</h3>
+              <p data-ac-insights-post-body>{post.excerpt}</p>
+              <span class="mono-label" data-ac-insights-read>
+                Read article
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
+              </span>
+            </a>
+          </article>
+        ))}
+      </div>
+
+      <div data-ac-insights-foot>
+        <div data-ac-insights-events>
+          <p class="mono-label" data-ac-insights-label>Events</p>
+          <p data-ac-insights-events-line>
+            {UPCOMING_EVENTS.length
+              ? `${UPCOMING_EVENTS.length} upcoming`
+              : "No upcoming events right now."}
+            {lastEvent && <span> Last: <strong>{lastEvent.title}</strong> — {lastEvent.tagline}, {lastEvent.dates}, {lastEvent.place.split(",")[0]}.</span>}
+          </p>
+          <a data-ac-insights-text-link href={withBase("/events/")}>All events</a>
+        </div>
+        <a data-ac-insights-blog-link class="mono-label" href={withBase("/blog/")}>
+          All {BLOG_POSTS.length}+ articles
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-ac-insights-grid] {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  [data-ac-insights-label] {
+    margin: 0 0 14px;
+    color: var(--color-accent);
+  }
+
+  /* White papers: a pale panel in the first column. */
+  [data-ac-insights-papers] {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(22px, 2.2vw, 32px);
+    background: color-mix(in srgb, var(--color-accent) 6%, #ffffff);
+    border-right: 1px solid var(--ac-line);
+  }
+
+  [data-ac-insights-papers-title] {
+    margin: 0 0 10px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(22px, 1.9vw, 28px);
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  [data-ac-insights-papers-body] {
+    margin: 0 0 18px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgb(10 16 34 / 0.66);
+  }
+
+  [data-ac-insights-paper-list] {
+    margin: 0 0 22px;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--ac-line);
+  }
+
+  [data-ac-insights-paper-list] a {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--ac-line);
+    font-size: 14px;
+    line-height: 1.4;
+    color: #0a1022;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  [data-ac-insights-paper-list] a:hover {
+    color: var(--color-accent);
+  }
+
+  [data-ac-insights-paper-n] {
+    font-size: 12px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-accent);
+  }
+
+  [data-ac-insights-cta] {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    align-self: flex-start;
+    margin-top: auto;
+    padding: 12px 18px;
+    background: var(--color-accent);
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+
+  [data-ac-insights-cta]:hover {
+    background: var(--color-accent-dark);
+  }
+
+  /* A post: cover, topic, title, the summary, then the link. */
+  [data-ac-insights-post] {
+    border-right: 1px solid var(--ac-line);
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+      transform 0.9s cubic-bezier(0.22, 0.68, 0.24, 1);
+    transition-delay: calc(var(--i) * 100ms + 80ms);
+  }
+
+  [data-ac-insights-post]:last-child {
+    border-right: 0;
+  }
+
+  [data-ac-insights][data-ac-in] [data-ac-insights-post] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-ac-insights-post-link] {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: clamp(12px, 1.2vw, 16px) clamp(12px, 1.2vw, 16px) clamp(20px, 2vw, 26px);
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.3s;
+  }
+
+  [data-ac-insights-post-link]:hover {
+    background: color-mix(in srgb, var(--color-accent) 4%, #ffffff);
+  }
+
+  [data-ac-insights-cover] {
+    display: block;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 18px;
+    border-radius: 10px;
+    overflow: clip;
+    background: #eef1f7;
+  }
+
+  [data-ac-insights-cover] img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s cubic-bezier(0.22, 0.68, 0.24, 1);
+  }
+
+  [data-ac-insights-post-link]:hover [data-ac-insights-cover] img {
+    transform: scale(1.04);
+  }
+
+  [data-ac-insights-cat] {
+    margin: 0 4px 8px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-insights-post-title] {
+    margin: 0 4px 10px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(17px, 1.3vw, 20px);
+    font-weight: 400;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: #0a1022;
+  }
+
+  [data-ac-insights-post-body] {
+    display: -webkit-box;
+    margin: 0 4px 18px;
+    overflow: hidden;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgb(10 16 34 / 0.62);
+  }
+
+  [data-ac-insights-read] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: auto 4px 0;
+    color: #0a1022;
+  }
+
+  [data-ac-insights-post-link]:hover [data-ac-insights-read] {
+    color: var(--color-accent);
+  }
+
+  /* Under the grid: events on the left, all articles on the right. */
+  [data-ac-insights-foot] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 32px;
+    padding: clamp(18px, 1.8vw, 24px) clamp(22px, 2.2vw, 32px);
+    border-top: 1px solid var(--ac-line);
+  }
+
+  [data-ac-insights-events] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 18px;
+  }
+
+  [data-ac-insights-events] [data-ac-insights-label] {
+    margin: 0;
+  }
+
+  [data-ac-insights-events-line] {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgb(10 16 34 / 0.66);
+  }
+
+  [data-ac-insights-events-line] strong {
+    font-weight: 600;
+    color: #0a1022;
+  }
+
+  [data-ac-insights-text-link] {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-accent);
+  }
+
+  [data-ac-insights-blog-link] {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-left: auto;
+    padding: 12px 18px;
+    border: 1px solid rgb(10 16 34 / 0.16);
+    color: #0a1022;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  [data-ac-insights-blog-link]:hover {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 6%, #ffffff);
+  }
+
+  @media (max-width: 1199px) {
+    [data-ac-insights-grid] {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    [data-ac-insights-papers] {
+      grid-column: 1 / -1;
+      border-right: 0;
+      border-bottom: 1px solid var(--ac-line);
+    }
+
+    [data-ac-insights-post]:nth-of-type(2n) {
+      border-right: 0;
+    }
+
+    [data-ac-insights-post]:nth-of-type(3) {
+      grid-column: 1 / -1;
+      border-top: 1px solid var(--ac-line);
+    }
+  }
+
+  @media (max-width: 809px) {
+    [data-ac-insights-grid] {
+      grid-template-columns: 1fr;
+    }
+
+    [data-ac-insights-post] {
+      border-right: 0;
+      border-top: 1px solid var(--ac-line);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-insights-post] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-insights]").forEach(toggleInView);
+</script>

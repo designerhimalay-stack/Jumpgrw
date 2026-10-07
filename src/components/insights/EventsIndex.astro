@@ -1,0 +1,350 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { UPCOMING_EVENTS, PAST_EVENTS, type CompanyEvent } from "@/lib/insights";
+
+/* Events: what's coming up, then what the team has taken part in. With no
+   upcoming dates the first block says so and offers a call instead. Each
+   event links to its page on the company site. */
+
+interface Props {
+  id?: string;
+}
+
+const { id = "events" } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+const ARROW = '<path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" />';
+
+/* "03 Aug – 07 Aug 2025" → day range, month, year for the date block. */
+const dateParts = (e: CompanyEvent) => {
+  const start = new Date(`${e.start}T12:00:00Z`);
+  const end = new Date(`${e.end}T12:00:00Z`);
+  const month = (d: Date) => d.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
+  const days = `${pad(start.getUTCDate())}–${pad(end.getUTCDate())}`;
+  const months = month(start) === month(end) ? month(start) : `${month(start)} – ${month(end)}`;
+  return { days, months, year: end.getUTCFullYear() };
+};
+
+const groups = [
+  { key: "upcoming", label: "Upcoming events", events: UPCOMING_EVENTS },
+  { key: "past", label: "Past events", events: PAST_EVENTS },
+];
+---
+
+<section data-ac-sec="light" data-ac-events id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead
+      eyebrow="Events"
+      headline={["Upcoming and", "past events."]}
+      accent={1}
+      lede="The conferences and startup events we take part in, in Dallas and beyond."
+    />
+
+    <div data-ac-sec-frame>
+      <Joints />
+      {groups.map((group) => (
+        <div data-ac-events-group={group.key}>
+          <p class="mono-label" data-ac-events-label>
+            {group.label} <span>/ {pad(group.events.length)}</span>
+          </p>
+
+          {group.events.length === 0 ? (
+            <div data-ac-events-empty>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" />
+              </svg>
+              <div>
+                <p data-ac-events-empty-title>No upcoming events right now.</p>
+                <p data-ac-events-empty-line>New dates are posted here. To meet the team sooner, book a discovery call.</p>
+              </div>
+              <a data-ac-events-empty-cta class="mono-label" href="#contact">
+                Book a discovery call
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
+              </a>
+            </div>
+          ) : (
+            <ul data-ac-events-list role="list">
+              {group.events.map((event) => {
+                const d = dateParts(event);
+                return (
+                  <li data-ac-event>
+                    <a data-ac-event-media href={event.url} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+                      <Image src={event.image} alt="" widths={[560, 840, 1120]} sizes="(max-width: 809px) 92vw, 46vw" quality={80} />
+                    </a>
+                    <div data-ac-event-body>
+                      <div data-ac-event-date>
+                        <span data-ac-event-days>{d.days}</span>
+                        <span class="mono-label">{d.months} {d.year}</span>
+                      </div>
+                      <p class="mono-label" data-ac-event-cat>{event.category}</p>
+                      <h3 data-ac-event-title>{event.title}</h3>
+                      <p data-ac-event-tagline>{event.tagline}</p>
+                      <ul data-ac-event-facts role="list">
+                        <li>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" />
+                          </svg>
+                          {event.dates}
+                        </li>
+                        <li>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" />
+                          </svg>
+                          {event.place}
+                        </li>
+                      </ul>
+                      <a data-ac-event-link class="mono-label" href={event.url} target="_blank" rel="noopener">
+                        Event details
+                        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
+                      </a>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-ac-events-group] {
+    padding: clamp(12px, 1.2vw, 16px);
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+      transform 0.9s cubic-bezier(0.22, 0.68, 0.24, 1);
+  }
+
+  [data-ac-events-group="past"] {
+    border-top: 1px solid var(--ac-line);
+    transition-delay: 120ms;
+  }
+
+  [data-ac-events][data-ac-in] [data-ac-events-group] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-ac-events-label] {
+    margin: clamp(6px, 0.8vw, 10px) clamp(4px, 0.8vw, 10px) clamp(14px, 1.4vw, 18px);
+    color: var(--color-accent);
+  }
+
+  [data-ac-events-label] span {
+    color: rgb(10 16 34 / 0.4);
+  }
+
+  /* No dates yet: a pale panel with a way to meet the team anyway. */
+  [data-ac-events-empty] {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: clamp(16px, 2vw, 28px);
+    align-items: center;
+    padding: clamp(22px, 2.6vw, 36px);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--color-accent) 6%, #ffffff);
+  }
+
+  [data-ac-events-empty] > svg {
+    color: var(--color-accent);
+  }
+
+  [data-ac-events-empty-title] {
+    margin: 0 0 4px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(20px, 1.7vw, 26px);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-events-empty-line] {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgb(10 16 34 / 0.64);
+  }
+
+  [data-ac-events-empty-cta] {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 18px;
+    background: var(--color-accent);
+    color: #ffffff;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+
+  [data-ac-events-empty-cta]:hover {
+    background: var(--color-accent-dark);
+  }
+
+  [data-ac-events-list] {
+    display: grid;
+    gap: clamp(12px, 1.2vw, 16px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* An event: the photo, then the date block and the facts. */
+  [data-ac-event] {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(24px, 3.4vw, 56px);
+    align-items: center;
+  }
+
+  [data-ac-event-media] {
+    display: block;
+    aspect-ratio: 3 / 2;
+    border-radius: 10px;
+    overflow: clip;
+    background: #eef1f7;
+  }
+
+  [data-ac-event-media] img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s cubic-bezier(0.22, 0.68, 0.24, 1);
+  }
+
+  [data-ac-event]:hover [data-ac-event-media] img {
+    transform: scale(1.03);
+  }
+
+  [data-ac-event-body] {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 clamp(4px, 2vw, 32px) 0 0;
+  }
+
+  [data-ac-event-date] {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: clamp(20px, 2vw, 28px);
+    padding: 14px 18px;
+    border: 1px solid var(--ac-line);
+    border-left: 3px solid var(--color-accent);
+  }
+
+  [data-ac-event-days] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(30px, 2.8vw, 40px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: #0a1022;
+  }
+
+  [data-ac-event-date] .mono-label {
+    color: rgb(10 16 34 / 0.55);
+  }
+
+  [data-ac-event-cat] {
+    margin: 0 0 10px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-event-title] {
+    margin: 0 0 8px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(26px, 2.5vw, 38px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  [data-ac-event-tagline] {
+    margin: 0 0 20px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: rgb(10 16 34 / 0.64);
+  }
+
+  [data-ac-event-facts] {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 0 26px;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-event-facts] li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: #0a1022;
+  }
+
+  [data-ac-event-facts] svg {
+    flex: none;
+    color: var(--color-accent);
+  }
+
+  [data-ac-event-link] {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 18px;
+    border: 1px solid rgb(10 16 34 / 0.16);
+    color: #0a1022;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  [data-ac-event-link]:hover {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 6%, #ffffff);
+  }
+
+  @media (max-width: 809px) {
+    [data-ac-events-empty] {
+      grid-template-columns: 1fr;
+      justify-items: start;
+    }
+
+    [data-ac-event] {
+      grid-template-columns: 1fr;
+      gap: 22px;
+    }
+
+    [data-ac-event-body] {
+      padding: 0 4px clamp(8px, 2vw, 12px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-events-group] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    [data-ac-event-media] img {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-events]").forEach(toggleInView);
+</script>

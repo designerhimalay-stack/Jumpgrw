@@ -1,0 +1,281 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { WHITE_PAPERS } from "@/lib/insights";
+
+/* Every white paper, one row each: the cover, then the topic, title, summary
+   and a link to the paper's download page on the company site. The topic
+   buttons narrow the list in place. */
+
+interface Props {
+  id?: string;
+}
+
+const { id = "papers" } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+const ARROW = '<path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" />';
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+const counts = new Map<string, number>();
+for (const paper of WHITE_PAPERS) counts.set(paper.topic, (counts.get(paper.topic) ?? 0) + 1);
+---
+
+<section data-ac-sec="light" data-ac-papers id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead
+      eyebrow={`White papers / ${pad(WHITE_PAPERS.length)}`}
+      headline={["Explore our", "white papers."]}
+      accent={1}
+      lede="Dive deeper into our expertise and thought leadership. Each paper is crafted to provide valuable insights, industry trends, and innovative solutions that reflect our commitment to excellence."
+    />
+
+    <div data-ac-papers-filters role="group" aria-label="Filter white papers by topic">
+      <button type="button" data-ac-papers-filter="all" aria-pressed="true">
+        All <span>{pad(WHITE_PAPERS.length)}</span>
+      </button>
+      {[...counts].map(([topic, n]) => (
+        <button type="button" data-ac-papers-filter={slug(topic)} aria-pressed="false">
+          {topic} <span>{pad(n)}</span>
+        </button>
+      ))}
+    </div>
+
+    <div data-ac-sec-frame>
+      <Joints />
+      <ol data-ac-papers-list role="list">
+        {WHITE_PAPERS.map((paper, i) => (
+          <li data-ac-paper data-topic={slug(paper.topic)} style={`--i:${i}`}>
+            <a data-ac-paper-cover href={paper.url} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+              <Image
+                src={paper.cover}
+                alt=""
+                widths={[480, 720, 960]}
+                sizes="(max-width: 809px) 92vw, 40vw"
+                quality={82}
+                loading={i === 0 ? "eager" : "lazy"}
+              />
+            </a>
+            <div data-ac-paper-body>
+              <p data-ac-paper-meta class="mono-label">
+                <span data-ac-paper-n>{pad(i + 1)}</span>
+                <span>{paper.topic}</span>
+              </p>
+              <h3 data-ac-paper-title>{paper.title}</h3>
+              <p data-ac-paper-summary>{paper.summary}</p>
+              <a data-ac-paper-cta class="mono-label" href={paper.url} target="_blank" rel="noopener">
+                Get the white paper
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
+              </a>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-ac-papers-filters] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: clamp(18px, 2vw, 26px);
+  }
+
+  [data-ac-papers-filter] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border: 1px solid rgb(10 16 34 / 0.14);
+    border-radius: 999px;
+    background: #ffffff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: #0a1022;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+  }
+
+  [data-ac-papers-filter] span {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: rgb(10 16 34 / 0.45);
+  }
+
+  [data-ac-papers-filter]:hover {
+    border-color: var(--color-accent);
+  }
+
+  [data-ac-papers-filter][aria-pressed="true"] {
+    border-color: #0a1022;
+    background: #0a1022;
+    color: #ffffff;
+  }
+
+  [data-ac-papers-filter][aria-pressed="true"] span {
+    color: rgb(255 255 255 / 0.6);
+  }
+
+  [data-ac-papers-filter]:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  [data-ac-papers-list] {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* A paper: cover on the left, the brief on the right. */
+  [data-ac-paper] {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+    gap: clamp(24px, 3.4vw, 56px);
+    align-items: center;
+    padding: clamp(12px, 1.2vw, 16px);
+    border-top: 1px solid var(--ac-line);
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+      transform 0.9s cubic-bezier(0.22, 0.68, 0.24, 1);
+    transition-delay: calc(var(--i) * 110ms);
+  }
+
+  [data-ac-paper]:first-child,
+  [data-ac-paper][data-first] {
+    border-top: 0;
+  }
+
+  [data-ac-papers][data-ac-in] [data-ac-paper] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-ac-paper-cover] {
+    display: block;
+    aspect-ratio: 16 / 10;
+    border-radius: 10px;
+    overflow: clip;
+    background: #eef1f7;
+  }
+
+  [data-ac-paper-cover] img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s cubic-bezier(0.22, 0.68, 0.24, 1);
+  }
+
+  [data-ac-paper]:hover [data-ac-paper-cover] img {
+    transform: scale(1.03);
+  }
+
+  [data-ac-paper-body] {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: clamp(8px, 1vw, 16px) clamp(4px, 2vw, 32px) clamp(8px, 1vw, 16px) 0;
+  }
+
+  [data-ac-paper-meta] {
+    display: flex;
+    gap: 10px;
+    margin: 0 0 14px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-paper-n] {
+    font-variant-numeric: tabular-nums;
+    color: rgb(10 16 34 / 0.4);
+  }
+
+  [data-ac-paper-title] {
+    margin: 0 0 14px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(24px, 2.3vw, 34px);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  [data-ac-paper-summary] {
+    max-width: 56ch;
+    margin: 0 0 26px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgb(10 16 34 / 0.64);
+  }
+
+  [data-ac-paper-cta] {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 18px;
+    background: var(--color-accent);
+    color: #ffffff;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+
+  [data-ac-paper-cta]:hover {
+    background: var(--color-accent-dark);
+  }
+
+  @media (max-width: 809px) {
+    [data-ac-paper] {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding-bottom: clamp(22px, 5vw, 28px);
+    }
+
+    [data-ac-paper-body] {
+      padding: 0 4px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-paper] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    [data-ac-paper-cover] img {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-papers]").forEach((section) => {
+    toggleInView(section);
+
+    const buttons = [...section.querySelectorAll<HTMLButtonElement>("[data-ac-papers-filter]")];
+    const papers = [...section.querySelectorAll<HTMLElement>("[data-ac-paper]")];
+
+    for (const button of buttons) {
+      button.addEventListener("click", () => {
+        const topic = button.dataset.acPapersFilter ?? "all";
+        for (const b of buttons) b.setAttribute("aria-pressed", String(b === button));
+        let first = true;
+        for (const paper of papers) {
+          paper.hidden = topic !== "all" && paper.dataset.topic !== topic;
+          /* The first paper left showing drops its top rule. */
+          paper.toggleAttribute("data-first", !paper.hidden && first);
+          if (!paper.hidden) first = false;
+        }
+      });
+    }
+  });
+</script>

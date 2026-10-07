@@ -33,9 +33,16 @@ The OFL text: https://openfontlicense.org/open-font-license-official-text/
 
 | Files | Source | Licence |
 |---|---|---|
-| `src/assets/avatars/*`, `cases/*.jpg`, `clients/*`, `why/*`, `teams/production.jpg`, `xshore/*` | Unsplash (IDs in `docs/components/`) | Unsplash License |
-| `src/assets/teams/specialist.jpg`, `teams/extension.jpg` | Pexels 1181677, 7988757 | Pexels License |
-| `src/assets/team-photo.webp`, `showcase/portrait.jpg`, `cases/*.webm` | Supplied by the AgentCraft team | AgentCraft's own |
+| `src/assets/avatars/*`, `clients/*`, `why/*`, `teams/production.jpg`, `xshore/*` | Unsplash (IDs in `docs/components/`) | Unsplash License |
+| `src/assets/teams/specialist.jpg`, `teams/extension.jpg`, `careers/hero.jpg` (a graded copy of `extension.jpg`) | Pexels 1181677, 7988757 | Pexels License |
+| `src/assets/team-photo.webp`, `showcase/portrait.jpg`, `cases/*.webm`, `cases/*.jpg` | Supplied by the AgentCraft team | AgentCraft's own |
+| `src/assets/about/leader-*`, `about/loc-*`, `cases/projects/*`, `cases/portfolio-hero.jpg`, `insights/**` | Supplied by JumpGrowth, the site's owner (also published on jumpgrowth.com); see `docs/components/company-pages.md` | JumpGrowth's own |
+
+## Marks
+
+The Clutch award badges (`src/assets/about/award-*`) and the Microsoft, Oracle NetSuite and
+AWS logos (`about/partner-*`) are trademarks of their owners, shown to state JumpGrowth's awards
+and partnerships.
 
 Unsplash and Pexels images are free for commercial use with no attribution required; the
 sources are recorded so each licence can be checked. Replace the stand-in portraits and

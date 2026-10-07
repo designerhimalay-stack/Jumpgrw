@@ -1,0 +1,357 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { PROJECTS } from "@/lib/projects";
+
+/* Every product in the portfolio, three to a row in one frame. Each card is
+   the device mockup on a soft stage, then what it is, the brief, the stack
+   and a link to the full write-up on the company site. A card's id is the
+   project's slug, so the home page's case studies can link straight to it. */
+
+interface Props {
+  id?: string;
+}
+
+const { id = "projects" } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/* The closing tile fills what's left of the last row in each layout. */
+const spanOf = (cols: number) => cols - (PROJECTS.length % cols) || cols;
+---
+
+<section data-ac-sec="light" data-ac-projects id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead
+      eyebrow={`Our portfolio / ${pad(PROJECTS.length)}`}
+      headline={["Products we’ve", "designed, built and shipped."]}
+      accent={1}
+      lede="From smart locks and lending platforms to AI note-takers and wellness wearables: apps our teams took from brief to release."
+    />
+
+    <div data-ac-sec-frame>
+      <Joints />
+      <ul data-ac-projects-grid role="list">
+        {PROJECTS.map((project, i) => (
+          <li data-ac-project id={project.slug} style={`--i:${i % 3}`}>
+            <a data-ac-project-stage href={project.url} target="_blank" rel="noopener" aria-label={`${project.name}: read the full case study`}>
+              <Image
+                src={project.mockup}
+                alt={`${project.name} app shown on a device`}
+                widths={[320, 480, 720]}
+                sizes="(max-width: 809px) 80vw, (max-width: 1199px) 40vw, 26vw"
+                quality={86}
+              />
+            </a>
+            <div data-ac-project-body>
+              <p data-ac-project-meta class="mono-label">
+                <span data-ac-project-n>{pad(i + 1)}</span>
+                <span>{project.category}</span>
+              </p>
+              <h3 data-ac-project-name>{project.name}</h3>
+              <p data-ac-project-platform>{project.platform}</p>
+              <p data-ac-project-tagline>{project.tagline}</p>
+              <p data-ac-project-brief>{project.brief}</p>
+              <ul data-ac-project-stack role="list">
+                {project.stack.map((tech) => <li>{tech}</li>)}
+              </ul>
+              <a data-ac-project-link class="mono-label" href={project.url} target="_blank" rel="noopener">
+                Full case study
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </a>
+            </div>
+          </li>
+        ))}
+        <li data-ac-project-next style={`--span3:${spanOf(3)};--span2:${spanOf(2)}`}>
+          <p class="mono-label" data-ac-project-next-tag>{pad(PROJECTS.length + 1)} / Your product</p>
+          <h3 data-ac-project-next-title>Your product <span>could be next.</span></h3>
+          <p data-ac-project-next-line>Tell us what you’re building. We’ll put together the team to design, build and ship it.</p>
+          <a data-ac-project-next-cta class="mono-label" href="#contact">
+            Build your team
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-ac-projects-grid] {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-project] {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(12px, 1.2vw, 16px);
+    border-right: 1px solid var(--ac-line);
+    border-bottom: 1px solid var(--ac-line);
+    scroll-margin-top: 136px;
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+      transform 0.9s cubic-bezier(0.22, 0.68, 0.24, 1);
+    transition-delay: calc(var(--i) * 90ms);
+  }
+
+  [data-ac-projects][data-ac-in] [data-ac-project] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Arriving from the home page's case studies: mark the card. */
+  [data-ac-project]:target [data-ac-project-stage] {
+    box-shadow: 0 0 0 2px var(--color-accent);
+  }
+
+  /* The stage: a soft blue light behind a transparent device render. */
+  [data-ac-project-stage] {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 5 / 4;
+    padding: clamp(18px, 2.4vw, 34px);
+    border-radius: 10px;
+    overflow: clip;
+    background:
+      radial-gradient(70% 70% at 50% 42%, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0) 70%),
+      linear-gradient(160deg, #eef2fe 0%, #dfe6fb 100%);
+    transition: box-shadow 0.3s;
+  }
+
+  [data-ac-project-stage] img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 22px 26px rgb(10 16 34 / 0.18));
+    transition: transform 0.9s cubic-bezier(0.22, 0.68, 0.24, 1);
+  }
+
+  [data-ac-project]:hover [data-ac-project-stage] img {
+    transform: translateY(-6px) scale(1.02);
+  }
+
+  [data-ac-project-body] {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: clamp(18px, 1.8vw, 24px) clamp(6px, 0.8vw, 10px) clamp(8px, 0.8vw, 10px);
+  }
+
+  [data-ac-project-meta] {
+    display: flex;
+    gap: 10px;
+    margin: 0 0 10px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-project-n] {
+    font-variant-numeric: tabular-nums;
+    color: rgb(10 16 34 / 0.4);
+  }
+
+  [data-ac-project-name] {
+    margin: 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(24px, 2vw, 30px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  [data-ac-project-platform] {
+    margin: 6px 0 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgb(10 16 34 / 0.5);
+  }
+
+  [data-ac-project-tagline] {
+    margin: 14px 0 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(16px, 1.2vw, 18px);
+    line-height: 1.35;
+    color: #0a1022;
+  }
+
+  [data-ac-project-brief] {
+    display: -webkit-box;
+    margin: 10px 0 18px;
+    overflow: hidden;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgb(10 16 34 / 0.62);
+  }
+
+  [data-ac-project-stack] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-project-stack] li {
+    padding: 4px 9px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--color-accent) 9%, #ffffff);
+    color: #2a4fc4;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+  }
+
+  [data-ac-project-link] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    margin-top: auto;
+    color: #0a1022;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  [data-ac-project-link]:hover {
+    color: var(--color-accent);
+  }
+
+  /* The closing tile: an invitation on the same blue stage. */
+  [data-ac-project-next] {
+    grid-column: span var(--span3);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    margin: clamp(12px, 1.2vw, 16px);
+    padding: clamp(28px, 4vw, 56px);
+    border-radius: 10px;
+    background:
+      radial-gradient(60% 90% at 85% 20%, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0) 70%),
+      var(--color-accent);
+    color: #ffffff;
+  }
+
+  [data-ac-project-next-tag] {
+    margin: 0 0 18px;
+    color: rgb(255 255 255 / 0.7);
+  }
+
+  [data-ac-project-next-title] {
+    margin: 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(30px, 3.2vw, 48px);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+  }
+
+  [data-ac-project-next-title] span {
+    display: block;
+    color: rgb(255 255 255 / 0.62);
+  }
+
+  [data-ac-project-next-line] {
+    max-width: 38ch;
+    margin: 18px 0 28px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgb(255 255 255 / 0.82);
+  }
+
+  [data-ac-project-next-cta] {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: #ffffff;
+    color: #0a1022;
+    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  [data-ac-project-next-cta]:hover {
+    background: #0a1022;
+    color: #ffffff;
+  }
+
+  /* Inner rules only, per layout. */
+  @media (min-width: 1200px) {
+    [data-ac-project]:nth-child(3n) {
+      border-right: 0;
+    }
+
+    [data-ac-project]:nth-last-child(-n + 3):nth-child(3n + 1),
+    [data-ac-project]:nth-last-child(-n + 3):nth-child(3n + 1) ~ [data-ac-project] {
+      border-bottom: 0;
+    }
+  }
+
+  @media (min-width: 810px) and (max-width: 1199px) {
+    [data-ac-projects-grid] {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    [data-ac-project-next] {
+      grid-column: span var(--span2);
+    }
+
+    [data-ac-project]:nth-child(2n) {
+      border-right: 0;
+    }
+
+    [data-ac-project]:nth-last-child(-n + 2):nth-child(2n + 1),
+    [data-ac-project]:nth-last-child(-n + 2):nth-child(2n + 1) ~ [data-ac-project] {
+      border-bottom: 0;
+    }
+  }
+
+  @media (max-width: 809px) {
+    [data-ac-projects-grid] {
+      grid-template-columns: 1fr;
+    }
+
+    [data-ac-project] {
+      border-right: 0;
+    }
+
+    [data-ac-project-next] {
+      grid-column: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-project] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    [data-ac-project-stage] img {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-projects]").forEach(toggleInView);
+</script>

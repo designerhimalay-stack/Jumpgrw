@@ -1,0 +1,255 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+
+/* The leadership team: a white portrait card each, on the dark band, like
+   framed prints. The portraits are prepared to one frame, head size and eye
+   line (see docs/components/company-pages.md); their own studio backdrops
+   differ, so the white card is what makes them read as one set. Without a
+   photo the frame shows the person's initials; without a LinkedIn URL the
+   badge is left out. */
+
+export interface Leader {
+  name: string;
+  role: string;
+  photo?: ImageMetadata;
+  linkedin?: string;
+}
+
+interface Props {
+  id?: string;
+  eyebrow: string;
+  headline: string[];
+  lede?: string;
+  leaders: Leader[];
+}
+
+const { id = "leadership", eyebrow, headline, lede, leaders } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+const initials = (name: string) => name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2);
+---
+
+<section data-ac-sec="dark" data-ac-leaders id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={headline.length - 1} lede={lede} />
+
+    <div data-ac-sec-frame data-ac-leaders-frame>
+      <Joints />
+      <ul data-ac-leaders-grid role="list">
+        {leaders.map((person, i) => (
+          <li data-ac-leader style={`--i:${i}`}>
+            <figure data-ac-leader-photo data-empty={!person.photo || undefined}>
+              {person.photo ? (
+                <Image
+                  src={person.photo}
+                  alt={`${person.name}, ${person.role} of JumpGrowth`}
+                  widths={[360, 540, 720]}
+                  sizes="(max-width: 809px) 90vw, (max-width: 1199px) 44vw, 22vw"
+                  quality={90}
+                />
+              ) : (
+                <span data-ac-leader-initials aria-hidden="true">{initials(person.name)}</span>
+              )}
+              <span data-ac-leader-index class="mono-label">{pad(i + 1)}</span>
+            </figure>
+            <div data-ac-leader-copy>
+              <p data-ac-leader-role class="mono-label">{person.role}</p>
+              <h3 data-ac-leader-name>{person.name}</h3>
+              {person.linkedin && (
+                <a data-ac-leader-link href={person.linkedin} target="_blank" rel="noopener" aria-label={`${person.name} on LinkedIn`}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4v11H3v-11Zm7 0h3.8v1.5h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1v5.45h-4v-4.83c0-1.15-.02-2.63-1.6-2.63-1.6 0-1.85 1.25-1.85 2.55v4.91H10v-11Z" />
+                  </svg>
+                </a>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-ac-leaders-frame] {
+    padding: clamp(10px, 1.2vw, 16px);
+  }
+
+  [data-ac-leaders-grid] {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(10px, 1.2vw, 16px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* The card: white, a hairline, the portrait inset, the caption under it. */
+  [data-ac-leader] {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 30px 60px -40px rgb(0 0 0 / 0.7);
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+      transform 0.9s cubic-bezier(0.22, 0.68, 0.24, 1);
+    transition-delay: calc(var(--i) * 120ms);
+  }
+
+  [data-ac-leaders][data-ac-in] [data-ac-leader] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-ac-leader-photo] {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 4 / 5;
+    border-radius: 9px;
+    overflow: clip;
+    background: #eef1f7;
+  }
+
+  /* A hairline over the photo's edge, so a white backdrop still has a frame. */
+  [data-ac-leader-photo]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgb(10 16 34 / 0.08);
+    pointer-events: none;
+  }
+
+  [data-ac-leader-photo] img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s cubic-bezier(0.22, 0.68, 0.24, 1);
+  }
+
+  [data-ac-leader]:hover [data-ac-leader-photo] img {
+    transform: scale(1.03);
+  }
+
+  /* No photo yet: the initials on a soft blue ground, same frame. */
+  [data-ac-leader-photo][data-empty] {
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(70% 60% at 50% 40%, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0) 72%),
+      linear-gradient(160deg, #eef2fe 0%, #dfe6fb 100%);
+  }
+
+  [data-ac-leader-initials] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(56px, 5.5vw, 84px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: color-mix(in srgb, var(--color-accent) 70%, #0a1022);
+    opacity: 0.85;
+  }
+
+  [data-ac-leader-index] {
+    position: absolute;
+    z-index: 1;
+    top: 12px;
+    left: 12px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: rgb(10 16 34 / 0.78);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    font-size: 10px;
+    line-height: 14px;
+  }
+
+  [data-ac-leader-copy] {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "role link" "name link";
+    align-items: center;
+    min-height: 42px;
+    gap: 6px 14px;
+    padding: clamp(18px, 1.7vw, 22px) clamp(10px, 1vw, 14px) clamp(10px, 1vw, 12px);
+  }
+
+  [data-ac-leader-role] {
+    grid-area: role;
+    margin: 0;
+    color: var(--color-accent);
+  }
+
+  [data-ac-leader-name] {
+    grid-area: name;
+    margin: 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(22px, 1.85vw, 28px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  /* LinkedIn: a square badge in the brand blue, as on the company site. */
+  [data-ac-leader-link] {
+    grid-area: link;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgb(10 16 34 / 0.12);
+    color: #0a1022;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+
+  [data-ac-leader-link]:hover {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: #fff;
+  }
+
+  [data-ac-leader-link]:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 1199px) {
+    [data-ac-leaders-grid] {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 809px) {
+    [data-ac-leaders-grid] {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-leader] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    [data-ac-leader-photo] img {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-leaders]").forEach(toggleInView);
+</script>

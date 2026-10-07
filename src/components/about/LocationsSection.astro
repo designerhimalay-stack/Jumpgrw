@@ -1,0 +1,192 @@
+---
+import { Image } from "astro:assets";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { OFFICES, type Office } from "@/lib/offices";
+
+/* Our global presence: every office in a framed grid, three to a row. Each
+   card pairs a small square photo of the city with its address. The photos
+   are kept small on purpose; several sources are only 228 px square. The
+   offices default to the company list in src/lib/offices.ts. */
+
+interface Props {
+  id?: string;
+  eyebrow: string;
+  headline: string[];
+  lede?: string;
+  offices?: Office[];
+}
+
+const { id = "locations", eyebrow, headline, lede, offices = OFFICES } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-hire-tint data-ac-offices id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={headline.length - 1} lede={lede} />
+
+    <div data-ac-sec-frame>
+      <Joints />
+      <ul data-ac-offices-grid role="list">
+        {offices.map((office, i) => (
+          <li data-ac-office style={`--i:${i}`}>
+            <Image src={office.photo} alt={office.alt} width={112} height={112} densities={[1, 2]} data-ac-office-photo />
+            <div data-ac-office-copy>
+              <p data-ac-office-country class="mono-label">
+                {office.country}
+                {office.hq && <span data-ac-office-hq>Headquarters</span>}
+              </p>
+              <h3 data-ac-office-city>{office.city}</h3>
+              <address>{office.address.map((line, j) => (<Fragment>{j > 0 && <br />}{line}</Fragment>))}</address>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-ac-offices-grid] {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-office] {
+    display: flex;
+    align-items: flex-start;
+    gap: clamp(16px, 1.6vw, 22px);
+    padding: clamp(20px, 2vw, 28px);
+    background: #fff;
+    border-right: 1px solid var(--ac-line);
+    border-bottom: 1px solid var(--ac-line);
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+      transform 0.9s cubic-bezier(0.22, 0.68, 0.24, 1),
+      background-color 0.3s ease;
+    transition-delay: calc(var(--i) * 80ms), calc(var(--i) * 80ms), 0ms;
+  }
+
+  /* Inner rules only: no rule along the frame's own edges. */
+  @media (min-width: 1200px) {
+    [data-ac-office]:nth-child(3n) {
+      border-right: 0;
+    }
+
+    [data-ac-office]:nth-last-child(-n + 3):nth-child(3n + 1),
+    [data-ac-office]:nth-last-child(-n + 3):nth-child(3n + 1) ~ [data-ac-office] {
+      border-bottom: 0;
+    }
+  }
+
+  [data-ac-offices][data-ac-in] [data-ac-office] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-ac-office]:hover {
+    background: color-mix(in srgb, var(--color-accent) 4%, #ffffff);
+  }
+
+  [data-ac-office-photo] {
+    flex: none;
+    display: block;
+    width: 112px;
+    height: 112px;
+    border-radius: 10px;
+    object-fit: cover;
+  }
+
+  [data-ac-office-copy] {
+    min-width: 0;
+  }
+
+  [data-ac-office-country] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 2px 0 8px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-office-hq] {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 9px;
+    line-height: 14px;
+  }
+
+  [data-ac-office-city] {
+    margin: 0 0 8px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(20px, 1.6vw, 24px);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-office] address {
+    font-style: normal;
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgb(10 16 34 / 0.62);
+  }
+
+  @media (min-width: 700px) and (max-width: 1199px) {
+    [data-ac-offices-grid] {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    [data-ac-office]:nth-child(2n) {
+      border-right: 0;
+    }
+
+    [data-ac-office]:nth-last-child(-n + 2):nth-child(2n + 1),
+    [data-ac-office]:nth-last-child(-n + 2):nth-child(2n + 1) ~ [data-ac-office] {
+      border-bottom: 0;
+    }
+  }
+
+  @media (max-width: 699px) {
+    [data-ac-offices-grid] {
+      grid-template-columns: 1fr;
+    }
+
+    [data-ac-office] {
+      border-right: 0;
+    }
+
+    [data-ac-office]:last-child {
+      border-bottom: 0;
+    }
+
+    [data-ac-office-photo] {
+      width: 88px;
+      height: 88px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-office] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-offices]").forEach(toggleInView);
+</script>

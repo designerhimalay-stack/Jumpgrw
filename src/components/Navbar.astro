@@ -129,7 +129,7 @@ const NAV_LINKS: NavLink[] = [
       ],
     },
   },
-  { label: "Case Studies", href: "#case-studies" },
+  { label: "Case Studies", href: withBase("/case-studies/") },
   {
     label: "X-Shore",
     href: "#x-shore",
@@ -183,13 +183,13 @@ const NAV_LINKS: NavLink[] = [
             { label: "About Us", href: withBase("/about/") },
             { label: "Leadership", href: withBase("/about/#leadership") },
             { label: "Locations", href: withBase("/about/#locations") },
-            { label: "Careers", href: "#contact" },
+            { label: "Careers", href: withBase("/careers/") },
           ],
         },
         {
           title: "PROOF",
           items: [
-            { label: "Case Studies", href: "#case-studies" },
+            { label: "Case Studies", href: withBase("/case-studies/") },
             { label: "How We Build Teams", href: "#process" },
           ],
         },
@@ -217,8 +217,9 @@ const NAV_LINKS: NavLink[] = [
         {
           title: "EXPLORE",
           items: [
-            { label: "Blogs", href: "#faq" },
-            { label: "Whitepapers", href: "#faq" },
+            { label: "Blogs", href: withBase("/blog/") },
+            { label: "Whitepapers", href: withBase("/whitepaper/") },
+            { label: "Events", href: withBase("/events/") },
           ],
         },
         {

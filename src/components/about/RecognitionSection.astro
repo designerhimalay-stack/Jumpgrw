@@ -1,0 +1,236 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+
+/* Achievements and partners. The award badges in a row of framed cells,
+   then the partner logos in a strip under them. Logos and badges are their
+   owners' marks, shown only to name the award and the partnership. */
+
+interface Award { badge: ImageMetadata; source: string; title: string }
+/** `height` is the logo's drawn height in px; each mark has its own optical
+    size, and none should be drawn above its source height. */
+interface Partner { logo: ImageMetadata; name: string; height?: number }
+
+interface Props {
+  id?: string;
+  eyebrow: string;
+  headline: string[];
+  lede?: string;
+  awards: Award[];
+  partnersLabel: string;
+  partnersLine: string;
+  partners: Partner[];
+}
+
+const { id = "achievements", eyebrow, headline, lede, awards, partnersLabel, partnersLine, partners } = Astro.props;
+---
+
+<section data-ac-sec="light" data-ac-hire-tint data-ac-recognition id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={headline.length - 1} lede={lede} />
+
+    <div data-ac-sec-frame>
+      <Joints />
+      <ul data-ac-awards role="list">
+        {awards.map((award, i) => (
+          <li data-ac-award style={`--i:${i}`}>
+            <Image src={award.badge} alt={`${award.source}: ${award.title}`} height={180} widths={[180, 360]} sizes="180px" data-ac-award-badge />
+            <div>
+              <p class="mono-label" data-ac-award-source>{award.source}</p>
+              <p data-ac-award-title>{award.title}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div data-ac-partners>
+        <div data-ac-partners-intro>
+          <p class="mono-label">{partnersLabel}</p>
+          <p data-ac-partners-line>{partnersLine}</p>
+        </div>
+        <ul data-ac-partners-logos role="list">
+          {partners.map((partner) => (
+            <li>
+              <Image src={partner.logo} alt={partner.name} height={partner.height ?? 32} densities={[1, 2]} data-ac-partner-logo style={`height:${partner.height ?? 32}px`} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-ac-awards] {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-award] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    padding: clamp(28px, 3vw, 44px) clamp(20px, 2.4vw, 36px);
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 0.68, 0.24, 1),
+      transform 0.9s cubic-bezier(0.22, 0.68, 0.24, 1);
+    transition-delay: calc(var(--i) * 110ms);
+  }
+
+  [data-ac-recognition][data-ac-in] [data-ac-award] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-ac-award] + [data-ac-award] {
+    border-left: 1px solid var(--ac-line);
+  }
+
+  [data-ac-award-badge] {
+    display: block;
+    width: auto;
+    height: clamp(128px, 11vw, 168px);
+    transition: transform 0.6s cubic-bezier(0.22, 0.68, 0.24, 1);
+  }
+
+  [data-ac-award]:hover [data-ac-award-badge] {
+    transform: translateY(-4px);
+  }
+
+  [data-ac-award-source] {
+    margin: 0 0 6px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-award-title] {
+    max-width: 26ch;
+    margin: 0 auto;
+    font-family: var(--font-display-stack);
+    font-size: clamp(16px, 1.25vw, 19px);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: #0a1022;
+  }
+
+  [data-ac-partners] {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    border-top: 1px solid var(--ac-line);
+  }
+
+  [data-ac-partners-intro] {
+    padding: clamp(22px, 2.2vw, 32px) clamp(20px, 2.4vw, 36px);
+    border-right: 1px solid var(--ac-line);
+  }
+
+  [data-ac-partners-intro] .mono-label {
+    margin: 0 0 8px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-partners-line] {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: rgb(10 16 34 / 0.68);
+  }
+
+  [data-ac-partners-logos] {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-partners-logos] li {
+    display: grid;
+    place-items: center;
+    padding: 24px;
+  }
+
+  [data-ac-partners-logos] li + li {
+    border-left: 1px solid var(--ac-line);
+  }
+
+  [data-ac-partner-logo] {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    filter: grayscale(1);
+    opacity: 0.82;
+    transition: filter 0.3s, opacity 0.3s;
+  }
+
+  [data-ac-partners-logos] li:hover [data-ac-partner-logo] {
+    filter: none;
+    opacity: 1;
+  }
+
+  @media (max-width: 991px) {
+    [data-ac-partners] {
+      grid-template-columns: 1fr;
+    }
+
+    [data-ac-partners-intro] {
+      border-right: 0;
+      border-bottom: 1px solid var(--ac-line);
+    }
+  }
+
+  @media (max-width: 809px) {
+    [data-ac-awards] {
+      grid-template-columns: 1fr;
+    }
+
+    [data-ac-award] {
+      flex-direction: row;
+      text-align: left;
+      gap: 18px;
+      padding: 20px;
+    }
+
+    [data-ac-award] + [data-ac-award] {
+      border-left: 0;
+      border-top: 1px solid var(--ac-line);
+    }
+
+    [data-ac-award-badge] {
+      height: 96px;
+    }
+
+    [data-ac-award-title] {
+      margin: 0;
+    }
+
+    [data-ac-partners-logos] li {
+      padding: 18px 10px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-award] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-recognition]").forEach(toggleInView);
+</script>

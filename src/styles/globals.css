@@ -3290,6 +3290,14 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   padding-bottom: var(--section-gap);
 }
 
+/* The subpages' pale-blue band. Their own stylesheet sets it, but this one
+   loads after it on every page, so [data-ac-sec] above would reset it to
+   white; re-assert it a step more specifically. */
+[data-ac-sec][data-ac-hire-tint] {
+  --sec-bg: #f1f4fe;
+  --ac-rule: rgb(42 72 170 / 0.1);
+}
+
 [data-ac-sec="dark"] {
   --ac-rule: rgb(255 255 255 / 0.07);
   --ac-line: rgb(255 255 255 / 0.13);
