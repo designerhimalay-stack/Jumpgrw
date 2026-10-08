@@ -55,7 +55,7 @@ export const slugify = (text: string): string =>
     .slice(0, 60);
 
 /** The h2 headings with unique anchors, for the "On this page" list. */
-export const outline = (article: Article): { id: string; text: string }[] => {
+export const outline = (article: Pick<Article, "blocks">): { id: string; text: string }[] => {
   const seen = new Map<string, number>();
   const headings: { id: string; text: string }[] = [];
   for (const block of article.blocks) {

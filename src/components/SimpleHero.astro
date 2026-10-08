@@ -1,0 +1,110 @@
+---
+import GridRules from "@pg/page30/components/GridRules.astro";
+
+/* A page opening with no picture: the subpage hero's navy field, a
+   breadcrumb or code line, a two-tone headline (the last line in the brand
+   blue) and a lede. Used where a photo would add nothing, such as the
+   privacy policy and the 404 page. Anything passed as children sits under
+   the lede. */
+
+interface Props {
+  /** The mono line over the headline: a breadcrumb trail or a short label. */
+  label: string[];
+  headline: string[];
+  lede?: string;
+}
+
+const { label, headline, lede } = Astro.props;
+---
+
+<section data-ac-sec="dark" data-ac-shero>
+  <GridRules />
+  <div data-ac-sec-container>
+    <nav data-ac-shero-label class="mono-label" aria-label="Breadcrumb">
+      <span aria-hidden="true">+</span>
+      <ol>
+        {label.map((step, i) => (
+          <li aria-current={i === label.length - 1 ? "page" : undefined}>{step}</li>
+        ))}
+      </ol>
+    </nav>
+    <h1 data-ac-shero-title aria-label={headline.join(" ")}>
+      {headline.map((line, i) => (
+        <span data-accent={i === headline.length - 1 || undefined}>{line}</span>
+      ))}
+    </h1>
+    {lede && <p data-ac-shero-lede>{lede}</p>}
+    <slot />
+  </div>
+</section>
+
+<style>
+  [data-ac-shero][data-ac-sec] {
+    padding-top: calc(108px + clamp(40px, 8vh, 96px));
+    padding-bottom: clamp(56px, 10vh, 112px);
+    background:
+      radial-gradient(55% 65% at 88% 18%, rgb(80 122 247 / 0.2), transparent 70%),
+      linear-gradient(180deg, #000715 0%, #071127 34%, #0d1c41 74%, #132658 100%);
+  }
+
+  [data-ac-shero-label] {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 clamp(18px, 3vh, 28px);
+    color: var(--sec-muted);
+  }
+
+  [data-ac-shero-label] > span {
+    color: var(--color-accent);
+  }
+
+  [data-ac-shero-label] ol {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-shero-label] li + li::before {
+    content: "/";
+    margin: 0 8px;
+    color: rgb(255 255 255 / 0.3);
+  }
+
+  [data-ac-shero-label] li[aria-current] {
+    color: #ffffff;
+  }
+
+  [data-ac-shero-title] {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(44px, 7vw, 104px);
+    font-weight: var(--display-weight);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #ffffff;
+  }
+
+  [data-ac-shero-title] [data-accent] {
+    color: var(--color-accent);
+  }
+
+  [data-ac-shero-lede] {
+    max-width: 52ch;
+    margin: clamp(20px, 3vh, 30px) 0 0;
+    font-size: clamp(16px, 1.3vw, 19px);
+    line-height: 1.5;
+    color: var(--sec-soft);
+  }
+</style>
+
+<script>
+  import { followHero } from "@/lib/nav-tone";
+
+  const hero = document.querySelector<HTMLElement>("[data-ac-shero]");
+  if (hero) followHero(hero);
+</script>

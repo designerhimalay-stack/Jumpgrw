@@ -9,7 +9,9 @@ import { outline, resolveLinks, slugify, type Article } from "@/lib/articles";
    own frame on a phone instead of widening the page. */
 
 interface Props {
-  article: Article;
+  /** Only the blocks are read, so any page with text in this shape (an
+      article, the privacy policy) can use it. */
+  article: Pick<Article, "blocks">;
 }
 
 const { article } = Astro.props;

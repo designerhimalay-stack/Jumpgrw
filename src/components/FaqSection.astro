@@ -3,19 +3,27 @@ import Arrow from "@/components/icons/Arrow.astro";
 import GridRules from "@/components/GridRules.astro";
 import SectionHead from "@/components/SectionHead.astro";
 import Joints from "@/components/process/Joints.astro";
-import { FAQS } from "@/lib/faqs";
+import { FAQS, type Faq } from "@/lib/faqs";
 
 /* Frequently asked: the header holds its place on the left while the answers
    scroll past on the right. Native <details> sharing one name, so only one
    answer is open at a time and it all works without scripts. See
-   docs/components/faq.md. The questions live in src/lib/faqs.ts, which the
-   /faq/ page's structured data also reads. */
+   docs/components/faq.md. By default it shows the company questions in
+   src/lib/faqs.ts (the home page and /faq/); a page with questions of its own,
+   like an industry page, passes them with its own headline. */
 
-const COPY = {
-  eyebrow: "Frequently asked",
-  headline: ["Straight answers", "about building", "your team."],
-  cta: "Ask a team specialist",
-};
+interface Props {
+  faqs?: Faq[];
+  eyebrow?: string;
+  headline?: string[];
+}
+
+const {
+  faqs = FAQS,
+  eyebrow = "Frequently asked",
+  headline = ["Straight answers", "about building", "your team."],
+} = Astro.props;
+const cta = "Ask a team specialist";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 ---
@@ -25,9 +33,9 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
   <div data-ac-sec-container data-ac-faq-layout>
     <div data-ac-faq-aside>
-      <SectionHead eyebrow={`${COPY.eyebrow} / ${pad(FAQS.length)}`} headline={COPY.headline} accent={2}>
+      <SectionHead eyebrow={`${eyebrow} / ${pad(faqs.length)}`} headline={headline} accent={headline.length - 1}>
         <a data-ac-faq-cta data-ac-sec-rise class="mono-label" href="#contact">
-          {COPY.cta}
+          {cta}
           <Arrow direction="diagonal" />
         </a>
       </SectionHead>
@@ -35,7 +43,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
     <div data-ac-sec-frame data-ac-faq-list>
       <Joints />
-      {FAQS.map((item, i) => (
+      {faqs.map((item, i) => (
         <details data-ac-faq-item name="faq" open={i === 0}>
           <summary data-ac-faq-question>
             <span data-ac-faq-number>{pad(i + 1)}</span>

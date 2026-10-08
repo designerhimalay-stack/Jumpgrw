@@ -1,0 +1,549 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@pg/page30/components/icons/Arrow.astro";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { caseHref } from "@/lib/cases";
+import { splitClient, type Industry } from "@/lib/industries";
+import { withBase } from "@/lib/paths";
+
+/* The body of one industry page, after its hero. Each part takes a different
+   form so the page reads as a story, not a wall of cards:
+     challenges   numbered cards (white)
+     solutions    a ruled two-column list (tint)
+     process      a numbered timeline along one rule (white)
+     why us       reasons on the navy band (dark)
+     stories      client results, who and where on each (white)
+     related work the portfolio's matching case studies, when there are any (tint)
+   A part the industry has no text for is left out. The FAQ and the form
+   follow on the page. */
+
+interface Props {
+  industry: Industry;
+}
+
+const { industry } = Astro.props;
+const { challenges, solutions, process, why, stories, cases, name } = industry;
+const pad = (n: number) => String(n).padStart(2, "0");
+const lower = name.toLowerCase();
+---
+
+{challenges && (
+  <section data-ac-sec="light" data-ac-ind="challenges" id="challenges">
+    <GridRules />
+    <div data-ac-sec-container>
+      <SectionHead eyebrow="The challenges" headline={["What holds", `${lower} teams back.`]} accent={1} lede={challenges.lead || undefined} />
+      <div data-ac-sec-frame data-ac-sec-rise>
+        <Joints />
+        <ol data-ac-ind-cards role="list">
+          {challenges.items.map((item, i) => (
+            <li data-ac-ind-card>
+              <span class="mono-label" data-ac-ind-n>{pad(i + 1)}</span>
+              <h3 data-ac-ind-card-title>{item.title}</h3>
+              <p data-ac-ind-card-body>{item.body}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </section>
+)}
+
+{solutions && (
+  <section data-ac-sec="light" data-ac-hire-tint data-ac-ind="solutions" id="solutions">
+    <GridRules />
+    <div data-ac-sec-container>
+      <SectionHead eyebrow="What we build" headline={["Software built", `for ${lower}.`]} accent={1} lede={solutions.lead || undefined} />
+      <div data-ac-sec-frame data-ac-sec-rise>
+        <Joints />
+        <ul data-ac-ind-list role="list">
+          {solutions.items.map((item, i) => (
+            <li data-ac-ind-row>
+              <span class="mono-label" data-ac-ind-n>{pad(i + 1)}</span>
+              <h3 data-ac-ind-row-title>{item.title}</h3>
+              <p data-ac-ind-row-body>{item.body}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+)}
+
+{process && (
+  <section data-ac-sec="light" data-ac-ind="process" id="process-steps">
+    <GridRules />
+    <div data-ac-sec-container>
+      <SectionHead eyebrow="How we deliver" headline={["From discovery", "to launch, and after."]} accent={1} lede={process.lead || undefined} />
+      <ol data-ac-ind-steps role="list" style={`--n:${process.items.length}`}>
+        {process.items.map((item, i) => (
+          <li data-ac-ind-step style={`--i:${i}`}>
+            <span data-ac-ind-step-num aria-hidden="true">{pad(i + 1)}</span>
+            <h3 data-ac-ind-step-title>{item.title}</h3>
+            <p data-ac-ind-step-body>{item.body}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+)}
+
+{why && (
+  <section data-ac-sec="dark" data-ac-ind="why" id="why-us">
+    <GridRules />
+    <div data-ac-sec-container>
+      <SectionHead eyebrow="Why JumpGrowth" headline={["A partner who", `knows ${lower}.`]} accent={1} lede={why.lead || undefined} />
+      <ul data-ac-ind-why role="list" data-ac-sec-rise>
+        {why.items.map((item) => (
+          <li>
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
+
+{stories && (
+  <section data-ac-sec="light" data-ac-ind="stories" id="client-results">
+    <GridRules />
+    <div data-ac-sec-container>
+      <SectionHead eyebrow="Client results" headline={["What changed", "for our clients."]} accent={1} lede={stories.lead || undefined} />
+      <div data-ac-sec-frame data-ac-sec-rise>
+        <Joints />
+        <ul data-ac-ind-cards role="list">
+          {stories.items.map((item) => {
+            const client = splitClient(item.title);
+            return (
+              <li data-ac-ind-card>
+                {client.where && <span class="mono-label" data-ac-ind-where>{client.where}</span>}
+                <h3 data-ac-ind-card-title>{client.who}</h3>
+                <p data-ac-ind-card-body>{item.body}</p>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  </section>
+)}
+
+{cases.length > 0 && (
+  <section data-ac-sec="light" data-ac-hire-tint data-ac-ind="cases" id="related-work">
+    <GridRules />
+    <div data-ac-sec-container>
+      <SectionHead eyebrow="Related work" headline={["Products we", `built for ${lower}.`]} accent={1} />
+      <div data-ac-sec-frame data-ac-sec-rise>
+        <Joints />
+        <ul data-ac-ind-work role="list" data-count={cases.length}>
+          {cases.map((project) => (
+            <li>
+              <a href={caseHref(project)} data-ac-ind-work-link>
+                <span data-ac-ind-work-stage>
+                  <Image src={project.mockup} alt="" widths={[320, 480]} sizes="(max-width: 809px) 60vw, 22vw" quality={84} loading="lazy" />
+                </span>
+                <span data-ac-ind-work-text>
+                  <span class="mono-label" data-ac-ind-where>{project.category}</span>
+                  <span data-ac-ind-work-name>{project.name}</span>
+                  <span data-ac-ind-work-line>{project.tagline}</span>
+                  <span class="mono-label" data-ac-ind-work-cta>
+                    Read case study
+                    <Arrow direction="diagonal" />
+                  </span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <p data-ac-ind-more data-ac-sec-rise>
+        <a href={withBase("/case-studies/")}>See every case study</a>
+      </p>
+    </div>
+  </section>
+)}
+
+<style>
+  /* -- numbered cards (challenges, stories) ---------------------------------- */
+  [data-ac-ind-cards] {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0 -1px -1px 0;
+    padding: 0;
+    list-style: none;
+    background: #ffffff;
+  }
+
+  [data-ac-ind-card] {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: clamp(20px, 2.2vw, 32px);
+    border-right: 1px solid var(--ac-line);
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  /* No lone card on the last row. */
+  @media (min-width: 1100px) {
+    [data-ac-ind-card]:last-child:nth-child(3n + 1) {
+      grid-column: 1 / -1;
+    }
+
+    [data-ac-ind-card]:last-child:nth-child(3n + 2) {
+      grid-column: span 2;
+    }
+  }
+
+  [data-ac-ind-n],
+  [data-ac-ind-where] {
+    color: var(--color-accent);
+  }
+
+  [data-ac-ind-card-title] {
+    margin: 4px 0 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(19px, 1.6vw, 23px);
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-ind-card-body] {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgb(10 16 34 / 0.68);
+  }
+
+  /* -- ruled list (solutions) --------------------------------------------------- */
+  [data-ac-ind-list] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #ffffff;
+  }
+
+  [data-ac-ind-row] {
+    display: grid;
+    align-content: start;
+    grid-template-columns: 40px minmax(0, 1fr);
+    column-gap: 16px;
+    row-gap: 8px;
+    padding: clamp(20px, 2.2vw, 30px);
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  [data-ac-ind-row]:nth-child(odd) {
+    border-right: 1px solid var(--ac-line);
+  }
+
+  /* the last row's cells lose their bottom rule; an odd last item spans */
+  [data-ac-ind-row]:last-child,
+  [data-ac-ind-row]:nth-last-child(2):nth-child(odd) {
+    border-bottom: 0;
+  }
+
+  [data-ac-ind-row]:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    border-right: 0;
+  }
+
+  [data-ac-ind-row] [data-ac-ind-n] {
+    grid-row: span 2;
+    padding-top: 4px;
+  }
+
+  [data-ac-ind-row-title] {
+    margin: 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(18px, 1.5vw, 22px);
+    font-weight: 400;
+    line-height: 1.22;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-ind-row-body] {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgb(10 16 34 / 0.68);
+  }
+
+  /* -- timeline (process) ------------------------------------------------------- */
+  [data-ac-ind-steps] {
+    display: grid;
+    grid-template-columns: repeat(min(var(--n), 3), minmax(0, 1fr));
+    gap: clamp(28px, 3vw, 44px) clamp(20px, 2.4vw, 36px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 1200px) {
+    [data-ac-ind-steps] {
+      grid-template-columns: repeat(min(var(--n), 6), minmax(0, 1fr));
+    }
+  }
+
+  [data-ac-ind-step] {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 22px;
+    border-top: 2px solid var(--color-accent);
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 0.68, 0.24, 1),
+      transform 0.8s cubic-bezier(0.22, 0.68, 0.24, 1);
+    transition-delay: calc(var(--i) * 90ms);
+  }
+
+  [data-ac-ind="process"][data-ac-in] [data-ac-ind-step] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-ac-ind-step-num] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(34px, 3.4vw, 48px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-accent);
+  }
+
+  [data-ac-ind-step-title] {
+    margin: 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(18px, 1.5vw, 22px);
+    font-weight: 400;
+    line-height: 1.22;
+    color: #0a1022;
+  }
+
+  [data-ac-ind-step-body] {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgb(10 16 34 / 0.68);
+  }
+
+  /* -- reasons on the navy band (why us) -------------------------------------- */
+  [data-ac-ind-why] {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--ac-line);
+    border: 1px solid var(--ac-line);
+  }
+
+  [data-ac-ind-why] li {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: clamp(22px, 2.4vw, 34px);
+    background: #0a1022;
+  }
+
+  /* No lone reason on the last row (three across on desktop). */
+  @media (min-width: 1100px) {
+    [data-ac-ind-why] li:last-child:nth-child(3n + 1) {
+      grid-column: 1 / -1;
+    }
+
+    [data-ac-ind-why] li:last-child:nth-child(3n + 2) {
+      grid-column: span 2;
+    }
+  }
+
+  [data-ac-ind-why] h3 {
+    margin: 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(19px, 1.6vw, 23px);
+    font-weight: 400;
+    line-height: 1.2;
+    color: #ffffff;
+  }
+
+  [data-ac-ind-why] p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--sec-soft);
+  }
+
+  /* -- related case studies ------------------------------------------------------ */
+  [data-ac-ind-work] {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #ffffff;
+  }
+
+  [data-ac-ind-work][data-count="1"] {
+    --cols: 1;
+  }
+
+  [data-ac-ind-work][data-count="2"] {
+    --cols: 2;
+  }
+
+  [data-ac-ind-work] > li + li {
+    border-left: 1px solid var(--ac-line);
+  }
+
+  [data-ac-ind-work-link] {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 2vw, 28px);
+    height: 100%;
+    padding: clamp(18px, 2vw, 28px);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  [data-ac-ind-work-link]:hover {
+    background: color-mix(in srgb, var(--color-accent) 4%, #ffffff);
+  }
+
+  [data-ac-ind-work-link]:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+
+  [data-ac-ind-work-stage] {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: clamp(96px, 9vw, 132px);
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: #eef1f7;
+  }
+
+  [data-ac-ind-work-stage] img {
+    display: block;
+    width: 84%;
+    height: 84%;
+    object-fit: contain;
+  }
+
+  [data-ac-ind-work-text] {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  [data-ac-ind-work-name] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(20px, 1.8vw, 26px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  [data-ac-ind-work-line] {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgb(10 16 34 / 0.62);
+  }
+
+  [data-ac-ind-work-cta] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    color: #0a1022;
+  }
+
+  [data-ac-ind-work-link]:hover [data-ac-ind-work-cta] {
+    color: var(--color-accent);
+  }
+
+  [data-ac-ind-more] {
+    margin: clamp(16px, 1.8vw, 22px) 0 0;
+    font-size: 15px;
+  }
+
+  [data-ac-ind-more] a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+
+  /* -- tablets and phones --------------------------------------------------------- */
+  @media (max-width: 1099px) {
+    [data-ac-ind-cards],
+    [data-ac-ind-why] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    [data-ac-ind-card]:last-child:nth-child(2n + 1),
+    [data-ac-ind-why] li:last-child:nth-child(2n + 1) {
+      grid-column: 1 / -1;
+    }
+
+    [data-ac-ind-work] {
+      --cols: 1;
+    }
+
+    [data-ac-ind-work] > li + li {
+      border-left: 0;
+      border-top: 1px solid var(--ac-line);
+    }
+  }
+
+  @media (max-width: 809px) {
+    [data-ac-ind-cards],
+    [data-ac-ind-why],
+    [data-ac-ind-list] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    [data-ac-ind-row]:nth-child(odd) {
+      border-right: 0;
+    }
+
+    [data-ac-ind-row]:nth-last-child(2):nth-child(odd) {
+      border-bottom: 1px solid var(--ac-line);
+    }
+
+    [data-ac-ind-steps] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-ind-step] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    [data-ac-ind-work-link] {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-ind]").forEach(toggleInView);
+</script>

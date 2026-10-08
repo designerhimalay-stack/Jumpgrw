@@ -1,0 +1,73 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import IndustryDetail from "@/components/industries/IndustryDetail.astro";
+import PageHero from "@pg/page30/components/PageHero.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@pg/page30/types/page";
+import { INDUSTRIES } from "@/lib/industries";
+import { faqSchema } from "@/lib/faqs";
+
+/* One industry, in the site's subpage layout: the hero, the challenges,
+   solutions, delivery process, reasons, client results and related case
+   studies (IndustryDetail), the industry's own FAQs, and the form. The text is
+   the company's own (src/data/industries); see src/lib/industries.ts. */
+
+export function getStaticPaths() {
+  return INDUSTRIES.map((industry) => ({ params: { slug: industry.slug }, props: { industry } }));
+}
+
+const { industry } = Astro.props;
+const count = (n: number | undefined) => String(n ?? 0).padStart(2, "0");
+
+const HERO: PageHeroContent = {
+  trail: ["Industries", industry.name],
+  audience: `${industry.name} software`,
+  headline: ["Software for", `${industry.name.toLowerCase()}.`],
+  size: "long",
+  lede: industry.intro[0] ?? industry.summary,
+  ctas: [
+    { label: "Talk to a specialist", href: "#contact", arrow: "right" },
+    { label: "What we build", href: industry.solutions ? "#solutions" : "#challenges", arrow: "diagonal" },
+  ],
+  image: industry.photo,
+  imageAlt: industry.photoAlt,
+  specs: [
+    { label: "Challenges we solve", value: count(industry.challenges?.items.length) },
+    { label: "Solutions we build", value: count(industry.solutions?.items.length) },
+    { label: "Delivery steps", value: count(industry.process?.items.length) },
+    { label: "Client results", value: count(industry.stories?.items.length) },
+  ],
+  base: { title: "Dallas headquartered", line: "Delivery across the US, Mexico, Canada and India" },
+};
+---
+
+<Layout
+  title={`${industry.name} software development`}
+  description={`${industry.summary} JumpGrowth builds ${industry.name.toLowerCase()} software with senior teams across the US, Mexico, Canada and India.`}
+  navTone="field"
+  image={industry.photo}
+  imageAlt={industry.photoAlt}
+  breadcrumbs={[
+    { name: "Industries", path: "/industries/" },
+    { name: industry.name, path: `/industries/${industry.slug}/` },
+  ]}
+  schema={industry.faqs.length ? [faqSchema(industry.faqs)] : []}
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <IndustryDetail industry={industry} />
+    {industry.faqs.length > 0 && (
+      <FaqSection faqs={industry.faqs} eyebrow={`${industry.name} FAQ`} headline={["Your questions", `about ${industry.name.toLowerCase()}`, "software, answered."]} />
+    )}
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

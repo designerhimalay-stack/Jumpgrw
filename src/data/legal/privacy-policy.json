@@ -1,0 +1,98 @@
+{
+  "title": "Privacy Policy",
+  "blocks": [
+    {
+      "t": "h2",
+      "text": "Who We Are"
+    },
+    {
+      "t": "h2",
+      "text": "How We Collect Data"
+    },
+    {
+      "t": "ul",
+      "items": [
+        "Cookies stored in background",
+        "Forms filled by you",
+        "Data collected by our partner sources"
+      ]
+    },
+    {
+      "t": "h2",
+      "text": "What Data We Collect"
+    },
+    {
+      "t": "ul",
+      "items": [
+        "Your Name",
+        "Your Country",
+        "Your Email Address",
+        "Your Phone Number",
+        "Any other information that you choose to share."
+      ]
+    },
+    {
+      "t": "h2",
+      "text": "Why We Collect These Data"
+    },
+    {
+      "t": "ul",
+      "items": [
+        "Offer personalized service",
+        "Create a secure platform",
+        "Improve performance",
+        "Statistical analysis",
+        "Contacting you if you agreed to any of our forms"
+      ]
+    },
+    {
+      "t": "h2",
+      "text": "How We Secure Your Data"
+    },
+    {
+      "t": "h2",
+      "text": "How We Use Your Personal Data"
+    },
+    {
+      "t": "ul",
+      "items": [
+        "To provide and maintain our services.",
+        "To improve our services and website experience.",
+        "To communicate with you via email, notification, or any other contact information that you have provided.",
+        "To provide any third-party requisite data that helps enable our services.",
+        "For internal research and management.",
+        "To enforce our terms and conditions."
+      ]
+    },
+    {
+      "t": "h2",
+      "text": "When We Share Your Personal Data"
+    },
+    {
+      "t": "h2",
+      "text": "How Do We Protect Your Information?"
+    },
+    {
+      "t": "ul",
+      "items": [
+        "Your explicit consent is obtained.",
+        "Mandated by law.",
+        "Third-party is a collaborator or a part (subsidiary, parent/sister company) of OTS.",
+        "To provide any third-party requisite data that helps enable our services."
+      ]
+    },
+    {
+      "t": "h2",
+      "text": "What You Can Do"
+    },
+    {
+      "t": "ul",
+      "items": [
+        "Unsubscribe from the mailing list and notification preferences to stop receiving any or all communication from us.",
+        "You can choose to not share your information by not filling up the forms or not using the chat support.",
+        "You can at any time change your consent earlier provided for any specific use of your data.",
+        "If you have any question regarding our privacy policy or data handling practices, we would be glad to hear from you at info@jumpgrowth.com"
+      ]
+    }
+  ]
+}

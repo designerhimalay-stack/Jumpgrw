@@ -2,6 +2,7 @@
 import GridRules from "@/components/GridRules.astro";
 import SectionHead from "@/components/SectionHead.astro";
 import Arrow from "@/components/icons/Arrow.astro";
+import { withBase } from "@/lib/paths";
 
 /* The shared lead form, placed before the footer on every page. Each page's
    form carries a hidden `source` (its path) so the CRM can tell which page a
@@ -272,6 +273,9 @@ const f = (name: string) => `${id}-${name}`;
         {careers ? "Send my details" : request ? "Send me the paper" : hero ? "Book my discovery call" : "Plan my team"}
         <Arrow direction="right" />
       </button>
+      <p data-ac-contact-consent>
+        By sending this form you agree to our <a href={withBase("/privacy-policy/")}>Privacy Policy</a>.
+      </p>
     </form>
   </div>
 </section>
@@ -434,6 +438,18 @@ const f = (name: string) => `${id}-${name}`;
     background: var(--color-accent-dark);
   }
 
+  [data-ac-contact-consent] {
+    margin: 12px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
+    color: rgb(10 16 34 / 0.55);
+  }
+
+  [data-ac-contact-consent] a {
+    color: var(--color-accent);
+  }
+
   /* As a page's opening: the subpage hero's navy field, the breadcrumb and a
      page-sized headline over the copy, the form in a white panel beside it. */
   [data-ac-contact-hero][data-ac-sec] {
@@ -538,29 +554,14 @@ const f = (name: string) => `${id}-${name}`;
 
 <script>
   import { toggleInView } from "@/lib/in-view";
+  import { followHero } from "@/lib/nav-tone";
 
   document.querySelectorAll<HTMLElement>("[data-ac-contact]").forEach((section) => {
     toggleInView(section);
 
     /* Opening a page, the section sits under the fixed navbar, so the bar's
-       tone follows it: dark while it is behind the bar, light once past. */
-    if (section.hasAttribute("data-ac-contact-hero")) {
-      const nav = document.querySelector<HTMLElement>(".ac-nav");
-      const root = document.documentElement;
-      let frame = 0;
-      const apply = () => {
-        frame = 0;
-        const under = section.getBoundingClientRect().bottom > (nav?.offsetHeight ?? 0);
-        const phase = under ? "field" : "paper";
-        if (root.dataset.portalPhase !== phase) root.dataset.portalPhase = phase;
-      };
-      const schedule = () => {
-        if (!frame) frame = requestAnimationFrame(apply);
-      };
-      apply();
-      window.addEventListener("scroll", schedule, { passive: true });
-      window.addEventListener("resize", schedule, { passive: true });
-    }
+       tone follows it. */
+    if (section.hasAttribute("data-ac-contact-hero")) followHero(section);
 
     /* A CV must be a PDF or Word file of 5 MB or less. */
     const cv = section.querySelector<HTMLInputElement>("input[data-ac-cv]");

@@ -1,0 +1,37 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import SimpleHero from "@/components/SimpleHero.astro";
+import ArticleBody from "@/components/insights/ArticleBody.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import policy from "@/data/legal/privacy-policy.json";
+import type { ArticleBlock } from "@/lib/articles";
+
+/* Privacy Policy: the company's own policy text (src/data/legal), set in the
+   article reading column with its "On this page" list. Linked from the footer
+   and from beside every form's submit button. */
+
+const blocks = policy.blocks as ArticleBlock[];
+---
+
+<Layout
+  title="Privacy Policy"
+  description="How JumpGrowth collects, uses, secures and shares personal data, including the details you send through our contact and careers forms."
+  navTone="field"
+  breadcrumbs={[{ name: "Privacy Policy", path: "/privacy-policy/" }]}
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <SimpleHero
+      label={["Company", "Privacy Policy"]}
+      headline={["Your data,", "handled with care."]}
+      lede="What we collect when you contact us or apply to join, why we collect it, how we keep it safe, and what you can do about it."
+    />
+    <ArticleBody article={{ blocks }} />
+  </main>
+  <Footer />
+</Layout>

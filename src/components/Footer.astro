@@ -100,7 +100,10 @@ const fixHref = (href: string): string =>
     </div>
 
     <div data-ac-footer-base class="mono-label">
-      <span>© <span data-ac-year>{year}</span> JumpGrowth. All rights reserved.</span>
+      <span>
+        © <span data-ac-year>{year}</span> JumpGrowth. All rights reserved.
+        <a href={withBase("/privacy-policy/")} data-ac-footer-legal>Privacy Policy</a>
+      </span>
       <a href="#top" data-ac-footer-top>
         Back to top
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">

@@ -4,7 +4,7 @@ import "@/styles/globals.css";
 import Layout from "@/layouts/Layout.astro";
 import Navbar from "@/components/Navbar.astro";
 import Footer from "@/components/Footer.astro";
-import GridRules from "@pg/page30/components/GridRules.astro";
+import SimpleHero from "@/components/SimpleHero.astro";
 import Arrow from "@pg/page30/components/icons/Arrow.astro";
 import { withBase } from "@/lib/paths";
 
@@ -23,80 +23,32 @@ const LINKS = [
 <Layout title="Page not found" description="The page you were looking for isn't here." navTone="field" noindex>
   <Navbar />
   <main>
-    <section data-ac-sec="dark" data-ac-notfound>
-      <GridRules />
-      <div data-ac-sec-container>
-        <p data-ac-notfound-code class="mono-label"><span aria-hidden="true">+</span> Error 404</p>
-        <h1 data-ac-notfound-title>
-          <span>This page</span>
-          <span data-accent>isn’t here.</span>
-        </h1>
-        <p data-ac-notfound-lede>The address may have changed, or the page may have moved. These will get you back on track.</p>
-        <ul data-ac-notfound-links role="list">
-          {LINKS.map((link) => (
-            <li>
-              <a href={link.href}>
-                <span data-ac-notfound-label>{link.label}</span>
-                <span data-ac-notfound-note>{link.note}</span>
-                <Arrow direction="diagonal" />
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
+    <SimpleHero
+      label={["Error 404"]}
+      headline={["This page", "isn’t here."]}
+      lede="The address may have changed, or the page may have moved. These will get you back on track."
+    >
+      <ul data-ac-notfound-links role="list">
+        {LINKS.map((link) => (
+          <li>
+            <a href={link.href}>
+              <span data-ac-notfound-label>{link.label}</span>
+              <span data-ac-notfound-note>{link.note}</span>
+              <Arrow direction="diagonal" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </SimpleHero>
   </main>
   <Footer />
 </Layout>
 
 <style>
-  [data-ac-notfound][data-ac-sec] {
-    padding-top: calc(108px + clamp(48px, 9vh, 110px));
-    padding-bottom: clamp(64px, 11vh, 130px);
-    background:
-      radial-gradient(55% 65% at 88% 18%, rgb(80 122 247 / 0.2), transparent 70%),
-      linear-gradient(180deg, #000715 0%, #071127 34%, #0d1c41 74%, #132658 100%);
-  }
-
-  [data-ac-notfound-code] {
-    display: flex;
-    gap: 10px;
-    margin: 0 0 clamp(18px, 3vh, 28px);
-    color: var(--sec-muted);
-  }
-
-  [data-ac-notfound-code] span {
-    color: var(--color-accent);
-  }
-
-  [data-ac-notfound-title] {
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    font-family: var(--font-display-stack);
-    font-size: clamp(44px, 7vw, 104px);
-    font-weight: var(--display-weight);
-    line-height: 1;
-    letter-spacing: -0.03em;
-    color: #ffffff;
-  }
-
-  [data-ac-notfound-title] [data-accent] {
-    color: var(--color-accent);
-  }
-
-  [data-ac-notfound-lede] {
-    max-width: 48ch;
-    margin: clamp(20px, 3vh, 30px) 0 clamp(32px, 5vh, 52px);
-    font-size: clamp(16px, 1.3vw, 19px);
-    line-height: 1.5;
-    color: var(--sec-soft);
-  }
-
   [data-ac-notfound-links] {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    margin: 0;
+    margin: clamp(32px, 5vh, 52px) 0 0;
     padding: 0;
     list-style: none;
     border: 1px solid var(--ac-line);
@@ -167,7 +119,7 @@ const LINKS = [
 
   @media (max-width: 559px) {
     [data-ac-notfound-links] {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
 
     [data-ac-notfound-links] li:nth-child(even) {

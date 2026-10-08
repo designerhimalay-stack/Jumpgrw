@@ -41,11 +41,11 @@ export const FAQS: Faq[] = [
   },
 ];
 
-/** The FAQPage structured data for a page that shows these questions. */
-export const faqSchema = () => ({
+/** The FAQPage structured data for a page that shows these (or its own) questions. */
+export const faqSchema = (list: Faq[] = FAQS) => ({
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: FAQS.map((faq) => ({
+  mainEntity: list.map((faq) => ({
     "@type": "Question",
     name: faq.q,
     acceptedAnswer: { "@type": "Answer", text: faq.a },

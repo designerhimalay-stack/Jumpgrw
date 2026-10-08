@@ -1,0 +1,54 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import IndustriesGrid from "@/components/industries/IndustriesGrid.astro";
+import PageHero from "@pg/page30/components/PageHero.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@pg/page30/types/page";
+import heroPhoto from "@/assets/xshore/zone-mexico.jpg";
+import { INDUSTRIES } from "@/lib/industries";
+
+/* Industries: the hub for the industry pages, linked from Company > Proof. */
+
+const withCases = INDUSTRIES.filter((industry) => industry.cases.length > 0).length;
+
+const HERO: PageHeroContent = {
+  trail: ["Company", "Industries"],
+  audience: "Industries we serve",
+  headline: ["Built for", "your industry."],
+  lede: "Healthcare, finance, insurance, manufacturing and logistics: software shaped by each sector's rules, data and pace, from senior teams across four countries.",
+  ctas: [
+    { label: "Explore the industries", href: "#industries", arrow: "right" },
+    { label: "Talk to a specialist", href: "#contact", arrow: "diagonal" },
+  ],
+  image: heroPhoto,
+  imageAlt: "Engineers working together at laptops around a shared table.",
+  specs: [
+    { label: "Industries", value: String(INDUSTRIES.length).padStart(2, "0") },
+    { label: "With case studies", value: String(withCases).padStart(2, "0") },
+    { label: "Years of experience", value: "20+" },
+    { label: "Clients served", value: "300+" },
+  ],
+  base: { title: "Dallas headquartered", line: "Delivery across the US, Mexico, Canada and India" },
+};
+---
+
+<Layout
+  title="Industries"
+  description="Software development for healthcare, medical devices, pharmaceuticals, banking, financial services, insurance, manufacturing, and transportation and logistics."
+  navTone="field"
+  breadcrumbs={[{ name: "Industries", path: "/industries/" }]}
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <IndustriesGrid />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

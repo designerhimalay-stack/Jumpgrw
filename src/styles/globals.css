@@ -3309,6 +3309,23 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   --ac-rule: rgb(42 72 170 / 0.1);
 }
 
+/* The subpage stylesheet spaces a tint/white edge only when a component's
+   <script> sits between the two sections (tint + script + white). A
+   component that renders several sections back to back (an industry page,
+   a case study) has no script between them, so the same edges are matched
+   here without it: both sides of a tone change carry the band padding. */
+[data-ac-hire-tint] + [data-ac-sec="light"]:not([data-ac-hire-tint]) {
+  padding-top: var(--band-pad);
+}
+
+[data-ac-sec="light"]:not([data-ac-hire-tint]):has(+ [data-ac-hire-tint]) {
+  padding-bottom: var(--band-pad);
+}
+
+[data-ac-hire-tint]:has(+ [data-ac-sec="light"]:not([data-ac-hire-tint])) {
+  padding-bottom: var(--band-pad);
+}
+
 [data-ac-sec="dark"] {
   --ac-rule: rgb(255 255 255 / 0.07);
   --ac-line: rgb(255 255 255 / 0.13);
@@ -5444,6 +5461,20 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
 
 [data-ac-footer-top]:hover {
   color: #ffffff;
+}
+
+/* The legal link beside the copyright, quiet until hovered. */
+[data-ac-footer-legal] {
+  margin-left: 14px;
+  padding-left: 14px;
+  border-left: 1px solid var(--ac-line);
+  color: rgb(255 255 255 / 0.72);
+  text-decoration: none;
+}
+
+[data-ac-footer-legal]:hover {
+  color: #ffffff;
+  text-decoration: underline;
 }
 
 @media (max-width: 991px) {

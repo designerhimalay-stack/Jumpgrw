@@ -18,14 +18,14 @@ import jumpgrowthLogoDark from "@/assets/jumpgrowth-logo-dark.webp";
 const NAV_LINKS: NavLink[] = [
   {
     label: "Teams",
-    href: "#teams",
+    href: withBase("/engagement-models/"),
     menu: {
       overview: {
         tag: "HOW WE ENGAGE",
         headline: "A product team built around your next milestone",
         description: "Start with an MVP squad, add a production team, or extend your organization with experienced developers.",
-        href: "#teams",
-        label: "Explore the overview",
+        href: withBase("/engagement-models/"),
+        label: "Compare all engagement models",
       },
       columns: [
         {
@@ -190,6 +190,7 @@ const NAV_LINKS: NavLink[] = [
           title: "PROOF",
           items: [
             { label: "Case Studies", href: withBase("/case-studies/") },
+            { label: "Industries", href: withBase("/industries/") },
             { label: "How We Build Teams", href: withBase("/how-we-build-teams/") },
           ],
         },
@@ -234,7 +235,7 @@ const NAV_LINKS: NavLink[] = [
           title: "RESOURCES",
           items: [
             { label: "FAQ", href: withBase("/faq/") },
-            { label: "Engagement Models", href: withBase("/engagement-models/") },
+            { label: "Case Studies", href: withBase("/case-studies/") },
           ],
         },
       ],

@@ -348,26 +348,9 @@ const { trail, title, size = "title", chips = [], lede, facts = [], actions = []
 
 <script>
   import { toggleInView } from "@pg/page30/lib/in-view";
+  import { followHero } from "@/lib/nav-tone";
 
   const hero = document.querySelector<HTMLElement>("[data-ac-dhero]")!;
-  const nav = document.querySelector<HTMLElement>(".ac-nav");
-  const root = document.documentElement;
-
   toggleInView(hero);
-
-  /* The navbar is fixed, so its tone follows what is under it: dark while
-     the hero is behind the bar, light once the page has moved past it. */
-  let frame = 0;
-  const apply = () => {
-    frame = 0;
-    const under = hero.getBoundingClientRect().bottom > (nav?.offsetHeight ?? 0);
-    const phase = under ? "field" : "paper";
-    if (root.dataset.portalPhase !== phase) root.dataset.portalPhase = phase;
-  };
-  const schedule = () => {
-    if (!frame) frame = requestAnimationFrame(apply);
-  };
-  apply();
-  window.addEventListener("scroll", schedule, { passive: true });
-  window.addEventListener("resize", schedule, { passive: true });
+  followHero(hero);
 </script>

@@ -1,0 +1,211 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@pg/page30/components/icons/Arrow.astro";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { INDUSTRIES, industryHref } from "@/lib/industries";
+import { withBase } from "@/lib/paths";
+
+/* Every industry in one frame, two to a row: a photo, the name, one line on
+   what we build, the first three challenges it solves, and a link. Where the
+   portfolio has matching work, the card says how many case studies. */
+
+interface Props {
+  id?: string;
+}
+
+const { id = "industries" } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-industries id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead
+      eyebrow={`Industries / ${pad(INDUSTRIES.length)}`}
+      headline={["The sectors", "we build for."]}
+      accent={1}
+      lede="Regulated, data-heavy, operations-critical: the industries where senior engineering and compliance know-how matter most."
+    />
+    <div data-ac-sec-frame data-ac-sec-rise>
+      <Joints />
+      <ul data-ac-industries-grid role="list">
+        {INDUSTRIES.map((industry, i) => (
+          <li data-ac-industry style={`--i:${i % 2}`}>
+            <a href={withBase(industryHref(industry.slug))} data-ac-industry-link>
+              <span data-ac-industry-photo>
+                <Image src={industry.photo} alt="" widths={[360, 560]} sizes="(max-width: 809px) 92vw, 22vw" quality={78} loading="lazy" />
+              </span>
+              <span data-ac-industry-text>
+                <span class="mono-label" data-ac-industry-n>
+                  {pad(i + 1)}
+                  {industry.cases.length > 0 && <span data-ac-industry-proof>{industry.cases.length} case {industry.cases.length === 1 ? "study" : "studies"}</span>}
+                </span>
+                <span data-ac-industry-name>{industry.name}</span>
+                <span data-ac-industry-summary>{industry.summary}</span>
+                {industry.challenges && (
+                  <span data-ac-industry-tags>
+                    {industry.challenges.items.slice(0, 3).map((item) => <span class="mono-label">{item.title}</span>)}
+                  </span>
+                )}
+                <span class="mono-label" data-ac-industry-cta>
+                  Explore {industry.name}
+                  <Arrow direction="diagonal" />
+                </span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-ac-industries-grid] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0 -1px -1px 0;
+    padding: 0;
+    list-style: none;
+    background: #ffffff;
+  }
+
+  [data-ac-industry] {
+    border-right: 1px solid var(--ac-line);
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  [data-ac-industry-link] {
+    display: grid;
+    grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.6fr);
+    gap: clamp(16px, 2vw, 28px);
+    height: 100%;
+    padding: clamp(16px, 1.8vw, 24px);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  [data-ac-industry-link]:hover {
+    background: color-mix(in srgb, var(--color-accent) 4%, #ffffff);
+  }
+
+  [data-ac-industry-link]:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+
+  [data-ac-industry-photo] {
+    display: block;
+    aspect-ratio: 4 / 5;
+    border-radius: 10px;
+    overflow: clip;
+    background: #eef1f7;
+  }
+
+  [data-ac-industry-photo] img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s cubic-bezier(0.22, 0.68, 0.24, 1);
+  }
+
+  [data-ac-industry-link]:hover [data-ac-industry-photo] img {
+    transform: scale(1.04);
+  }
+
+  [data-ac-industry-text] {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 4px 0;
+  }
+
+  [data-ac-industry-n] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-industry-proof] {
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--color-accent);
+    color: #ffffff;
+  }
+
+  [data-ac-industry-name] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(24px, 2.2vw, 32px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  [data-ac-industry-summary] {
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgb(10 16 34 / 0.66);
+  }
+
+  [data-ac-industry-tags] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  [data-ac-industry-tags] span {
+    padding: 5px 10px;
+    border: 1px solid var(--ac-line);
+    border-radius: 999px;
+    color: rgb(10 16 34 / 0.66);
+  }
+
+  [data-ac-industry-cta] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 6px;
+    color: #0a1022;
+  }
+
+  [data-ac-industry-link]:hover [data-ac-industry-cta] {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 1099px) {
+    [data-ac-industries-grid] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 559px) {
+    [data-ac-industry-link] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    [data-ac-industry-photo] {
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-industry-photo] img,
+    [data-ac-industry-link] {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-industries]").forEach(toggleInView);
+</script>
