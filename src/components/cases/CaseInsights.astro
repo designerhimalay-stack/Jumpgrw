@@ -1,0 +1,422 @@
+---
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { platformCount, stackLayers, type CaseStudy } from "@/lib/cases";
+
+/* "The build, by the numbers": figures and charts drawn only from what the
+   case study holds. Four number cards (problems named, features delivered,
+   platforms, technologies), a bar chart of features per part of the product,
+   and a donut of the stack by layer. A card or chart whose data is missing is
+   left out. Bars grow and the donut fades in when the section arrives, and
+   both stand still for reduced motion. Every chart's values are also written
+   as text beside it. */
+
+interface Props {
+  study: CaseStudy;
+  tone?: "light" | "tint";
+}
+
+const { study, tone = "light" } = Astro.props;
+const { project, problem, solution } = study;
+
+const problems = problem?.items.length ?? 0;
+const groups = (solution?.groups ?? []).map((group) => ({ title: group.title, count: group.items.length }));
+const features = groups.reduce((sum, group) => sum + group.count, 0);
+const maxCount = Math.max(1, ...groups.map((group) => group.count));
+const layers = stackLayers(project.stack);
+const total = project.stack.length;
+
+/* A chart has to compare something. A single feature group draws one full-width
+   bar, and a single stack layer draws a solid one-segment ring — both say
+   nothing the number cards above don't, and the full stack is already listed in
+   the overview. So the bar chart needs two or more parts and the donut two or
+   more layers; below that each is dropped, and if neither qualifies the whole
+   chart frame is left out and the number cards stand on their own. */
+const showBars = groups.length >= 2;
+const showDonut = layers.length >= 2;
+const showCharts = showBars || showDonut;
+
+const cards = [
+  { value: problems, label: "Problems solved", show: problems > 0 },
+  { value: features, label: "Features delivered", show: features > 0 },
+  { value: platformCount(project.platform), label: platformCount(project.platform) === 1 ? "Platform" : "Platforms", show: true },
+  { value: total, label: "Technologies", show: total > 0 },
+].filter((card) => card.show);
+
+/* One hue family: the brand blue stepped light to dark, then the ink. */
+const COLORS = [
+  "var(--color-accent)",
+  "color-mix(in srgb, var(--color-accent) 55%, #ffffff)",
+  "color-mix(in srgb, var(--color-accent) 70%, #0a1022)",
+  "color-mix(in srgb, var(--color-accent) 28%, #ffffff)",
+  "#0a1022",
+];
+
+let running = 0;
+const stops = layers.map((group, i) => {
+  const from = (running / total) * 100;
+  running += group.items.length;
+  const to = (running / total) * 100;
+  return `${COLORS[i % COLORS.length]} ${from}% ${to}%`;
+});
+const donut = `conic-gradient(${stops.join(", ")})`;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-hire-tint={tone === "tint" || undefined} data-ac-case-insights id="at-a-glance">
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow="At a glance" headline={["The build,", "by the numbers."]} accent={1} />
+
+    <ul data-ac-insight-cards role="list" data-ac-sec-rise>
+      {cards.map((card) => (
+        <li data-ac-insight-card>
+          <span data-ac-insight-value>{pad(card.value)}</span>
+          <span class="mono-label" data-ac-insight-label>{card.label}</span>
+        </li>
+      ))}
+    </ul>
+
+    {showCharts && (
+    <div data-ac-sec-frame data-ac-sec-rise>
+      <Joints />
+      <div data-ac-insight-grid data-two={showBars && showDonut || undefined}>
+        {showBars && (
+          <figure data-ac-insight-panel>
+            <figcaption>
+              <span class="mono-label" data-ac-insight-kicker>What we built</span>
+              <span data-ac-insight-title>Features by part of the product</span>
+            </figcaption>
+            <ol data-ac-bars role="list">
+              {groups.map((group, i) => (
+                <li data-ac-bar style={`--i:${i};--w:${group.count / maxCount}`}>
+                  <span data-ac-bar-label>{group.title}</span>
+                  <span data-ac-bar-track aria-hidden="true"><span data-ac-bar-fill></span></span>
+                  <span data-ac-bar-value>{group.count}</span>
+                </li>
+              ))}
+            </ol>
+            <p data-ac-insight-note>{features} features across {groups.length} {groups.length === 1 ? "part" : "parts"} of {project.name}.</p>
+          </figure>
+        )}
+
+        {showDonut && (
+          <figure data-ac-insight-panel>
+            <figcaption>
+              <span class="mono-label" data-ac-insight-kicker>Built with</span>
+              <span data-ac-insight-title>The stack, by layer</span>
+            </figcaption>
+            <div data-ac-donut-wrap>
+              <div data-ac-donut role="img" aria-label={`${total} technologies: ${layers.map((g) => `${g.items.length} ${g.layer.toLowerCase()}`).join(", ")}`} style={`background:${donut}`}>
+                <span data-ac-donut-hole>
+                  <strong>{total}</strong>
+                  <span class="mono-label">Technologies</span>
+                </span>
+              </div>
+              <ul data-ac-legend role="list">
+                {layers.map((group, i) => (
+                  <li>
+                    <span data-ac-legend-key style={`background:${COLORS[i % COLORS.length]}`} aria-hidden="true"></span>
+                    <span data-ac-legend-name>{group.layer}</span>
+                    <span data-ac-legend-items>{group.items.join(", ")}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </figure>
+        )}
+      </div>
+    </div>
+    )}
+  </div>
+</section>
+
+<style>
+  [data-ac-insight-cards] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: clamp(10px, 1.2vw, 16px);
+    margin: 0 0 clamp(18px, 2vw, 28px);
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-insight-card] {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: clamp(18px, 2vw, 28px);
+    border: 1px solid var(--ac-line);
+    border-top: 3px solid var(--color-accent);
+    border-radius: 6px;
+    background: #ffffff;
+  }
+
+  [data-ac-insight-value] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(40px, 4.6vw, 68px);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #0a1022;
+  }
+
+  [data-ac-insight-label] {
+    color: rgb(10 16 34 / 0.6);
+  }
+
+  [data-ac-insight-grid] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    background: #ffffff;
+  }
+
+  [data-ac-insight-grid][data-two] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  [data-ac-insight-panel] {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(18px, 2vw, 26px);
+    margin: 0;
+    padding: clamp(22px, 2.6vw, 40px);
+  }
+
+  [data-ac-insight-grid][data-two] > [data-ac-insight-panel] + [data-ac-insight-panel] {
+    border-left: 1px solid var(--ac-line);
+  }
+
+  [data-ac-insight-panel] figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  [data-ac-insight-kicker] {
+    color: var(--color-accent);
+  }
+
+  [data-ac-insight-title] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(20px, 1.8vw, 26px);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-bars] {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-bar] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "label value"
+      "track track";
+    gap: 8px 12px;
+    align-items: baseline;
+  }
+
+  [data-ac-bar-label] {
+    grid-area: label;
+    font-size: 15px;
+    line-height: 1.35;
+    color: #0a1022;
+  }
+
+  [data-ac-bar-value] {
+    grid-area: value;
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-accent);
+  }
+
+  [data-ac-bar-track] {
+    grid-area: track;
+    display: block;
+    height: 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-accent) 10%, #ffffff);
+    overflow: hidden;
+  }
+
+  [data-ac-bar-fill] {
+    display: block;
+    width: calc(var(--w) * 100%);
+    height: 100%;
+    border-radius: 999px;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.9s cubic-bezier(0.22, 0.68, 0.24, 1);
+    transition-delay: calc(var(--i) * 90ms + 200ms);
+  }
+
+  [data-ac-case-insights][data-ac-in] [data-ac-bar-fill] {
+    transform: scaleX(1);
+  }
+
+  [data-ac-insight-note] {
+    margin: auto 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgb(10 16 34 / 0.6);
+  }
+
+  [data-ac-donut-wrap] {
+    display: grid;
+    grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);
+    gap: clamp(20px, 2.4vw, 36px);
+    align-items: center;
+  }
+
+  [data-ac-donut] {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(0.92);
+    transition:
+      opacity 0.8s ease 0.2s,
+      transform 0.9s cubic-bezier(0.22, 0.68, 0.24, 1) 0.2s;
+  }
+
+  [data-ac-case-insights][data-ac-in] [data-ac-donut] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-ac-donut-hole] {
+    position: absolute;
+    inset: 26%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border-radius: 50%;
+    background: #ffffff;
+    text-align: center;
+  }
+
+  [data-ac-donut-hole] strong {
+    font-family: var(--font-display-stack);
+    font-size: clamp(26px, 3vw, 40px);
+    font-weight: 400;
+    line-height: 1;
+    color: #0a1022;
+  }
+
+  [data-ac-donut-hole] span {
+    font-size: 9px;
+    color: rgb(10 16 34 / 0.55);
+  }
+
+  [data-ac-legend] {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-legend] li {
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr);
+    column-gap: 10px;
+    row-gap: 2px;
+    align-items: center;
+  }
+
+  [data-ac-legend-key] {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  [data-ac-legend-name] {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0a1022;
+  }
+
+  [data-ac-legend-items] {
+    grid-column: 2;
+    font-size: 14px;
+    line-height: 1.45;
+    color: rgb(10 16 34 / 0.65);
+  }
+
+  /* When the donut is the only chart (no feature comparison to draw), it fills
+     the whole frame on its own, so the legend opens into two columns and the
+     donut grows a little — a balanced figure rather than a ring hugging the
+     left with an empty half beside it. */
+  [data-ac-insight-grid]:not([data-two]) [data-ac-donut-wrap] {
+    grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+    gap: clamp(28px, 4vw, 64px);
+  }
+
+  [data-ac-insight-grid]:not([data-two]) [data-ac-legend] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px clamp(24px, 3vw, 48px);
+  }
+
+  @media (max-width: 1099px) {
+    [data-ac-insight-grid][data-two] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    [data-ac-insight-grid][data-two] > [data-ac-insight-panel] + [data-ac-insight-panel] {
+      border-left: 0;
+      border-top: 1px solid var(--ac-line);
+    }
+  }
+
+  @media (max-width: 559px) {
+    [data-ac-donut-wrap],
+    [data-ac-insight-grid]:not([data-two]) [data-ac-donut-wrap] {
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: center;
+    }
+
+    [data-ac-donut] {
+      width: min(220px, 70vw);
+    }
+
+    [data-ac-legend],
+    [data-ac-insight-grid]:not([data-two]) [data-ac-legend] {
+      grid-template-columns: minmax(0, 1fr);
+      justify-self: stretch;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-bar-fill] {
+      transform: scaleX(1);
+      transition: none;
+    }
+
+    [data-ac-donut] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-case-insights]").forEach(toggleInView);
+</script>

@@ -201,8 +201,9 @@ every CSS rule and script that uses it.
 
 These are known and waiting on decisions, not bugs to fix on your own:
 
-- `/contact` and `/case-studies` pages don't exist yet; "Plan my team" and "View case study"
-  point at them.
+- `/contact/`, `/case-studies/`, `/faq/` and `/engagement-models/` now exist, along with the
+  article, case-study, white-paper and event detail pages. The home page's "Plan my team"
+  still scrolls to its own form.
 - Six testimonials, three case-study summaries and the stand-in photos are placeholders.
 - The headquarters address needs confirming.
 - White 11px text on the brand blue (and the small blue FAQ numbers on white) measure

@@ -1,0 +1,51 @@
+{
+  "slug": "totally-pregnant",
+  "name": "A Pregnancy Aid Application",
+  "stores": {},
+  "intro": [],
+  "sections": [
+    {
+      "title": "A Total Pregnancy Experience.",
+      "paras": [
+        "Totally Pregnant is an enterprise application which helps the Moms-to-be on the journey of pregnancy by providing answers/advice to pressing questions. The application provides content like blogs, videos, chapters, toolboxs, parental/birth classes, products, a due date calculator, and more – all related to the specific pregnancy week. Each application can be whitelisted as per the brand of the hospital."
+      ],
+      "items": []
+    },
+    {
+      "title": "The Problem",
+      "paras": [
+        "JumpGrowth was brought in to review the existing old code base that was using legacy end of life Parse API server and migrate to newer technologies. The codebase provided was having other issues and needed upgraded to support multiple whitelabel versions of newer and old hospital customers for the app platform."
+      ],
+      "items": []
+    },
+    {
+      "title": "The Solution",
+      "paras": [
+        "Jumpgrowth helped with migration and developing of the codebase to newer technologies. We are very proud to help Totally Pregnant in distributing to over 10 hospital enterprise customers in past years. Jumpgrowth helped in these areas:"
+      ],
+      "items": [
+        {
+          "title": "",
+          "body": "Migration of existing code base from Parse based API’s to Firebase based API."
+        },
+        {
+          "title": "",
+          "body": "Architectural changes to support latest versions of Android’s and iOS."
+        },
+        {
+          "title": "",
+          "body": "New Modules developed as a toolbox to the users."
+        },
+        {
+          "title": "",
+          "body": "Various hard-wired branded versions released for the application for each new customer."
+        }
+      ]
+    },
+    {
+      "title": "The Result",
+      "paras": [],
+      "items": []
+    }
+  ]
+}

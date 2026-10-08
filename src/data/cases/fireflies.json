@@ -1,0 +1,144 @@
+{
+  "slug": "fireflies",
+  "name": "Friends & Deals",
+  "stores": {},
+  "intro": [],
+  "sections": [
+    {
+      "title": "Enterprise App",
+      "paras": [],
+      "items": []
+    },
+    {
+      "title": "Users App",
+      "paras": [
+        "Fireflies is a social app for users to enjoy discounted drinks while inviting friends to bars & restaurants, and publicly or privately pinning their location on the in-app map. Additionally, the bar owners can use this platform to market themselves and post offers to users. Fireflies is a great platform to find new bars and restaurants while earning loyalty points."
+      ],
+      "items": []
+    },
+    {
+      "title": "The Problem",
+      "paras": [
+        "The client had a rough idea to create a mobile application for their customers, bars, and restaurants."
+      ],
+      "items": [
+        {
+          "title": "",
+          "body": "The client wanted to create a social meetup platform for their customers where they can check-in different restaurants and make themselves private, public, or only friends."
+        },
+        {
+          "title": "",
+          "body": "The Client wanted to implement the check-in process through the QR code scan from the mobile application or the QR device available in the restaurants."
+        },
+        {
+          "title": "",
+          "body": "The client wanted to make sure that customers do not make false check-ins on this platform."
+        },
+        {
+          "title": "",
+          "body": "The client wanted to implement in-app purchases for the bars & customers to buy trophies and marketing plans within the application."
+        },
+        {
+          "title": "",
+          "body": "The client needed flexibility for the restaurant/bar owners that would allow them to create or customize their marketing plans for their customers. These created marketing plans would be visible to the customers who were nearby or who were searching for them over the map."
+        },
+        {
+          "title": "",
+          "body": "The client needed a way to help their customers find their FB friends or phone contacts who were registered on the platform."
+        }
+      ]
+    },
+    {
+      "title": "The Solution",
+      "paras": [
+        "We engaged with Fireflies and helped them visualize their idea through appealing UI/UX designs. We helped them from the beginning stages by providing our inputs on wireframes and designs. We developed the social meet-up platform and provided the functionality through which customers can do check-ins – publicly, privately, or solely for their friends – to the restaurants. These check-ins allow other users to find each other over the map."
+      ],
+      "items": [
+        {
+          "title": "",
+          "body": "We implemented the scan QR code functionality through which the customers can make the check-in to the restaurant after scanning the QR code. We also integrated a QR device in the platform that can help restaurants scan the QR code of the customers without any physical presence."
+        },
+        {
+          "title": "",
+          "body": "To avoid false check-ins, we implemented an algorithm in the backend that tracks the customer’s location from the restaurant. If the customer is out of radius, we do not allow them to check-in, and if the customer is already checked-in to an establishment, but is travelling out of the defined radius, we automatically check them out."
+        },
+        {
+          "title": "",
+          "body": "We integrated Apple & Google Pay for implementing in-app purchases for the bars & customers to buy trophies and marketing plans within the application. If the restaurant/bar owners purchase the marketing plans then only they can create them for their customers."
+        },
+        {
+          "title": "",
+          "body": "We provided flexibility to the restaurant/bar owners to create marketing plans and notify their valuable customers – especially the ones who had visited their establishment in the last 7 days."
+        },
+        {
+          "title": "",
+          "body": "We integrated the phone book contact list, and other social platforms like Facebook. This will help their users follow other users who are already registered on Fireflies, and send invites to those who are not yet registered."
+        }
+      ]
+    },
+    {
+      "title": "Enterprise App",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "Created a mobile & web-based platform that will help them broadcast their marketing offers."
+        },
+        {
+          "title": "",
+          "body": "Integrated hardware for scanning the QR code of the customers to confirm their check-ins."
+        },
+        {
+          "title": "",
+          "body": "Implemented in-app purchases that will allow them to create their marketing offers."
+        },
+        {
+          "title": "",
+          "body": "Providing them access to view all of their customer’s data who have visited or checked-in their restaurants/bars with the help of Fireflies."
+        }
+      ]
+    },
+    {
+      "title": "Users App",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "Created a mobile application that will inform them about nearby events created by the bar owners."
+        },
+        {
+          "title": "",
+          "body": "Provided a unique profile QR code to each user for viewing each other’s profile, or checking in."
+        },
+        {
+          "title": "",
+          "body": "Implemented in-app purchases for buying the trophies which they can gift to other users."
+        },
+        {
+          "title": "",
+          "body": "Included notifications for real-time check-ins made by users and friends."
+        }
+      ]
+    },
+    {
+      "title": "The Result",
+      "paras": [],
+      "items": []
+    },
+    {
+      "title": "Find Friends. Win Big.",
+      "paras": [],
+      "items": []
+    },
+    {
+      "title": "Enterprise App",
+      "paras": [],
+      "items": []
+    },
+    {
+      "title": "Users App",
+      "paras": [],
+      "items": []
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import PageHero from "@pg/page30/components/PageHero.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import HireProcess from "@pg/page30/components/hire/HireProcess.astro";
+import type { PageHeroContent } from "@pg/page30/types/page";
+import heroPhoto from "@/assets/why/people.jpg";
+import alignPhoto from "@/assets/why/people.jpg";
+import matchPhoto from "@/assets/teams/production.jpg";
+import assemblePhoto from "@/assets/teams/extension.jpg";
+import launchPhoto from "@/assets/teams/specialist.jpg";
+import scalePhoto from "@/assets/showcase/portrait.jpg";
+
+/* How we build teams: the five stages from a team brief to a first sprint and
+   beyond, on one page. The stages are the engagement path the company uses
+   (timings are indicative and depend on team shape and specialist
+   availability). The photos are the people photos already in the project. */
+
+const HERO: PageHeroContent = {
+  trail: ["Company", "How we build teams"],
+  headline: ["How we build", "your team."],
+  lede: "From the first brief to a team shipping its first sprint: five stages, a named person at each, and a plan you can see before you commit.",
+  ctas: [
+    { label: "See the five stages", href: "#stages", arrow: "right" },
+    { label: "Plan my team", href: "#contact", arrow: "diagonal" },
+  ],
+  image: heroPhoto,
+  imageAlt: "Two colleagues work through a plan together at a screen while others work behind them.",
+  specs: [
+    { label: "Stages", value: "5" },
+    { label: "First shortlist", value: "Days 3–5" },
+    { label: "Team launched", value: "Week 2" },
+    { label: "Reviews", value: "30 / 60 / 90" },
+  ],
+};
+
+const STAGES = [
+  {
+    title: "Align",
+    body: "Define the team around the outcome. We clarify the product stage, next milestone, capability gaps, technical environment, collaboration needs and preferred shore mix before discussing specific people.",
+    covers: [
+      "Timing: Days 1–2",
+      "Regions: US onshore lead",
+      "Sessions: Roadmap briefing, team-shape workshop",
+      "Output: Team brief + engagement blueprint",
+    ],
+    photo: { image: alignPhoto, alt: "Two colleagues review a plan together at a screen while others work behind them.", focus: "60% 40%" },
+  },
+  {
+    title: "Match",
+    body: "Find people who fit the work and the team. We identify relevant specialists across the X-shore network, review technical evidence, and validate communication and working-style fit against the brief.",
+    covers: [
+      "Timing: Days 3–5",
+      "Regions: United States, Mexico + Canada, India",
+      "Sessions: Profile review, technical conversations",
+      "Output: Shortlist + role scorecards",
+    ],
+    photo: { image: matchPhoto, alt: "A smiling engineer standing by a bright window.", focus: "55% 30%" },
+  },
+  {
+    title: "Assemble",
+    body: "Turn selected talent into one operating unit. We confirm the named team, delivery leadership, regional composition, working-hour overlap, communication model, responsibilities and onboarding sequence.",
+    covers: [
+      "Timing: Week 1",
+      "Regions: Selected X-shore mix",
+      "Sessions: Team introduction, operating-model alignment",
+      "Output: Named team + onboarding plan",
+    ],
+    photo: { image: assemblePhoto, alt: "Two engineers talk through a block of code on a monitor.", focus: "50% 45%" },
+  },
+  {
+    title: "Launch",
+    body: "Connect the team and start delivering. The team enters your product environment, aligns on architecture and quality standards, confirms the first delivery objective and begins the first working cycle together.",
+    covers: [
+      "Timing: Week 2",
+      "Regions: One coordinated team",
+      "Sessions: Environment setup, kickoff + sprint planning",
+      "Output: Working team + first sprint plan",
+    ],
+    photo: { image: launchPhoto, alt: "An engineer in headphones working across two monitors and a laptop.", focus: "60% 45%" },
+  },
+  {
+    title: "Scale",
+    body: "Evolve the team as the roadmap changes. We review delivery outcomes, collaboration health, role coverage and upcoming priorities, then adjust seniority, skills, capacity or shore mix where it improves the product outcome.",
+    covers: [
+      "Timing: 30 / 60 / 90 days",
+      "Regions: Flexible across all regions",
+      "Sessions: Performance review, capacity + roadmap planning",
+      "Output: Team health review + scale plan",
+    ],
+    photo: { image: scalePhoto, alt: "A teammate concentrating on her laptop at a shared desk.", focus: "50% 35%" },
+  },
+];
+---
+
+<Layout
+  title="How we build teams · JumpGrowth"
+  description="How JumpGrowth builds your team: align, match, assemble, launch and scale, from the first brief to a team shipping its first sprint."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+
+    <HireProcess
+      id="stages"
+      eyebrow="Indicative engagement path"
+      headline={["From team brief", "to first sprint."]}
+      lede="Exact timing depends on team shape and specialist availability. Pick a stage to see who takes part, what we do together and what you receive."
+      steps={STAGES}
+      detailLabel="Stage"
+      coverLabel="At a glance"
+      stepWord="Stage"
+      cta={{ label: "Plan my team", href: "#contact" }}
+      pickLabel="Pick a stage"
+    />
+
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

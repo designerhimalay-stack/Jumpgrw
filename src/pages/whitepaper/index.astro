@@ -12,9 +12,8 @@ import type { PageHeroContent } from "@pg/page30/types/page";
 import heroPhoto from "@/assets/insights/whitepapers/papers-hero.jpg";
 import { WHITE_PAPERS } from "@/lib/insights";
 
-/* White Papers: every paper on the company's White Papers page
-   (jumpgrowth.com/whitepaper), filterable by topic. Each links to the paper's
-   download page on the company site. */
+/* White Papers: every paper, filterable by topic. Each opens the paper's own
+   page (src/pages/whitepaper/[slug].astro), where it can be requested. */
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const featured = WHITE_PAPERS[0];

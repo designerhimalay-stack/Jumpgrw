@@ -1,0 +1,198 @@
+---
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { stackLayers, type CaseStudy, type StackLayer } from "@/lib/cases";
+
+/* "How it fits together": the product's stack as the layers a request passes
+   through, left to right (top to bottom on a phone): what people touch, the
+   services behind it, the data it keeps, and where it runs. Each layer lists
+   its technologies. Under the layers, build notes that follow directly from
+   the stack and the case study's own feature groups (for example, one
+   cross-platform codebase when React Native or Flutter is in use). Nothing
+   here is a measured result. */
+
+interface Props {
+  study: CaseStudy;
+  tone?: "light" | "tint";
+}
+
+const { study, tone = "tint" } = Astro.props;
+const { project, solution } = study;
+const layers = stackLayers(project.stack);
+const stack = new Set(project.stack);
+const groupTitles = (solution?.groups ?? []).map((group) => group.title.toLowerCase());
+
+const ROLE: Record<StackLayer, string> = {
+  Client: `What people touch: the product on ${project.platform}.`,
+  Services: "The logic behind it: APIs, business rules and integrations.",
+  Data: "Where the product keeps its records.",
+  "Cloud & hosting": "How it is served, scaled and kept running.",
+  Other: "Supporting technology.",
+};
+
+const notes: string[] = [];
+if (stack.has("React Native") || stack.has("Flutter")) {
+  notes.push(`One ${stack.has("Flutter") ? "Flutter" : "React Native"} codebase serves the mobile apps, so every release reaches iOS and Android together.`);
+}
+if (stack.has("AWS Lambda")) notes.push("Serverless functions on AWS Lambda run the back-end work, so capacity follows demand.");
+if (stack.has("AWS Transcribe") || stack.has("AWS Lex")) notes.push("Voice input runs through AWS Transcribe and Lex, so the app understands what people say.");
+if (groupTitles.some((title) => /admin/.test(title))) notes.push("A web admin panel gives the client control of users, content and logs without a developer.");
+if (groupTitles.some((title) => /widget/.test(title))) notes.push("Home-screen widgets put the main actions one tap away, without opening the full app.");
+if (stack.has("Azure") || stack.has("AWS")) notes.push(`Hosted on ${stack.has("Azure") ? "Azure" : "AWS"}, with the services and data kept together.`);
+
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-hire-tint={tone === "tint" || undefined} data-ac-case-arch id="architecture">
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow="Under the hood" headline={["How it", "fits together."]} accent={1} />
+
+    <div data-ac-sec-frame data-ac-sec-rise>
+      <Joints />
+      <ol data-ac-arch role="list">
+        {layers.map((group, i) => (
+          <li data-ac-cs-layer style={`--i:${i}`}>
+            <span class="mono-label" data-ac-arch-n>{pad(i + 1)} · {group.layer}</span>
+            <p data-ac-arch-role>{ROLE[group.layer]}</p>
+            <ul data-ac-arch-tech role="list">
+              {group.items.map((tech) => <li class="mono-label">{tech}</li>)}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    {notes.length > 0 && (
+      <ul data-ac-arch-notes role="list" data-ac-sec-rise>
+        {notes.map((note) => (
+          <li>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 8.5l3.2 3L13 4.5" />
+            </svg>
+            {note}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>
+
+<style>
+  [data-ac-arch] {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #ffffff;
+  }
+
+  [data-ac-cs-layer] {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: clamp(20px, 2.2vw, 32px);
+  }
+
+  [data-ac-cs-layer] + [data-ac-cs-layer] {
+    border-left: 1px solid var(--ac-line);
+  }
+
+  /* An arrow on the rule between layers shows the direction of a request. */
+  [data-ac-cs-layer] + [data-ac-cs-layer]::before {
+    content: "";
+    position: absolute;
+    top: clamp(24px, 2.4vw, 34px);
+    left: -6px;
+    width: 11px;
+    height: 11px;
+    border-top: 1.5px solid var(--color-accent);
+    border-right: 1.5px solid var(--color-accent);
+    background: #ffffff;
+    transform: rotate(45deg);
+  }
+
+  [data-ac-arch-n] {
+    color: var(--color-accent);
+  }
+
+  [data-ac-arch-role] {
+    margin: 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(18px, 1.5vw, 22px);
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-arch-tech] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: auto 0 0;
+    padding: 6px 0 0;
+    list-style: none;
+  }
+
+  [data-ac-arch-tech] li {
+    padding: 5px 10px;
+    border: 1px solid var(--ac-line);
+    border-radius: 999px;
+    color: rgb(10 16 34 / 0.7);
+  }
+
+  [data-ac-arch-notes] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px clamp(20px, 3vw, 48px);
+    margin: clamp(20px, 2.4vw, 32px) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-arch-notes] li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgb(10 16 34 / 0.74);
+  }
+
+  [data-ac-arch-notes] svg {
+    flex: none;
+    margin-top: 3px;
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 991px) {
+    [data-ac-arch] {
+      grid-auto-flow: row;
+    }
+
+    [data-ac-cs-layer] + [data-ac-cs-layer] {
+      border-left: 0;
+      border-top: 1px solid var(--ac-line);
+    }
+
+    [data-ac-cs-layer] + [data-ac-cs-layer]::before {
+      top: -6px;
+      left: 28px;
+      transform: rotate(135deg);
+    }
+
+    [data-ac-arch-notes] {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-case-arch]").forEach(toggleInView);
+</script>

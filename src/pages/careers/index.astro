@@ -8,15 +8,18 @@ import ContactForm from "@/components/ContactForm.astro";
 import PageHero from "@pg/page30/components/PageHero.astro";
 import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
 import HireWhy from "@pg/page30/components/hire/HireWhy.astro";
+import HireSteps from "@pg/page30/components/hire/HireSteps.astro";
 import LocationsSection from "@/components/about/LocationsSection.astro";
+import OpenRoles from "@/components/careers/OpenRoles.astro";
 import type { PageHeroContent } from "@pg/page30/types/page";
-import heroPhoto from "@/assets/careers/hero.jpg";
+import heroPhoto from "@/assets/teams/production.jpg";
 import { OFFICES } from "@/lib/offices";
+import { ROLES } from "@/lib/roles";
 
-/* Careers. The company site lists no open roles, so this page says what
-   working here is like (from the About page's facts), where the offices are,
-   and takes an applicant's details through the shared form's careers
-   variant. */
+/* Careers. The open roles live in src/lib/roles.ts (placeholders until the
+   owner confirms the live openings). Below them: what working here is like
+   (from the About page's facts), how hiring works, where the offices are, and
+   the shared form's careers variant for an applicant's details. */
 
 const HERO: PageHeroContent = {
   trail: ["Company", "Careers"],
@@ -25,7 +28,7 @@ const HERO: PageHeroContent = {
   size: "long",
   lede: "A digital studio of 200+ engineers building web, mobile and AI products for startups and growing businesses, with offices in the US, Canada, Mexico, India and Australia.",
   ctas: [
-    { label: "Send your details", href: "#apply", arrow: "right" },
+    { label: "See open roles", href: "#roles", arrow: "right" },
     { label: "Why JumpGrowth", href: "#why", arrow: "diagonal" },
   ],
   assurances: [
@@ -34,11 +37,11 @@ const HERO: PageHeroContent = {
     { icon: "shield", label: "Part of OTS Solutions" },
   ],
   image: heroPhoto,
-  imageAlt: "Two engineers review code together on a monitor.",
+  imageAlt: "A smiling JumpGrowth engineer standing by a bright office window.",
   card: {
-    status: "Careers / Open applications",
+    status: "Careers / Hiring",
     place: "Dallas headquartered",
-    note: "No roles listed right now. Send your details and we’ll be in touch.",
+    note: `${ROLES.length} open roles across engineering, QA, cloud, design and sales.`,
     kicker: "Join us.",
     statement: "Real products, senior teams, four delivery countries.",
     foot: { label: "Offices", value: OFFICES.map((o) => o.city.split(",")[0]).join(", ") },
@@ -63,8 +66,15 @@ const HERO: PageHeroContent = {
   <main>
     <PageHero content={HERO} />
 
+    <OpenRoles
+      eyebrow="Open roles"
+      headline={["Find the role", "that fits you."]}
+      lede="Engineers, testers, designers and delivery leads for web, mobile and AI products. Open a role to see what it involves, then apply."
+    />
+
     <HireWhy
       id="why"
+      tone="tint"
       eyebrow="Why JumpGrowth"
       headline={["Why build", "your career here."]}
       lede="What the work looks like: real products, senior colleagues and teams that span four delivery countries."
@@ -91,6 +101,20 @@ const HERO: PageHeroContent = {
         { value: "300+", label: "Clients served" },
       ]}
       cta={{ label: "Send your details", href: "#apply" }}
+    />
+
+    <HireSteps
+      id="hiring"
+      eyebrow="How we hire"
+      headline={["A clear process,", "start to finish."]}
+      lede="Four steps from your first message to your first day, with a person you can reply to at every one."
+      steps={[
+        { title: "Apply", body: "Pick a role or send your details. Share a CV, LinkedIn or portfolio link if you have one.", focus: "A reply within a few days" },
+        { title: "Intro call", body: "A conversation with our talent team about your work, what you want next and where you would like to be based.", focus: "30 minutes" },
+        { title: "Working session", body: "Talk through real work with the people you would join: a code or design review, a test plan or a delivery scenario.", focus: "Role-specific" },
+        { title: "Offer", body: "A clear offer, the team you will join and an onboarding plan so your first weeks are never a guessing game.", focus: "Onboarding plan included" },
+      ]}
+      close={{ text: "Ready to start? Send your details and tell us the work you do best.", cta: { label: "Send your details", href: "#apply" } }}
     />
 
     <LocationsSection

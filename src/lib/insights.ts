@@ -2,9 +2,10 @@ import type { ImageMetadata } from "astro";
 
 /* JumpGrowth's published insights: blog posts, white papers and events, in
    one place so the About page and the Blog, White Papers and Events pages
-   never disagree. The articles and the white-paper downloads live on the
-   company's own site (jumpgrowth.com); the cards here link to them. Newest
-   first. */
+   never disagree. Every blog article, white paper and event has its own page
+   on this site: article text is in src/data/blog/ (src/lib/articles.ts), a
+   paper's highlights in src/data/papers/ (src/lib/papers.ts), and an event's
+   page is built from its entry below. Newest first. */
 
 import buildAiMvp from "@/assets/insights/blog/build-ai-powered-mvp-30-days.png";
 import customVsInHouse from "@/assets/insights/blog/custom-software-company-vs-in-house-2026.png";
@@ -30,12 +31,15 @@ export interface BlogPost {
   title: string;
   excerpt: string;
   category: string;
+  /** The article's original address; the site's own page is /blog/<slug>/. */
   url: string;
+  /** The article's page name, taken from `url`. */
+  slug: string;
   cover: ImageMetadata;
   author?: string;
 }
 
-export const BLOG_POSTS: BlogPost[] = [
+const POSTS: Omit<BlogPost, "slug">[] = [
   {
     title: "How to Build an AI-Powered MVP in 30 Days: Architecture, Stack, and Cost Breakdown",
     excerpt: "Step-by-step technical guide for AI MVP development in 30 days. LLM selection, backend stack, cost ranges, and phased timeline for startups.",
@@ -109,6 +113,11 @@ export const BLOG_POSTS: BlogPost[] = [
   },
 ];
 
+export const BLOG_POSTS: BlogPost[] = POSTS.map((post) => ({
+  ...post,
+  slug: post.url.split("/blog/")[1].replace(/\/$/, ""),
+}));
+
 /** The topics the company blog files posts under. */
 export const BLOG_CATEGORIES = [
   "App Development", "App of the week", "AR / VR Development", "Artificial Intelligence", "Companies",
@@ -120,11 +129,13 @@ export interface WhitePaper {
   title: string;
   summary: string;
   topic: "Artificial Intelligence" | "Mobile Application";
+  /** The paper's original address; the site's own page is /whitepaper/<slug>/. */
   url: string;
+  slug: string;
   cover: ImageMetadata;
 }
 
-export const WHITE_PAPERS: WhitePaper[] = [
+const PAPERS: Omit<WhitePaper, "slug">[] = [
   {
     title: "Vibe Coding: Navigating the Future of AI-Enhanced Software Development",
     summary: "Explore how AI is reshaping the way we build software. This whitepaper introduces the concept of Vibe Coding—an innovative, AI-assisted development approach that allows both technical and non-technical users to turn ideas into working software using natural language prompts. Learn how your product teams can accelerate innovation, improve efficiency, and stay ahead in the age of intelligent automation.",
@@ -148,6 +159,11 @@ export const WHITE_PAPERS: WhitePaper[] = [
   },
 ];
 
+export const WHITE_PAPERS: WhitePaper[] = PAPERS.map((paper) => ({
+  ...paper,
+  slug: paper.url.split("/whitepaper/")[1].replace(/\/$/, ""),
+}));
+
 /** The featured paper's portrait cover, for the White Papers hero. */
 export const FEATURED_WHITE_PAPER_COVER = vibeCodingCover;
 
@@ -160,13 +176,18 @@ export interface CompanyEvent {
   /** e.g. "03 Aug – 07 Aug 2025" */
   dates: string;
   place: string;
+  /** The event's original address; the site's own page is /events/<slug>/. */
   url: string;
+  slug: string;
   image: ImageMetadata;
 }
 
+const withEventSlug = (events: Omit<CompanyEvent, "slug">[]): CompanyEvent[] =>
+  events.map((event) => ({ ...event, slug: event.url.split("/event/")[1].replace(/\/$/, "") }));
+
 export const UPCOMING_EVENTS: CompanyEvent[] = [];
 
-export const PAST_EVENTS: CompanyEvent[] = [
+export const PAST_EVENTS: CompanyEvent[] = withEventSlug([
   {
     title: "DFW Startup Week 2025",
     tagline: "Where Innovation Meets Opportunity",
@@ -178,4 +199,4 @@ export const PAST_EVENTS: CompanyEvent[] = [
     url: `${SITE}/event/dfw-startup-week-2025-where-innovation-meets-opportunity/`,
     image: dfwStartupWeek,
   },
-];
+]);

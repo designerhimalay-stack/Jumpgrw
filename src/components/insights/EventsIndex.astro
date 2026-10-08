@@ -4,10 +4,11 @@ import GridRules from "@pg/page30/components/GridRules.astro";
 import SectionHead from "@pg/page30/components/SectionHead.astro";
 import Joints from "@pg/page30/components/process/Joints.astro";
 import { UPCOMING_EVENTS, PAST_EVENTS, type CompanyEvent } from "@/lib/insights";
+import { withBase } from "@/lib/paths";
 
 /* Events: what's coming up, then what the team has taken part in. With no
    upcoming dates the first block says so and offers a call instead. Each
-   event links to its page on the company site. */
+   event opens its own page on this site. */
 
 interface Props {
   id?: string;
@@ -71,7 +72,7 @@ const groups = [
                 const d = dateParts(event);
                 return (
                   <li data-ac-event>
-                    <a data-ac-event-media href={event.url} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+                    <a data-ac-event-media href={withBase(`/events/${event.slug}/`)} tabindex="-1" aria-hidden="true">
                       <Image src={event.image} alt="" widths={[560, 840, 1120]} sizes="(max-width: 809px) 92vw, 46vw" quality={80} />
                     </a>
                     <div data-ac-event-body>
@@ -96,7 +97,7 @@ const groups = [
                           {event.place}
                         </li>
                       </ul>
-                      <a data-ac-event-link class="mono-label" href={event.url} target="_blank" rel="noopener">
+                      <a data-ac-event-link class="mono-label" href={withBase(`/events/${event.slug}/`)}>
                         Event details
                         <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
                       </a>

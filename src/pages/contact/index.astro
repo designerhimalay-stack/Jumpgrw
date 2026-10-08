@@ -1,0 +1,56 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import LocationsSection from "@/components/about/LocationsSection.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import HireSteps from "@pg/page30/components/hire/HireSteps.astro";
+
+/* Contact: where the navbar's "Book a Discovery Call" lands. The page opens on
+   the form itself, in the same navy field as every subpage hero and with no
+   photo, so a visitor who came to write can do so at once. Below it: what
+   happens after you send a brief (the same steps as the home page's "How we
+   work", with a call between) and the offices. */
+---
+
+<Layout
+  title="Contact · JumpGrowth"
+  description="Book a discovery call with JumpGrowth. Tell us what you're building and we'll map a practical team and delivery model."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <ContactForm
+      hero
+      trail={["Company", "Contact"]}
+      headline={["Book a", "discovery call."]}
+      body="Tell us what you’re building and where the roadmap is blocked. We’ll map a practical team and delivery model around it."
+      promises={["Shortlist usually inside a week", "First commit within two weeks", "Dallas-led, across four countries"]}
+    />
+
+    <HireSteps
+      id="next"
+      eyebrow="What happens next"
+      headline={["From your brief", "to your first sprint."]}
+      lede="No long procurement cycles and no guesswork. Tell us the gap, meet the engineers, then start shipping."
+      steps={[
+        { title: "Send your brief", body: "Tell us the gap: the roadmap and the roles it needs. A rough outline is enough to start.", focus: "The clearer the roadmap, the faster the match" },
+        { title: "Talk to a specialist", body: "A call with a team specialist about your product, your stage and the shore mix that suits it.", focus: "A practical team and delivery model" },
+        { title: "Meet the shortlist", body: "We put forward senior engineers who have shipped this before, usually inside a week.", focus: "Every engineer is vetted before you see them" },
+        { title: "Start building", body: "Your squad joins stand-ups, picks up tickets and commits inside the first two weeks.", focus: "First commit lands inside two weeks" },
+      ]}
+      close={{ text: "Ready when you are. The form is at the top of this page.", cta: { label: "Send your brief", href: "#contact" } }}
+    />
+
+    <LocationsSection
+      eyebrow="Where to find us"
+      headline={["Offices across", "the globe."]}
+      lede="Headquartered in Dallas, with teams in Toronto, Mexico City, Delhi NCR, Pune and Sydney."
+    />
+  </main>
+  <Footer />
+</Layout>

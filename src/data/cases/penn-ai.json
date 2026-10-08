@@ -1,0 +1,84 @@
+{
+  "slug": "penn-ai",
+  "name": "Speech To Text",
+  "stores": {},
+  "intro": [
+    "Penn. A.I provides an AI-based platform that converts voice meetings into text notes. This AI-powered mobile application transcribes your voice meetings in real-time providing speech to text notes on the fly. Penn. A.I help in t hese notes can then be organized and searched as needed for records.",
+    "This application also identifies the speakers based on their voices and separates the conversations as per the voice recognition. The application automatically provides the summary of the recording and even V Penn. A.I allowing the users to use custom templates that will help them to categorize their recorded content accordingly.."
+  ],
+  "sections": [
+    {
+      "title": "The Problem",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "Client came to us with a very innovative idea and they were having the mock-ups ready. The only thing which they were looking for was the technical feasibility of their created prototype."
+        },
+        {
+          "title": "",
+          "body": "Client needed the automatic speech recognition technology to help their users prepare the live meeting notes to overcome the issue of preparing notes manually."
+        },
+        {
+          "title": "",
+          "body": "Client asked for the word clouds functionality that would create tags based on the recorded transcribed data."
+        },
+        {
+          "title": "",
+          "body": "Client required a functionality that could recognize the speakers who participated in the meeting. After the recording, the users should be allowed to change the speaker name as well."
+        },
+        {
+          "title": "",
+          "body": "Client needed the flexibility that would allow their users to connect their local calendars and show their schedules in the application."
+        },
+        {
+          "title": "",
+          "body": "Client wanted to have import recording functionality that would import the transcribed text into the app."
+        },
+        {
+          "title": "",
+          "body": "Client needed a smart way to provide the summary of the transcribed data that could classify the text into the custom templates."
+        }
+      ]
+    },
+    {
+      "title": "The Solution- Penn. A.I",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "We looked into the provided mock-ups and went through the discovery & research phase for confirming the feasibility of the project. We provided the POC for the transcription process to the client."
+        },
+        {
+          "title": "",
+          "body": "We implemented Google’s Automatic Speech Recognition technique for providing the real-time transcribed data based on the voice recording of the users. Penn. A.I even gave them the flexibility to import pre-recorded audio files to get converted into text."
+        },
+        {
+          "title": "",
+          "body": "We implemented the word clouds generator in a very efficient manner and implemented the algorithm to produce the words that seem to be more important from the meeting’s perspective. So, whenever the user taps on any cloud word then that particular word gets highlighted in their transcribed data."
+        },
+        {
+          "title": "",
+          "body": "We used the advanced voice recognition technology Penn. A.I that differentiates the speaker type based on their voice pitch. We gave the flexibility to the users that allows them to give the names to the speaker in one place and it will get updated everywhere with their name initials."
+        },
+        {
+          "title": "",
+          "body": "We gave the flexibility that will allow users to connect their local calendars and this will help them put all their scheduled meetings in one place. Penn. A.I allows them to record their meetings as per the defined agenda but for this, they need to be a premium user on this platform."
+        },
+        {
+          "title": "",
+          "body": "We implemented the premium subscription functionality which will give users access to templates. They will be allowed to select any template and based on it; their transcribed text will be shown in those specific fields that are part of it."
+        },
+        {
+          "title": "",
+          "body": "We gave the flexibility to users that allows them to share their recorded meetings with others. The shared meeting data can be easily accessed by that other user as well in the same manner."
+        }
+      ]
+    },
+    {
+      "title": "The Result - Penn. A.I",
+      "paras": [],
+      "items": []
+    }
+  ]
+}

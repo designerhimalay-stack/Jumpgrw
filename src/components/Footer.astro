@@ -18,19 +18,19 @@ const COLUMNS = [
     title: "Quick links",
     links: [
       { label: "Why JumpGrowth", href: "#why-agentcraft" },
-      { label: "Case studies", href: "#case-studies" },
+      { label: "Case studies", href: withBase("/case-studies/") },
       { label: "Client stories", href: "#client-stories" },
       { label: "X-Shore", href: "#x-shore" },
-      { label: "FAQ", href: "#faq" },
+      { label: "FAQ", href: withBase("/faq/") },
     ],
   },
   {
     title: "Team models",
     links: [
-      { label: "MVP teams", href: "#teams" },
-      { label: "Production teams", href: "#teams" },
-      { label: "Specialist developers", href: "#teams" },
-      { label: "Team extension", href: "#teams" },
+      { label: "MVP teams", href: withBase("/page1/") },
+      { label: "Production teams", href: withBase("/page4/") },
+      { label: "Specialist developers", href: withBase("/page8/") },
+      { label: "Team extension", href: withBase("/page7/") },
     ],
   },
 ];

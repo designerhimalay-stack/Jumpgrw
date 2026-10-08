@@ -1,0 +1,101 @@
+{
+  "slug": "greenaider",
+  "name": "Greenaider",
+  "stores": {},
+  "intro": [
+    "GA Footprint Calculator is a digital platform for companies, academic institutions and communities that care about the environment and help their people contribute to tackling climate challenges.",
+    "The GA Footprint Calculator is designed to empower people to easily quantify the connection between making sustainable lifestyle choices daily and their impact on their climate footprint. GA uses a consumption-based accounting approach to track the global impact of carbon emissions and help users track their activities over time.",
+    "This application allows users to set goals, track their contributions and participate in green challenges."
+  ],
+  "sections": [
+    {
+      "title": "The Problem",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "Client wanted a platform that can calculate and show eco-footprint over a 12-month period by category and by month. Users should be able to view their footprint and edit inputs to their footprint calculations to accurately update their footprint in real-time."
+        },
+        {
+          "title": "",
+          "body": "Client wanted a platform that Shows goals/challenges users can participate in, as well as pages for past and upcoming challenges."
+        },
+        {
+          "title": "",
+          "body": "Client wanted a functionality which allows users to view Group and Individual challenges and view their (individual or group) progress towards the challenges."
+        },
+        {
+          "title": "",
+          "body": "Client wanted a Ranking Board for users which will show individual and group ranking."
+        },
+        {
+          "title": "",
+          "body": "Client wanted challenges and footprint reports providing advanced analytics on the usage behavior and progress of users and their organization as a whole."
+        },
+        {
+          "title": "",
+          "body": "Client wanted a private interface to manage their organization’s account, data and users’ activities in a safe space."
+        },
+        {
+          "title": "",
+          "body": "Client wanted a super admin panel where they can manage the users/companies, goals, challenges and subscriptions."
+        },
+        {
+          "title": "",
+          "body": "Client wanted a CMS-based landing page."
+        },
+        {
+          "title": "",
+          "body": "Client wanted functionality for receiving payments from companies using the platform."
+        }
+      ]
+    },
+    {
+      "title": "The Solution",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "JumpGrowth created a web app for users where they can view their footprint and edit inputs to their footprint calculations to accurately update their footprint in real-time."
+        },
+        {
+          "title": "",
+          "body": "Users can either have individual accounts on the platform or they can also be part of a company."
+        },
+        {
+          "title": "",
+          "body": "The web app shows goals users are currently working towards. Their progress is based on the eco-footprint calculator we built."
+        },
+        {
+          "title": "",
+          "body": "Users can view the Leaderboard to view all rankings, and filter the rankings based on the challenges they are participating in."
+        },
+        {
+          "title": "",
+          "body": "We have developed an analytics dashboard where users can check their carbon footprint by category and can track the change in footprint by month or year."
+        },
+        {
+          "title": "",
+          "body": "We have built a company admin panel where company admins can manage the users, challenges assignment and goals assignment."
+        },
+        {
+          "title": "",
+          "body": "We have built a super admin panel for GA controllers where they can manage companies/individual users, challenges, goals and subscriptions."
+        },
+        {
+          "title": "",
+          "body": "We have built a WordPress-based landing page."
+        },
+        {
+          "title": "",
+          "body": "We have integrated Stripe as a payment gateway."
+        }
+      ]
+    },
+    {
+      "title": "The Result",
+      "paras": [],
+      "items": []
+    }
+  ]
+}

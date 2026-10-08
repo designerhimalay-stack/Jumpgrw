@@ -1,9 +1,10 @@
 import type { ImageMetadata } from "astro";
 
-/* JumpGrowth's portfolio: every product on the company's Our Portfolio page
-   (jumpgrowth.com/portfolio), in its order. Briefs, taglines and stacks are
-   the company's own words; the full write-ups live on the company site and
-   `url` links to each. The mockups are transparent device renders. */
+/* JumpGrowth's portfolio: every product in the company's portfolio, in its
+   order. Briefs, taglines and stacks are the company's own words; each
+   product's problem and solution text is in src/data/cases/ and shown on its
+   own page (see src/lib/cases.ts). The mockups are transparent device
+   renders. */
 
 import gunlox from "@/assets/cases/projects/gunlox.webp";
 import shipItPro from "@/assets/cases/projects/ship-it-pro.webp";

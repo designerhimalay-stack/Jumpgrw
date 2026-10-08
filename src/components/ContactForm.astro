@@ -54,19 +54,30 @@ const CAREER_LOCATIONS = [
 
 interface Props {
   id?: string;
-  variant?: "team" | "careers";
+  variant?: "team" | "careers" | "paper";
+  /** The white paper being requested (the "paper" variant). */
+  paper?: string;
   eyebrow?: string;
   headline?: string[];
   body?: string;
+  /** Opens the page: the navy hero field with the form in it (the Contact page). */
+  hero?: boolean;
+  /** The breadcrumb over a hero's headline. */
+  trail?: string[];
+  /** Short promises listed under the contact details (hero only). */
+  promises?: string[];
 }
-const { id = "contact", variant = "team" } = Astro.props;
+const { id = "contact", variant = "team", paper = "", hero = false, trail = [], promises = [] } = Astro.props;
 const careers = variant === "careers";
+const request = variant === "paper";
 const {
-  eyebrow = careers ? "Join the team" : "Build your team",
-  headline = careers ? ["Send us", "your details."] : ["Tell us what", "you’re building."],
+  eyebrow = careers ? "Join the team" : request ? "Get the paper" : "Build your team",
+  headline = careers ? ["Send us", "your details."] : request ? ["Request the", "white paper."] : ["Tell us what", "you’re building."],
   body = careers
     ? "Share the work you do and where you’d like to do it, with a link to your CV or profile. We’ll get in touch when a role fits."
-    : "Share where the roadmap is blocked and the capabilities you need. We’ll map a practical team and delivery model.",
+    : request
+      ? "Tell us where to send it. We’ll email you the full paper and, if it helps, set up a call with the team that wrote it."
+      : "Share where the roadmap is blocked and the capabilities you need. We’ll map a practical team and delivery model.",
 } = Astro.props;
 
 const source = Astro.url.pathname;
@@ -76,8 +87,9 @@ const f = (name: string) => `${id}-${name}`;
 ---
 
 <section
-  data-ac-sec="accent"
+  data-ac-sec={hero ? "dark" : "accent"}
   data-ac-contact
+  data-ac-contact-hero={hero || undefined}
   id={id}
   data-email={CONTACT_EMAIL}
   data-has-action={FORM_ACTION ? "" : undefined}
@@ -86,7 +98,30 @@ const f = (name: string) => `${id}-${name}`;
 
   <div data-ac-sec-container data-ac-contact-grid>
     <div data-ac-contact-copy>
-      <SectionHead eyebrow={eyebrow} headline={headline} accent={headline.length - 1} />
+      {hero ? (
+        <Fragment>
+          {trail.length > 0 && (
+            <nav data-ac-contact-trail class="mono-label" aria-label="Breadcrumb">
+              <span aria-hidden="true">+</span>
+              <ol>
+                {trail.map((step, i) => (
+                  <li aria-current={i === trail.length - 1 ? "page" : undefined}>{step}</li>
+                ))}
+              </ol>
+            </nav>
+          )}
+          <h1 data-ac-contact-title aria-label={headline.join(" ")}>
+            {headline.map((line, i) => (
+              <Fragment>
+                {i > 0 && <Fragment>{" "}<br aria-hidden="true" /></Fragment>}
+                <span data-accent={i === headline.length - 1 || undefined}>{line}</span>
+              </Fragment>
+            ))}
+          </h1>
+        </Fragment>
+      ) : (
+        <SectionHead eyebrow={eyebrow} headline={headline} accent={headline.length - 1} />
+      )}
       <div data-ac-sec-rise data-ac-contact-ways>
         <p data-ac-contact-body>{body}</p>
         <ul role="list">
@@ -103,6 +138,18 @@ const f = (name: string) => `${id}-${name}`;
             <a href={tel}>{CONTACT_PHONE}</a>
           </li>
         </ul>
+        {promises.length > 0 && (
+          <ul data-ac-contact-promises role="list" aria-label="What to expect">
+            {promises.map((promise) => (
+              <li>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 8.5l3.2 3L13 4.5" />
+                </svg>
+                {promise}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
 
@@ -112,8 +159,8 @@ const f = (name: string) => `${id}-${name}`;
       data-ac-sec-rise
       action={action}
       method="post"
-      enctype={FORM_ACTION ? undefined : "text/plain"}
-      data-subject={careers ? "Careers" : "Team brief"}
+      enctype={FORM_ACTION ? (careers ? "multipart/form-data" : undefined) : "text/plain"}
+      data-subject={careers ? "Careers" : request ? "White paper" : "Team brief"}
     >
       <input type="hidden" name="source" value={source} />
 
@@ -142,12 +189,44 @@ const f = (name: string) => `${id}-${name}`;
             </select>
           </div>
           <div data-ac-field data-wide>
-            <label for={f("profile")}>CV, LinkedIn or portfolio link <span>(optional)</span></label>
+            <label for={f("cv")}>Attach your CV <span>(PDF or Word, up to 5 MB)</span></label>
+            <input id={f("cv")} name="cv" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" data-ac-cv />
+            <p data-ac-field-hint>
+              {FORM_ACTION
+                ? "Your CV is sent with the form."
+                : "Your email app opens with your details filled in. Attach this file to that email before you send it."}
+            </p>
+          </div>
+          <div data-ac-field data-wide>
+            <label for={f("profile")}>LinkedIn or portfolio link <span>(optional)</span></label>
             <input id={f("profile")} name="profile" type="url" placeholder="https://" />
           </div>
           <div data-ac-field data-wide>
             <label for={f("message")}>About you <span>(optional)</span></label>
             <textarea id={f("message")} name="message" rows="3" placeholder="Your experience, skills and the role you’re looking for"></textarea>
+          </div>
+        </div>
+      ) : request ? (
+        <div data-ac-contact-fields>
+          <div data-ac-field data-wide>
+            <label for={f("need")}>White paper</label>
+            <input id={f("need")} name="need" type="text" value={paper} readonly />
+          </div>
+          <div data-ac-field>
+            <label for={f("name")}>Your name</label>
+            <input id={f("name")} name="name" type="text" autocomplete="name" placeholder="Full name" required />
+          </div>
+          <div data-ac-field>
+            <label for={f("email")}>Work email</label>
+            <input id={f("email")} name="email" type="email" autocomplete="email" placeholder="you@company.com" required />
+          </div>
+          <div data-ac-field>
+            <label for={f("company")}>Company <span>(optional)</span></label>
+            <input id={f("company")} name="company" type="text" autocomplete="organization" placeholder="Company name" />
+          </div>
+          <div data-ac-field>
+            <label for={f("phone")}>Phone <span>(optional)</span></label>
+            <input id={f("phone")} name="phone" type="tel" autocomplete="tel" placeholder="Phone number" />
           </div>
         </div>
       ) : (
@@ -190,7 +269,7 @@ const f = (name: string) => `${id}-${name}`;
       )}
 
       <button type="submit" data-ac-contact-submit class="mono-label">
-        {careers ? "Send my details" : "Plan my team"}
+        {careers ? "Send my details" : request ? "Send me the paper" : hero ? "Book my discovery call" : "Plan my team"}
         <Arrow direction="right" />
       </button>
     </form>
@@ -298,6 +377,31 @@ const f = (name: string) => `${id}-${name}`;
     min-height: 74px;
   }
 
+  [data-ac-field] input[type="file"] {
+    padding: 8px;
+    cursor: pointer;
+  }
+
+  [data-ac-field] input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--color-accent) 10%, #fff);
+    color: var(--color-accent);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  [data-ac-field-hint] {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: rgb(10 16 34 / 0.55);
+  }
+
   [data-ac-field] input::placeholder,
   [data-ac-field] textarea::placeholder {
     color: rgb(10 16 34 / 0.38);
@@ -330,6 +434,95 @@ const f = (name: string) => `${id}-${name}`;
     background: var(--color-accent-dark);
   }
 
+  /* As a page's opening: the subpage hero's navy field, the breadcrumb and a
+     page-sized headline over the copy, the form in a white panel beside it. */
+  [data-ac-contact-hero][data-ac-sec] {
+    --ac-nav-h: 108px;
+    padding-top: calc(var(--ac-nav-h) + clamp(32px, 6vh, 72px));
+    padding-bottom: clamp(56px, 9vh, 110px);
+    background:
+      radial-gradient(55% 65% at 88% 18%, rgb(80 122 247 / 0.2), transparent 70%),
+      linear-gradient(180deg, #000715 0%, #071127 34%, #0d1c41 74%, #132658 100%);
+    overflow: clip;
+  }
+
+  [data-ac-contact-hero] [data-ac-contact-grid] {
+    align-items: center;
+  }
+
+  [data-ac-contact-trail] {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 clamp(18px, 3vh, 28px);
+    color: var(--sec-muted);
+  }
+
+  [data-ac-contact-trail] > span {
+    color: var(--color-accent);
+  }
+
+  [data-ac-contact-trail] ol {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-contact-trail] li + li::before {
+    content: "/";
+    margin: 0 8px;
+    color: rgb(255 255 255 / 0.3);
+  }
+
+  [data-ac-contact-trail] li[aria-current] {
+    color: #ffffff;
+  }
+
+  [data-ac-contact-title] {
+    margin: 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(44px, 6vw, 92px);
+    font-weight: var(--display-weight);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #ffffff;
+  }
+
+  [data-ac-contact-title] [data-accent] {
+    color: var(--color-accent);
+  }
+
+  [data-ac-contact-hero] [data-ac-contact-ways] {
+    margin-top: clamp(22px, 3vh, 34px);
+  }
+
+  /* Written with the contact list's own prefix so its generic "ul" rule
+     (no margin, no padding) doesn't flatten this list's spacing. */
+  [data-ac-contact-ways] [data-ac-contact-promises] {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: clamp(22px, 3vh, 32px) 0 0;
+    padding: clamp(18px, 2.4vh, 24px) 0 0;
+    list-style: none;
+    border-top: 1px solid var(--ac-line);
+  }
+
+  [data-ac-contact-promises] li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: rgb(255 255 255 / 0.82);
+  }
+
+  [data-ac-contact-promises] svg {
+    flex: none;
+    color: var(--color-accent);
+  }
+
   @media (max-width: 860px) {
     [data-ac-contact-grid] {
       grid-template-columns: 1fr;
@@ -349,6 +542,36 @@ const f = (name: string) => `${id}-${name}`;
   document.querySelectorAll<HTMLElement>("[data-ac-contact]").forEach((section) => {
     toggleInView(section);
 
+    /* Opening a page, the section sits under the fixed navbar, so the bar's
+       tone follows it: dark while it is behind the bar, light once past. */
+    if (section.hasAttribute("data-ac-contact-hero")) {
+      const nav = document.querySelector<HTMLElement>(".ac-nav");
+      const root = document.documentElement;
+      let frame = 0;
+      const apply = () => {
+        frame = 0;
+        const under = section.getBoundingClientRect().bottom > (nav?.offsetHeight ?? 0);
+        const phase = under ? "field" : "paper";
+        if (root.dataset.portalPhase !== phase) root.dataset.portalPhase = phase;
+      };
+      const schedule = () => {
+        if (!frame) frame = requestAnimationFrame(apply);
+      };
+      apply();
+      window.addEventListener("scroll", schedule, { passive: true });
+      window.addEventListener("resize", schedule, { passive: true });
+    }
+
+    /* A CV must be a PDF or Word file of 5 MB or less. */
+    const cv = section.querySelector<HTMLInputElement>("input[data-ac-cv]");
+    cv?.addEventListener("change", () => {
+      const file = cv.files?.[0];
+      const okType = !file || /\.(pdf|docx?)$/i.test(file.name);
+      const okSize = !file || file.size <= 5 * 1024 * 1024;
+      cv.setCustomValidity(okType ? (okSize ? "" : "That file is over 5 MB. Please attach a smaller CV.") : "Please attach a PDF or Word file.");
+      if (!okType || !okSize) cv.reportValidity();
+    });
+
     /* With a form service set the browser posts normally. */
     if (section.hasAttribute("data-has-action")) return;
 
@@ -359,6 +582,11 @@ const f = (name: string) => `${id}-${name}`;
       event.preventDefault();
       const lines: string[] = [];
       form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input, select, textarea").forEach((field) => {
+        if (field instanceof HTMLInputElement && field.type === "file") {
+          const file = field.files?.[0];
+          if (file) lines.push(`CV file: ${file.name} (please attach it to this email)`);
+          return;
+        }
         if (field.type === "hidden") {
           if (field.value.trim()) lines.push(`Page: ${field.value.trim()}`);
           return;

@@ -1,0 +1,50 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import FaqSection from "@/components/FaqSection.astro";
+import PageHero from "@pg/page30/components/PageHero.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@pg/page30/types/page";
+import heroPhoto from "@/assets/teams/extension.jpg";
+
+/* FAQ: the home page's questions and answers on a page of their own, so the
+   navbar's FAQ link opens here from any page instead of jumping to the
+   middle of the home page. The questions live in FaqSection. */
+
+const HERO: PageHeroContent = {
+  trail: ["Insights", "FAQ"],
+  headline: ["Questions,", "answered."],
+  lede: "Straight answers about building your team with JumpGrowth: team models, speed, AI assistance, X-shore delivery and where we are based.",
+  ctas: [
+    { label: "Read the answers", href: "#faq", arrow: "right" },
+    { label: "Ask a team specialist", href: "#contact", arrow: "diagonal" },
+  ],
+  image: heroPhoto,
+  imageAlt: "Two engineers talk through a block of code on a monitor.",
+  specs: [
+    { label: "Questions answered", value: "7" },
+    { label: "First commit", value: "Within two weeks" },
+    { label: "Headquarters", value: "Dallas, TX" },
+    { label: "Delivery", value: "Four countries" },
+  ],
+};
+---
+
+<Layout
+  title="FAQ · JumpGrowth"
+  description="Answers to common questions about JumpGrowth: individual developers or full teams, MVP teams, how fast a team starts, AI-assisted delivery and the X-shore model."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <FaqSection />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

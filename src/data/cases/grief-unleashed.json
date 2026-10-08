@@ -1,0 +1,68 @@
+{
+  "slug": "grief-unleashed",
+  "name": "Grief Counseling App",
+  "stores": {},
+  "intro": [
+    "Grief Unleashed has a mission to help individuals undergoing grief, empower them to overcome and grow stronger through the grief journey. So, Grief Unleashed provides a web & mobile platform for users to receive real counseling from verified counselors who care about them & their life.",
+    "This platform helps their members to book appointments with the counselor and have one-one video/audio sessions with them. The counselors get assigned automatically to the members based on their provided answers in response to their questions that will decide their stage of grief."
+  ],
+  "sections": [
+    {
+      "title": "The Problem",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "Client approached us with their raw idea and wanted a feasible solution to achieve their objective of creating this platform."
+        },
+        {
+          "title": "",
+          "body": "Client needed a mapping algorithm that could help their members to get connected with the counselors based on their selected options. This would help their most grief members to communicate with their most experienced counselors."
+        },
+        {
+          "title": "",
+          "body": "Client wanted to have different options that could help their members to have a one-one video/audio session with their assigned counselor. To have this session, they need to make in-app purchases for buying minutes for the session."
+        },
+        {
+          "title": "",
+          "body": "Client needed the flexibility for their members that would allow them to change their options and assigned counselors if they are not satisfied with the previously assigned counselor."
+        },
+        {
+          "title": "",
+          "body": "Client also needed a mood tracker at the end of their counselors that would help them know the mood status of their assigned members while using this app."
+        }
+      ]
+    },
+    {
+      "title": "The Solution",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "We analyzed the vision of the client and provided the appropriate technology solution for launching their idea into the app market."
+        },
+        {
+          "title": "",
+          "body": "We developed an algorithm for the assignment/re-assignment of the counselors to the members of this platform. We defined certain scores based on the options selected by the members and based on these scores, the highest scored member gets mapped with the most qualified counselor. We defined that the member who is scoring the highest score is in the more grief and required a more experienced counselor."
+        },
+        {
+          "title": "",
+          "body": "We implemented Agora in the background for having the smooth one-one video/audio session between members & counselors of this platform. We implemented certain logics as well based on the number of minutes left in the purchased plan of the members. Once the minutes are over then the members can boost their plan by purchasing more minutes."
+        },
+        {
+          "title": "",
+          "body": "We gave flexibility to the members that allow them to update their options anytime. They can change their assigned counselor and for this, the algorithm will again run in the background."
+        },
+        {
+          "title": "",
+          "body": "We implemented the mood tracker graph at the end of a counselor based on which they can filter out all their members. On the other hand, we had given a scroller which members can scroll to showcase their mood to their counselors."
+        }
+      ]
+    },
+    {
+      "title": "The Result",
+      "paras": [],
+      "items": []
+    }
+  ]
+}

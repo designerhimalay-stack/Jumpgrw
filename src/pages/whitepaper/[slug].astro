@@ -1,0 +1,54 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import DetailHero from "@/components/DetailHero.astro";
+import PaperDetail from "@/components/insights/PaperDetail.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import { WHITE_PAPERS } from "@/lib/insights";
+import { getPaperExtras } from "@/lib/papers";
+import { withBase } from "@/lib/paths";
+
+/* One white paper, in the site's own layout: its hero, what it covers, the
+   other papers and a form to request it. The title, summary, topic and cover
+   come from src/lib/insights.ts; the introduction and highlights, where the
+   paper has them, from src/data/papers/<slug>.json. */
+
+export function getStaticPaths() {
+  return WHITE_PAPERS.map((paper) => ({ params: { slug: paper.slug }, props: { paper } }));
+}
+
+const { paper } = Astro.props;
+const extras = getPaperExtras(paper.slug);
+const others = WHITE_PAPERS.filter((other) => other.slug !== paper.slug);
+---
+
+<Layout title={`${paper.title} · JumpGrowth`} description={paper.summary.slice(0, 200)} navTone="field">
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <DetailHero
+      trail={["Insights", "White Papers", paper.topic]}
+      title={paper.title}
+      chips={[paper.topic, "White paper"]}
+      lede={paper.summary.length > 220 ? undefined : paper.summary}
+      facts={[
+        { label: "Topic", value: paper.topic },
+        { label: "Published by", value: "JumpGrowth" },
+      ]}
+      actions={[
+        { label: "Get the white paper", href: "#request", arrow: "right" },
+        { label: "All white papers", href: withBase("/whitepaper/#papers"), arrow: "diagonal" },
+      ]}
+      image={paper.cover}
+      imageAlt={`Cover of the white paper “${paper.title}”`}
+      fit="contain"
+    />
+    <PaperDetail paper={paper} extras={extras} others={others} />
+    <ContactForm id="request" variant="paper" paper={paper.title} />
+  </main>
+  <Footer />
+</Layout>

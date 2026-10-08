@@ -1,0 +1,65 @@
+{
+  "slug": "loan-mantra",
+  "name": "loan-mantra",
+  "stores": {
+    "ios": "https://apps.apple.com/us/app/loan-mantra-blue/id1520405464"
+  },
+  "intro": [],
+  "sections": [
+    {
+      "title": "The Solution",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "OTS started relationship with Loan Mantra by helping them to resolve all the existing functional issues occurring in the platform developed by previous vendor."
+        },
+        {
+          "title": "",
+          "body": "OTS did the complete transition from the previous vendor by understanding the complete system, doing code reviews and documenting the complete process workflows."
+        },
+        {
+          "title": "",
+          "body": "OTS migrated the complete system to Azure for improving scalability and reliability."
+        },
+        {
+          "title": "",
+          "body": "OTS implemented robust security techniques to enhance system security including the implementation of SSL."
+        },
+        {
+          "title": "",
+          "body": "OTS implemented a dynamic document template architecture which helps the system administrator to map the templates with existing lenders, loan types, partners and category. Architecture helped to generate pre-filled documents (based on the data in loan application) for the users and also allow the user to manually upload against the required application type."
+        },
+        {
+          "title": "",
+          "body": "OTS changed the architecture to remove the data discrepancies in the applications from both the borrower and advisor side."
+        },
+        {
+          "title": "",
+          "body": "OTS helped in integration of DOCUSIGN API for digital signature of documents from the borrower."
+        },
+        {
+          "title": "",
+          "body": "OTS helped to develop the algorithm for automating the mapping of the lenders and advisors as per the loan application."
+        },
+        {
+          "title": "",
+          "body": "OTS evaluated and implemented the SMART API for providing the credit reports of individual/business to the advisors."
+        },
+        {
+          "title": "",
+          "body": "OTS helped HCANOW to rebrand the complete marketing strategy by launching new brand LoanMantra (developed in WordPress) with integrating the existing platform (developed in .Net) renamed as “BLUETM”."
+        },
+        {
+          "title": "",
+          "body": "OTS helped bringing lendservices and hcanow to one umbrella of Loan Mantra by integrating under sub-domain advisors.loanmantra.com and borrowers.loanmantra.com"
+        }
+      ]
+    },
+    {
+      "title": "The Result",
+      "paras": [],
+      "items": []
+    }
+  ]
+}

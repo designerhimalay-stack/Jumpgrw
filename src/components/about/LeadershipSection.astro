@@ -231,7 +231,39 @@ const initials = (name: string) => name.split(/\s+/).map((part) => part[0]).join
 
   @media (max-width: 809px) {
     [data-ac-leaders-grid] {
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* Grid items default to min-width:auto (their min-content), which would
+       hold the row wider than the viewport; let the cards and their caption
+       shrink so two fit cleanly down to 320px. */
+    [data-ac-leader],
+    [data-ac-leader-copy],
+    [data-ac-leader-name],
+    [data-ac-leader-role] {
+      min-width: 0;
+    }
+
+    [data-ac-leader-name] {
+      overflow-wrap: break-word;
+    }
+  }
+
+  /* Small phones: the caption tightens so two portrait cards fit the row
+     without the name and badge crowding. */
+  @media (max-width: 420px) {
+    [data-ac-leader-copy] {
+      padding: 14px 8px 8px;
+      gap: 4px 8px;
+    }
+
+    [data-ac-leader-name] {
+      font-size: 19px;
+    }
+
+    [data-ac-leader-link] {
+      width: 36px;
+      height: 36px;
     }
   }
 

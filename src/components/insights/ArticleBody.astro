@@ -1,0 +1,312 @@
+---
+import GridRules from "@pg/page30/components/GridRules.astro";
+import { outline, resolveLinks, slugify, type Article } from "@/lib/articles";
+
+/* One article's text on a light band. A reading column of about 70
+   characters, with an "On this page" list beside it on wide screens (sticky,
+   and it marks the section being read). Headings, paragraphs, lists and
+   tables are set in the site's own type; a table scrolls sideways inside its
+   own frame on a phone instead of widening the page. */
+
+interface Props {
+  article: Article;
+}
+
+const { article } = Astro.props;
+const toc = outline(article);
+
+/* Each h2 takes the next anchor outline() computed, in the same order. */
+let h2 = 0;
+const nextId = (text: string) => toc[h2++]?.id ?? slugify(text);
+---
+
+<section data-ac-sec="light" data-ac-article>
+  <GridRules />
+  <div data-ac-sec-container data-ac-article-grid>
+    {toc.length > 2 && (
+      <nav data-ac-article-toc aria-label="On this page">
+        <p class="mono-label">On this page</p>
+        <ol>
+          {toc.map((item) => (
+            <li><a href={`#${item.id}`}>{item.text}</a></li>
+          ))}
+        </ol>
+      </nav>
+    )}
+
+    <div data-ac-article-body data-has-toc={toc.length > 2 || undefined}>
+      {article.blocks.map((block) => {
+        if (block.t === "h2") return <h2 id={nextId(block.text)} set:html={resolveLinks(block.text)} />;
+        if (block.t === "h3") return <h3 set:html={resolveLinks(block.text)} />;
+        if (block.t === "h4") return <h4 set:html={resolveLinks(block.text)} />;
+        if (block.t === "p") return <p set:html={resolveLinks(block.text)} />;
+        if (block.t === "ul") return <ul>{block.items.map((item) => <li set:html={resolveLinks(item)} />)}</ul>;
+        if (block.t === "ol") return <ol>{block.items.map((item) => <li set:html={resolveLinks(item)} />)}</ol>;
+        const [head, ...rows] = block.rows;
+        return (
+          <div data-ac-article-table role="region" aria-label="Table" tabindex="0">
+            <table>
+              <thead>
+                <tr>{head.map((cell) => <th scope="col" set:html={resolveLinks(cell)} />)}</tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr>{row.map((cell) => <td set:html={resolveLinks(cell)} />)}</tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-ac-article-grid] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(32px, 4vw, 72px);
+    justify-content: center;
+  }
+
+  @media (min-width: 1100px) {
+    [data-ac-article-grid] {
+      grid-template-columns: 240px minmax(0, 720px);
+    }
+  }
+
+  [data-ac-article-toc] {
+    display: none;
+  }
+
+  @media (min-width: 1100px) {
+    [data-ac-article-toc] {
+      display: block;
+      position: sticky;
+      top: 128px;
+      align-self: start;
+      max-height: calc(100vh - 160px);
+      overflow-y: auto;
+    }
+  }
+
+  [data-ac-article-toc] p {
+    margin: 0 0 14px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-article-toc] ol {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-left: 1px solid var(--ac-line);
+  }
+
+  [data-ac-article-toc] a {
+    display: block;
+    padding: 8px 0 8px 16px;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    font-size: 14px;
+    line-height: 1.4;
+    color: rgb(10 16 34 / 0.62);
+    text-decoration: none;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  [data-ac-article-toc] a:hover,
+  [data-ac-article-toc] a[aria-current="true"] {
+    color: var(--color-accent);
+    border-left-color: var(--color-accent);
+  }
+
+  [data-ac-article-toc] a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  [data-ac-article-body] {
+    min-width: 0;
+    font-size: clamp(16.5px, 1.25vw, 18px);
+    line-height: 1.72;
+    color: rgb(10 16 34 / 0.8);
+  }
+
+  [data-ac-article-body] > :first-child {
+    margin-top: 0;
+  }
+
+  [data-ac-article-body] h2 {
+    margin: clamp(44px, 5vw, 68px) 0 18px;
+    scroll-margin-top: 128px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(26px, 2.5vw, 36px);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  [data-ac-article-body] h3 {
+    margin: clamp(30px, 3vw, 40px) 0 12px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(20px, 1.8vw, 25px);
+    font-weight: 400;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-article-body] h4 {
+    margin: 26px 0 8px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #0a1022;
+  }
+
+  [data-ac-article-body] p {
+    margin: 0 0 1.15em;
+  }
+
+  [data-ac-article-body] strong {
+    font-weight: 600;
+    color: #0a1022;
+  }
+
+  [data-ac-article-body] a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    overflow-wrap: anywhere;
+  }
+
+  [data-ac-article-body] a:hover {
+    color: var(--color-accent-dark);
+  }
+
+  [data-ac-article-body] a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  [data-ac-article-body] ul,
+  [data-ac-article-body] ol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6em;
+    margin: 0 0 1.4em;
+    padding: 0;
+    list-style: none;
+    counter-reset: item;
+  }
+
+  [data-ac-article-body] li {
+    position: relative;
+    padding-left: 26px;
+  }
+
+  [data-ac-article-body] ul > li::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 0.82em;
+    width: 10px;
+    height: 1.5px;
+    background: var(--color-accent);
+  }
+
+  [data-ac-article-body] ol > li {
+    counter-increment: item;
+  }
+
+  [data-ac-article-body] ol > li::before {
+    content: counter(item, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 0.2em;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-accent);
+  }
+
+  [data-ac-article-body] ol > li {
+    padding-left: 34px;
+  }
+
+  [data-ac-article-table] {
+    margin: 1.6em 0 2em;
+    overflow-x: auto;
+    border: 1px solid var(--ac-line);
+    border-radius: 10px;
+    background: #ffffff;
+  }
+
+  [data-ac-article-table]:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  [data-ac-article-table] table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+
+  [data-ac-article-table] th,
+  [data-ac-article-table] td {
+    padding: 12px 16px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  [data-ac-article-table] th {
+    background: #f1f4fe;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #0a1022;
+  }
+
+  [data-ac-article-table] tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-article-toc] a {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /* Mark the "On this page" entry for the section being read. */
+  const toc = document.querySelector<HTMLElement>("[data-ac-article-toc]");
+  if (toc && "IntersectionObserver" in window) {
+    const links = new Map<string, HTMLAnchorElement>();
+    toc.querySelectorAll<HTMLAnchorElement>("a[href^='#']").forEach((a) => links.set(a.hash.slice(1), a));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          links.forEach((a, id) => a.setAttribute("aria-current", String(id === entry.target.id)));
+        }
+      },
+      { rootMargin: "-20% 0px -70% 0px" },
+    );
+    links.forEach((_, id) => {
+      const heading = document.getElementById(id);
+      if (heading) observer.observe(heading);
+    });
+  }
+</script>

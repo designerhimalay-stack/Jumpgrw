@@ -1,0 +1,117 @@
+{
+  "slug": "ship-it-pro",
+  "name": "Ship It Pro",
+  "stores": {},
+  "intro": [
+    "Ship It Pro introduces a groundbreaking B2B Load Planning Software, revolutionizing cargo management with its 3D interactive load diagrams and collaborative communication features",
+    "Ship It Pro wanted to build a B2B Load Planning Software which would provide end-to-end securement and damage prevention solutions to the shipping companies.This should help in the reduction of waste due to cargo damage, freight claims and financial claims.",
+    "Ship It Pro is digitizing the manual transaction of loading and unloading to provide bottom-up collaborative communication between the shippers, carriers, receivers and insurers.",
+    "It will provide a standard operating procedure to the loading dock on proper loading, blocking and bracing and rules and regulations into a 3D interactive load diagram"
+  ],
+  "sections": [
+    {
+      "title": "The Problem",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "Inefficient manual transaction processes for cargo loading and unloading."
+        },
+        {
+          "title": "",
+          "body": "Lack of standardized procedures for proper loading, blocking, and bracing."
+        },
+        {
+          "title": "",
+          "body": "Poor communication between shippers, carriers, receivers, and insurers."
+        },
+        {
+          "title": "",
+          "body": "Difficulty in ensuring securement and damage prevention during transit."
+        },
+        {
+          "title": "",
+          "body": "Frequent instances of cargo damage leading to freight claims and financial losses."
+        },
+        {
+          "title": "",
+          "body": "Limited visibility into load status and conditions during transport."
+        },
+        {
+          "title": "",
+          "body": "Insufficient tools for analyzing and optimizing cargo loading patterns."
+        },
+        {
+          "title": "",
+          "body": "Inability to provide real-time feedback and address issues during transit."
+        },
+        {
+          "title": "",
+          "body": "Challenges in meeting regulatory compliance and safety standards."
+        },
+        {
+          "title": "",
+          "body": "Increasing complexity of supply chain logistics and cargo management."
+        }
+      ]
+    },
+    {
+      "title": "The Solution",
+      "paras": [
+        "JumpGrowth implemented digitized load planning processes to enhance cargo management efficiency. We standardized procedures and developed interactive 3D load diagrams to ensure securement. Additionally, we established a collaborative communication platform for stakeholders throughout the supply chain. The solution includes data analysis for optimizing loading patterns and mitigating risks, alongside real-time feedback and monitoring capabilities during transit. Comprehensive destination reporting and documentation features were integrated, along with streamlined user management and access control functionalities"
+      ],
+      "items": []
+    },
+    {
+      "title": "To detail the functionalities:",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "Shipping managers can generate 3D interactive load diagrams based on transport mode, product details, packaging, pallet sizes, and dunnage."
+        },
+        {
+          "title": "",
+          "body": "They can virtually arrange pallets and dunnage within containers based on unit weights and sizes, creating interactive load diagrams."
+        },
+        {
+          "title": "",
+          "body": "Diagram sharing with secondary users like loading managers, customs inspectors, and receiving shipping managers is facilitated."
+        },
+        {
+          "title": "",
+          "body": "Shipping managers can grant view and edit access to secondary users."
+        },
+        {
+          "title": "",
+          "body": "Secondary users can generate consolidated destination reports for each pallet, detailing parameters like load shifts, primary packaging failures, and dunnage failures."
+        },
+        {
+          "title": "",
+          "body": "Secondary users can capture shipment images and include them in destination reports."
+        },
+        {
+          "title": "",
+          "body": "Shipping managers can share loading and securing information with receivers at the destination."
+        },
+        {
+          "title": "",
+          "body": "Receiving shipping managers can provide feedback starting from door opening at the destination."
+        },
+        {
+          "title": "",
+          "body": "Secondary users can edit load diagrams during the loading process."
+        },
+        {
+          "title": "",
+          "body": "Customer admins can add shipping managers, and super admins can add customer admins to the platform."
+        }
+      ]
+    },
+    {
+      "title": "The Result",
+      "paras": [],
+      "items": []
+    }
+  ]
+}

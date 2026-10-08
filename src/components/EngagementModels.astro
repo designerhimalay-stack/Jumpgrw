@@ -1,0 +1,232 @@
+---
+import Arrow from "@pg/page30/components/icons/Arrow.astro";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { withBase } from "@/lib/paths";
+
+/* The engagement models on one page: the nine team pages in the Teams menu,
+   grouped as the menu groups them (Launch, Build & Run, Extend). Each group
+   says when to choose it, then lists its models, each linking to its own
+   page. The one-line descriptions are the pages' own hero lines. */
+
+interface Props {
+  id?: string;
+}
+
+const { id = "models" } = Astro.props;
+
+const GROUPS = [
+  {
+    label: "Launch",
+    title: "Get a product to market.",
+    when: "You have an idea or a design and need a first release.",
+    models: [
+      { name: "MVP launch teams", href: "/page1/", line: "A tight, senior squad that turns a validated idea into a credible first release." },
+      { name: "Product discovery", href: "/page2/", line: "Define the problem, validate the solution and map the architecture before you invest in engineering." },
+      { name: "Prototype to launch", href: "/page3/", line: "A rapid path from an approved interactive prototype to a robust, scalable application." },
+    ],
+  },
+  {
+    label: "Build & run",
+    title: "Keep a live product moving.",
+    when: "Your product is in market and needs a team to build, test, release and run it.",
+    models: [
+      { name: "Production teams", href: "/page4/", line: "A dedicated team that builds, tests, releases and runs your product, sprint after sprint." },
+      { name: "QA pods", href: "/page5/", line: "Dedicated quality engineers who test your builds before they reach your users." },
+      { name: "DevOps pods", href: "/page6/", line: "Engineers for pipelines, cloud infrastructure and the release process behind your product." },
+    ],
+  },
+  {
+    label: "Extend",
+    title: "Add people to your team.",
+    when: "You already have a team and need more capacity or deeper expertise.",
+    models: [
+      { name: "Staff augmentation", href: "/page7/", line: "Senior engineers who join your team, tools and stand-ups, and scale up or down with your roadmap." },
+      { name: "Specialist developers", href: "/page8/", line: "Expertise you don’t have in-house, such as AI, data and cloud, for a project, a sprint or longer." },
+      { name: "Global capability center", href: "/page9/", line: "Your own engineering center, built, run and handed over by JumpGrowth." },
+    ],
+  },
+];
+
+const pad = (n: number) => String(n).padStart(2, "0");
+let count = 0;
+---
+
+<section data-ac-sec="light" data-ac-models id={id}>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead
+      eyebrow={`Engagement models / ${pad(GROUPS.reduce((n, g) => n + g.models.length, 0))}`}
+      headline={["Pick the model", "that fits your stage."]}
+      accent={1}
+      lede="Three ways to work with us. Choose by where your product is, then open a model to see how the team is shaped and how it runs."
+    />
+
+    {GROUPS.map((group) => (
+      <div data-ac-models-group data-ac-sec-rise>
+        <div data-ac-models-head>
+          <p class="mono-label" data-ac-models-label>{group.label}</p>
+          <h3 data-ac-models-title>{group.title}</h3>
+          <p data-ac-models-when><strong>Choose this when</strong> {group.when}</p>
+        </div>
+        <div data-ac-sec-frame>
+          <Joints />
+          <ul data-ac-models-list role="list">
+            {group.models.map((model) => (
+              <li data-ac-model>
+                <a href={withBase(model.href)} data-ac-model-link>
+                  <span class="mono-label" data-ac-model-n>{pad(++count)}</span>
+                  <span data-ac-model-name>{model.name}</span>
+                  <span data-ac-model-line>{model.line}</span>
+                  <span class="mono-label" data-ac-model-cta>
+                    See the model
+                    <Arrow direction="diagonal" />
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  [data-ac-models-group] + [data-ac-models-group] {
+    margin-top: clamp(40px, 5vw, 72px);
+  }
+
+  [data-ac-models-head] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 4px clamp(24px, 4vw, 64px);
+    align-items: end;
+    margin-bottom: clamp(16px, 1.8vw, 24px);
+  }
+
+  [data-ac-models-label] {
+    grid-column: 1 / -1;
+    margin: 0 0 8px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-models-title] {
+    margin: 0;
+    font-family: var(--font-display-stack);
+    font-size: clamp(26px, 2.8vw, 40px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  [data-ac-models-when] {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgb(10 16 34 / 0.65);
+  }
+
+  [data-ac-models-when] strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #0a1022;
+  }
+
+  [data-ac-models-list] {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #ffffff;
+  }
+
+  [data-ac-model] + [data-ac-model] {
+    border-left: 1px solid var(--ac-line);
+  }
+
+  [data-ac-model-link] {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    padding: clamp(20px, 2.2vw, 32px);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  [data-ac-model-link]:hover {
+    background: color-mix(in srgb, var(--color-accent) 4%, #ffffff);
+  }
+
+  [data-ac-model-link]:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+
+  [data-ac-model-n] {
+    color: var(--color-accent);
+  }
+
+  [data-ac-model-name] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(20px, 1.8vw, 26px);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-model-line] {
+    flex: 1;
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgb(10 16 34 / 0.66);
+  }
+
+  [data-ac-model-cta] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    color: #0a1022;
+  }
+
+  [data-ac-model-link]:hover [data-ac-model-cta] {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 991px) {
+    [data-ac-models-head] {
+      grid-template-columns: 1fr;
+    }
+
+    [data-ac-models-list] {
+      grid-template-columns: 1fr;
+    }
+
+    [data-ac-model] + [data-ac-model] {
+      border-left: 0;
+      border-top: 1px solid var(--ac-line);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-model-link] {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-models]").forEach(toggleInView);
+</script>

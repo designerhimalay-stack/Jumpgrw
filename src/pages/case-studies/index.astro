@@ -13,10 +13,9 @@ import type { PageHeroContent } from "@pg/page30/types/page";
 import heroPhoto from "@/assets/cases/portfolio-hero.jpg";
 import { PROJECTS } from "@/lib/projects";
 
-/* Case Studies: every product on the company's Our Portfolio page
-   (jumpgrowth.com/portfolio). The home page's featured four play first, then
-   the full portfolio; each card links to its full write-up on the company
-   site. */
+/* Case Studies: every product in the portfolio. The home page's featured four
+   play first, then the full portfolio; each card opens the product's own case
+   study page (src/pages/case-studies/[slug].astro). */
 
 const HERO: PageHeroContent = {
   trail: ["Company", "Case Studies"],

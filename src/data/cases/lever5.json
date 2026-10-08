@@ -1,0 +1,71 @@
+{
+  "slug": "lever5",
+  "name": "lever5",
+  "stores": {},
+  "intro": [],
+  "sections": [
+    {
+      "title": "The Solution",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "JumpGrowth created a responsive web application for users where they can trade US stocks with Trading Credits as a value unit which they can purchase on the web application."
+        },
+        {
+          "title": "",
+          "body": "Thousands of users are now trading on Lever5 using the unique and innovative Lever5 system that provides easy money transfer, real-time data, levered trading power and a secure platform."
+        },
+        {
+          "title": "",
+          "body": "We created a system which allows thirteen levels of leverage ranging from 5% to 100% by offering a combination of four levels of maximum price movements and five lever numbers."
+        },
+        {
+          "title": "",
+          "body": "We integrated quotemedia and qmod for showing advanced charting and real-time data of nearly 9000 stocks listed in NASDAQ."
+        },
+        {
+          "title": "",
+          "body": "We used Chart.js for implementing multiple types of charts in the application."
+        },
+        {
+          "title": "",
+          "body": "We created a Trade Matching Algorithm that helps users to always get a match for their trade."
+        },
+        {
+          "title": "",
+          "body": "We created a system which offers a flexible settlement schedule for users to force settle their day trades on the same day, upcoming week or month."
+        },
+        {
+          "title": "",
+          "body": "We implemented the latest stock market news functionality on the user’s dashboard."
+        },
+        {
+          "title": "",
+          "body": "We implemented PayPal and Stripe as payment gateways."
+        },
+        {
+          "title": "",
+          "body": "We created a system that shows Gains/Losses in form of trading credits by converting USD to Trading Credits in real-time."
+        },
+        {
+          "title": "",
+          "body": "We created an admin panel where the admin can manage users, manage trades and manage subscriptions."
+        },
+        {
+          "title": "",
+          "body": "We created an HTML editor for the admin to add announcements with the functionality of embedding links, images and videos in content."
+        },
+        {
+          "title": "",
+          "body": "We created an admin dashboard that shows Sales Statistics, Suspended Stocks and allows the admin to export daily IO reports of 9000 stocks."
+        }
+      ]
+    },
+    {
+      "title": "The Result",
+      "paras": [],
+      "items": []
+    }
+  ]
+}

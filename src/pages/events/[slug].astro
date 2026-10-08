@@ -1,0 +1,51 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import DetailHero from "@/components/DetailHero.astro";
+import EventDetail from "@/components/insights/EventDetail.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import { PAST_EVENTS, UPCOMING_EVENTS } from "@/lib/insights";
+import { withBase } from "@/lib/paths";
+
+/* One event, in the site's own layout. The details come from the event's entry
+   in src/lib/insights.ts, so adding an event there adds its page. */
+
+export function getStaticPaths() {
+  return [
+    ...UPCOMING_EVENTS.map((event) => ({ params: { slug: event.slug }, props: { event, past: false } })),
+    ...PAST_EVENTS.map((event) => ({ params: { slug: event.slug }, props: { event, past: true } })),
+  ];
+}
+
+const { event, past } = Astro.props;
+---
+
+<Layout title={`${event.title} · JumpGrowth`} description={`${event.title}: ${event.tagline}. ${event.dates}, ${event.place}.`} navTone="field">
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <DetailHero
+      trail={["Insights", "Events", event.title]}
+      title={event.title}
+      chips={[past ? "Past event" : "Upcoming event", event.category]}
+      lede={event.tagline}
+      facts={[
+        { label: "Dates", value: event.dates },
+        { label: "Place", value: event.place },
+      ]}
+      actions={[
+        { label: "Book a discovery call", href: "#contact", arrow: "right" },
+        { label: "All events", href: withBase("/events/#events"), arrow: "diagonal" },
+      ]}
+      image={event.image}
+      imageAlt={`${event.title}, ${event.tagline}`}
+    />
+    <EventDetail event={event} past={past} />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

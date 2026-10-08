@@ -1,0 +1,192 @@
+---
+import Arrow from "@pg/page30/components/icons/Arrow.astro";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { withBase } from "@/lib/paths";
+import type { CompanyEvent } from "@/lib/insights";
+
+/* The body of one event page, after its hero: what the event is (the facts
+   we publish: name, tagline, category, dates and place), whether it has
+   taken place, and where to go next. A past event says so and points to the
+   events list and to a discovery call. */
+
+interface Props {
+  event: CompanyEvent;
+  past: boolean;
+}
+
+const { event, past } = Astro.props;
+const FACTS = [
+  { label: "Dates", value: event.dates },
+  { label: "Place", value: event.place },
+  { label: "Type", value: event.category },
+  { label: "Status", value: past ? "This event has ended" : "Upcoming" },
+];
+---
+
+<section data-ac-sec="light" data-ac-event-about id="about">
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow="About the event" headline={["The event,", "in brief."]} accent={1} />
+    <div data-ac-sec-frame data-ac-sec-rise>
+      <Joints />
+      <div data-ac-event-grid>
+        <div data-ac-event-prose>
+          <p data-ac-event-tagline-lead>{event.tagline}</p>
+          <p>
+            {event.title} is a {event.category.toLowerCase()} in {event.place.split(",")[0]}, held {event.dates}.
+            {past
+              ? " The JumpGrowth team took part. This event has now ended; new dates are posted on the events page."
+              : " The JumpGrowth team will take part."}
+          </p>
+          <div data-ac-event-links>
+            <a href={withBase("/events/#events")} data-ac-event-link-primary class="mono-label">
+              All events
+              <Arrow direction="right" />
+            </a>
+            <a href="#contact" data-ac-event-link-ghost class="mono-label">
+              Book a discovery call
+              <Arrow direction="diagonal" />
+            </a>
+          </div>
+        </div>
+        <dl data-ac-event-facts>
+          {FACTS.map((fact) => (
+            <div>
+              <dt class="mono-label">{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-ac-event-grid] {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    background: #ffffff;
+  }
+
+  [data-ac-event-prose] {
+    padding: clamp(22px, 3vw, 44px);
+    border-right: 1px solid var(--ac-line);
+  }
+
+  [data-ac-event-prose] p {
+    max-width: 58ch;
+    margin: 0 0 1.1em;
+    font-size: clamp(16px, 1.2vw, 18px);
+    line-height: 1.65;
+    color: rgb(10 16 34 / 0.74);
+  }
+
+  [data-ac-event-prose] [data-ac-event-tagline-lead] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(22px, 2.2vw, 32px);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  [data-ac-event-links] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: clamp(20px, 2.4vw, 30px);
+  }
+
+  [data-ac-event-links] a {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 46px;
+    padding: 0 22px;
+    text-decoration: none;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  [data-ac-event-link-primary] {
+    background: var(--color-accent);
+    color: #ffffff;
+  }
+
+  [data-ac-event-link-primary]:hover {
+    background: var(--color-accent-dark);
+  }
+
+  [data-ac-event-link-ghost] {
+    border: 1px solid rgb(10 16 34 / 0.2);
+    color: #0a1022;
+  }
+
+  [data-ac-event-link-ghost]:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  [data-ac-event-links] a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  [data-ac-event-facts] {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+  }
+
+  [data-ac-event-facts] > div {
+    padding: clamp(16px, 1.8vw, 24px) clamp(22px, 2.4vw, 36px);
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  [data-ac-event-facts] > div:last-child {
+    border-bottom: 0;
+  }
+
+  [data-ac-event-facts] dt {
+    margin: 0 0 6px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-event-facts] dd {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 500;
+    color: #0a1022;
+  }
+
+  @media (max-width: 809px) {
+    [data-ac-event-grid] {
+      grid-template-columns: 1fr;
+    }
+
+    [data-ac-event-prose] {
+      border-right: 0;
+      border-bottom: 1px solid var(--ac-line);
+    }
+
+    [data-ac-event-links] a {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-event-links] a {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-event-about]").forEach(toggleInView);
+</script>

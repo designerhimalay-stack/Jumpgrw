@@ -1,0 +1,112 @@
+{
+  "slug": "vowtimer",
+  "name": "Vow Timer App",
+  "stores": {
+    "ios": "https://apps.apple.com/in/app/vow-timer/id1616173902",
+    "android": "https://play.google.com/store/apps/details?id=com.weddinggameapp"
+  },
+  "intro": [
+    "Vow Timer is an app for the wedding guests that came for the party. Vow Timer provides a platform for Wedding guests to connect pre-ceremony and take bets on what everyone’s thinking and how long the ceremony going to take. Wedding guests can bet on the time it takes for the ceremony to end.",
+    "The host creates the event and invites the others to bet on the scheduled wedding and is responsible for defining the betting amount for each user.",
+    "The purpose of this app is to connect with other guests at the wedding and count the seconds until the real party starts"
+  ],
+  "sections": [
+    {
+      "title": "The Problem",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "Client used to play this game of timing the wedding service but when a lot of people join the game it becomes too difficult and time-consuming to manage with pen and paper."
+        },
+        {
+          "title": "",
+          "body": "Client wanted an App so that people can easily manage, play and share the game with their families and friends."
+        },
+        {
+          "title": "",
+          "body": "Client wanted an App where a user can create an event and invite others to bet on the time."
+        },
+        {
+          "title": "",
+          "body": "Client wanted an app where the host of an event can set the betting amount for each user."
+        },
+        {
+          "title": "",
+          "body": "Client wanted an admin panel to manage users, reports, events and subscription plans."
+        },
+        {
+          "title": "",
+          "body": "Client wanted functionality for sharing and scanning the QR codes to invite other users."
+        },
+        {
+          "title": "",
+          "body": "Client wanted to implement In-App advertisements."
+        },
+        {
+          "title": "",
+          "body": "Client wanted payment gateway integration to charge an event fee and subscription fee."
+        },
+        {
+          "title": "",
+          "body": "Client wanted to implement tutorials for users to understand the rules and conditions of the game."
+        },
+        {
+          "title": "",
+          "body": "Client wanted a chat feature in the app for the users."
+        }
+      ]
+    },
+    {
+      "title": "The Solution",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "JumpGrowth created a cross-platform mobile app for users where they can play and share the game with their family and friends."
+        },
+        {
+          "title": "",
+          "body": "JumpGrowth created a responsive admin panel for the client to manage the users, events and subscription plans."
+        },
+        {
+          "title": "",
+          "body": "The wedding game is now easier to manage among multiple players using the app."
+        },
+        {
+          "title": "",
+          "body": "Users can now host an event, invite other people to bet and set the betting amount for other users with the app."
+        },
+        {
+          "title": "",
+          "body": "We implemented a functionality by which users can report other users if required and the admin can remove the reported user or resolve the report."
+        },
+        {
+          "title": "",
+          "body": "We implemented google ads for In-App advertisements."
+        },
+        {
+          "title": "",
+          "body": "We integrated Apple Pay and Google Pay for the payment gateway."
+        },
+        {
+          "title": "",
+          "body": "We integrated Socket.io for the chat feature."
+        },
+        {
+          "title": "",
+          "body": "We implemented Google Places API for adding the event location."
+        },
+        {
+          "title": "",
+          "body": "We implemented an onboarding guide for users to learn the rules and conditions of the game."
+        }
+      ]
+    },
+    {
+      "title": "The Result",
+      "paras": [],
+      "items": []
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import EngagementModels from "@/components/EngagementModels.astro";
+import PageHero from "@pg/page30/components/PageHero.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import type { PageHeroContent } from "@pg/page30/types/page";
+import heroPhoto from "@/assets/showcase/portrait.jpg";
+
+/* Engagement models: the hub for the nine team pages in the Teams menu, so a
+   visitor can choose a model by stage before opening one. */
+
+const HERO: PageHeroContent = {
+  trail: ["Insights", "Engagement models"],
+  headline: ["Engagement", "models."],
+  lede: "Launch a product, build and run it, or extend your own team: nine ways to work with JumpGrowth, grouped by where you are.",
+  ctas: [
+    { label: "Compare the models", href: "#models", arrow: "right" },
+    { label: "Plan my team", href: "#contact", arrow: "diagonal" },
+  ],
+  image: heroPhoto,
+  imageAlt: "A teammate concentrates on her laptop at a shared desk.",
+  specs: [
+    { label: "Models", value: "9" },
+    { label: "First commit", value: "Within two weeks" },
+    { label: "Delivery", value: "Dallas-led, X-shore" },
+    { label: "Countries", value: "Four" },
+  ],
+};
+---
+
+<Layout
+  title="Engagement models · JumpGrowth"
+  description="JumpGrowth's engagement models: MVP launch teams, production teams, QA and DevOps pods, staff augmentation, specialist developers and global capability centers."
+  navTone="field"
+>
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <PageHero content={HERO} />
+    <EngagementModels />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

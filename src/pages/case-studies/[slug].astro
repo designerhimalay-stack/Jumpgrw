@@ -1,0 +1,64 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@pg/page30/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import Footer from "@/components/Footer.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import DetailHero from "@/components/DetailHero.astro";
+import CaseDetail from "@/components/cases/CaseDetail.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import { PROJECTS } from "@/lib/projects";
+import { getCaseStudy } from "@/lib/cases";
+import { withBase } from "@/lib/paths";
+
+/* One case study, in the site's own layout: the product's hero, its overview,
+   problem and solution, and the neighbouring products. The text comes from
+   src/data/cases/<slug>.json (see src/lib/cases.ts); the brief, tagline, stack
+   and device render from the product's entry in src/lib/projects.ts. */
+
+export function getStaticPaths() {
+  return PROJECTS.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const study = getCaseStudy(project);
+
+const features = (study.solution?.groups ?? []).reduce((sum, group) => sum + group.items.length, 0);
+const facts = [
+  { label: "Platform", value: project.platform },
+  ...(features > 0 ? [{ label: "Features delivered", value: String(features) }] : []),
+  { label: "Lead stack", value: project.stack.slice(0, 2).join(", ") },
+];
+
+const actions = [
+  { label: "Start your project", href: "#contact", arrow: "right" as const },
+  ...(study.stores.ios ? [{ label: "App Store", href: study.stores.ios, external: true, arrow: "diagonal" as const }] : []),
+  ...(study.stores.android ? [{ label: "Google Play", href: study.stores.android, external: true, arrow: "diagonal" as const }] : []),
+  ...(!study.stores.ios && !study.stores.android
+    ? [{ label: "All case studies", href: withBase("/case-studies/#projects"), arrow: "diagonal" as const }]
+    : []),
+];
+---
+
+<Layout title={`${project.name} case study · JumpGrowth`} description={`${project.name}: ${project.tagline}`} navTone="field">
+  <SmoothScroll />
+  <Navbar />
+  <main>
+    <DetailHero
+      trail={["Company", "Case Studies", project.name]}
+      title={project.name}
+      size="name"
+      chips={[project.category, project.platform]}
+      lede={project.tagline}
+      facts={facts}
+      actions={actions}
+      image={project.mockup}
+      imageAlt={`${project.name} app shown on a device`}
+      fit="contain"
+    />
+    <CaseDetail study={study} />
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

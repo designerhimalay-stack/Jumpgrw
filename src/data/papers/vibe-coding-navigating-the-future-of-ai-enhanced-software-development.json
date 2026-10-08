@@ -1,0 +1,35 @@
+{
+  "slug": "vibe-coding-navigating-the-future-of-ai-enhanced-software-development",
+  "title": "Vibe Coding: The Future of AI-Enhanced Software Development",
+  "intro": [
+    "As AI transforms every industry, software development is undergoing a revolution. At the forefront of this evolution is Vibe Coding—a new paradigm where natural language meets powerful code generation, enabling anyone to build software, not just developers.",
+    "In this whitepaper, JumpGrowth unpacks how AI tools like GitHub Copilot, Cursor, and Replit are redefining the development lifecycle, what challenges still exist, and how businesses and tech teams can prepare for a future where humans and machines collaborate to build faster, smarter software."
+  ],
+  "highlightsTitle": "Some of the key highlights of this whitepaper include:",
+  "highlights": [
+    {
+      "title": "What is Vibe Coding?",
+      "body": "Understand the core concept and how it bridges creative intent with code execution through AI."
+    },
+    {
+      "title": "Top AI-Powered Coding Platforms",
+      "body": "Get insights on tools like GitHub Copilot, Cursor, Replit, V0.dev, and others transforming the development landscape."
+    },
+    {
+      "title": "Benefits for Businesses & Developers",
+      "body": "See how Vibe Coding boosts speed, accessibility, and creativity across teams of all skill levels."
+    },
+    {
+      "title": "Risks and Limitations",
+      "body": "Learn about security concerns, code quality issues, and the continued need for human oversight."
+    },
+    {
+      "title": "The Shift in Developer Roles",
+      "body": "Discover how developers are evolving into AI orchestrators, focusing on architecture, prompt engineering, and system strategy."
+    },
+    {
+      "title": "JumpGrowth’s Role in the Vibe Coding Movement",
+      "body": "Learn how JumpGrowth is enabling startups and enterprises to adopt AI-powered development with sprint-based delivery models."
+    }
+  ]
+}

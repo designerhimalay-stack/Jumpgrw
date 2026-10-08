@@ -1,0 +1,472 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@pg/page30/components/icons/Arrow.astro";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import CaseInsights from "@/components/cases/CaseInsights.astro";
+import CaseArchitecture from "@/components/cases/CaseArchitecture.astro";
+import { caseHref, neighbours, showArchitecture, type CaseStudy } from "@/lib/cases";
+
+/* The body of one case study, after its hero. Overview (the brief, the
+   product's own description, the platform and stack), the build by the
+   numbers (cards and charts), the problem as numbered cards, the solution as
+   groups of feature cards, how the stack fits together, then the neighbouring
+   products. A product's write-up may be short, so a part with no text is left
+   out and the bands that remain alternate white and tint. */
+
+interface Props {
+  study: CaseStudy;
+}
+
+const { study } = Astro.props;
+const { project, intro, problem, solution } = study;
+const { prev, next } = neighbours(project);
+const pad = (n: number) => String(n).padStart(2, "0");
+
+const hasProblem = !!problem && (problem.items.length > 0 || problem.paras.length > 0);
+const hasSolution = !!solution && (solution.groups.length > 0 || solution.paras.length > 0);
+let band = 0;
+const tone = () => (band++ % 2 === 0 ? "light" : "tint");
+const overviewTone = tone();
+const insightsTone = tone();
+const problemTone = hasProblem ? tone() : "light";
+const solutionTone = hasSolution ? tone() : "light";
+const hasArch = showArchitecture(project);
+const archTone = hasArch ? tone() : "light";
+const nextTone = tone();
+---
+
+<section data-ac-sec="light" data-ac-hire-tint={overviewTone === "tint" || undefined} data-ac-case-overview id="overview">
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow="Overview" headline={["The product,", "in brief."]} accent={1} />
+    <div data-ac-sec-frame data-ac-sec-rise>
+      <Joints />
+      <div data-ac-case-overview-grid>
+        <div data-ac-case-prose>
+          <p data-ac-case-tagline>{project.tagline}</p>
+          <p>{project.brief}</p>
+          {intro.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
+        <dl data-ac-case-specs>
+          <div>
+            <dt class="mono-label">Category</dt>
+            <dd>{project.category}</dd>
+          </div>
+          <div>
+            <dt class="mono-label">Platform</dt>
+            <dd>{project.platform}</dd>
+          </div>
+          <div>
+            <dt class="mono-label">Built with</dt>
+            <dd>
+              <ul data-ac-cs-stack role="list">
+                {project.stack.map((tech) => <li class="mono-label">{tech}</li>)}
+              </ul>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<CaseInsights study={study} tone={insightsTone} />
+
+{hasProblem && (
+  <section data-ac-sec="light" data-ac-hire-tint={problemTone === "tint" || undefined} data-ac-case-problem id="problem">
+    <GridRules />
+    <div data-ac-sec-container>
+      <SectionHead eyebrow="The problem" headline={["What had", "to be solved."]} accent={1} />
+      {problem!.items.length === 0 && problem!.paras.length > 0 ? (
+        <div data-ac-sec-frame data-ac-sec-rise>
+          <Joints />
+          <div data-ac-case-panel>
+            {problem!.paras.map((paragraph, i) => <p data-lead={i === 0 || undefined}>{paragraph}</p>)}
+          </div>
+        </div>
+      ) : (
+        problem!.paras.map((paragraph) => <p data-ac-case-lead data-ac-sec-rise>{paragraph}</p>)
+      )}
+      {problem!.items.length > 0 && (
+        <div data-ac-sec-frame data-ac-sec-rise>
+          <Joints />
+          <ol data-ac-case-cards role="list">
+            {problem!.items.map((item, i) => (
+              <li data-ac-case-card>
+                <span data-ac-case-n class="mono-label">{pad(i + 1)}</span>
+                {item.title && <h3 data-ac-case-card-title>{item.title}</h3>}
+                {item.body && <p data-ac-case-card-body>{item.body}</p>}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </div>
+  </section>
+)}
+
+{hasSolution && (
+  <section data-ac-sec="light" data-ac-hire-tint={solutionTone === "tint" || undefined} data-ac-case-solution id="solution">
+    <GridRules />
+    <div data-ac-sec-container>
+      <SectionHead eyebrow="The solution" headline={["How we", "built it."]} accent={1} />
+      {solution!.paras.map((paragraph) => <p data-ac-case-lead data-ac-sec-rise>{paragraph}</p>)}
+      {solution!.groups.map((group) => (
+        <div data-ac-case-group data-ac-sec-rise>
+          <h3 data-ac-case-group-title class="mono-label">{group.title}</h3>
+          <div data-ac-sec-frame>
+            <Joints />
+            <ul data-ac-case-cards role="list">
+              {group.items.map((item, i) => (
+                <li data-ac-case-card>
+                  <span data-ac-case-n class="mono-label">{pad(i + 1)}</span>
+                  {item.title && <h4 data-ac-case-card-title>{item.title}</h4>}
+                  {item.body && <p data-ac-case-card-body>{item.body}</p>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
+
+{hasArch && <CaseArchitecture study={study} tone={archTone} />}
+
+<section data-ac-sec="light" data-ac-hire-tint={nextTone === "tint" || undefined} data-ac-case-next>
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow="More case studies" headline={["Keep", "exploring."]} accent={1} />
+    <div data-ac-sec-frame data-ac-sec-rise>
+      <Joints />
+      <ul data-ac-case-next-grid role="list">
+        {[
+          { label: "Previous", project: prev },
+          { label: "Next", project: next },
+        ].map((entry) => (
+          <li>
+            <a href={caseHref(entry.project)} data-ac-case-next-link>
+              <span data-ac-case-next-image>
+                <Image src={entry.project.mockup} alt="" widths={[240, 400]} sizes="160px" quality={80} loading="lazy" />
+              </span>
+              <span data-ac-case-next-text>
+                <span class="mono-label" data-ac-case-next-label>{entry.label} · {entry.project.category}</span>
+                <span data-ac-case-next-name>{entry.project.name}</span>
+                <span data-ac-case-next-line>{entry.project.tagline}</span>
+                <span class="mono-label" data-ac-case-next-cta>
+                  Read case study
+                  <Arrow direction="diagonal" />
+                </span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  [data-ac-case-overview-grid] {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    background: #ffffff;
+  }
+
+  [data-ac-case-prose] {
+    padding: clamp(22px, 3vw, 44px);
+    border-right: 1px solid var(--ac-line);
+  }
+
+  [data-ac-case-prose] p {
+    max-width: 62ch;
+    margin: 0 0 1.1em;
+    font-size: clamp(16px, 1.2vw, 18px);
+    line-height: 1.65;
+    color: rgb(10 16 34 / 0.74);
+  }
+
+  [data-ac-case-prose] p:last-child {
+    margin-bottom: 0;
+  }
+
+  [data-ac-case-prose] [data-ac-case-tagline] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(22px, 2.2vw, 32px);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  [data-ac-case-specs] {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+  }
+
+  [data-ac-case-specs] > div {
+    padding: clamp(18px, 2vw, 28px) clamp(22px, 2.4vw, 36px);
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  [data-ac-case-specs] > div:last-child {
+    border-bottom: 0;
+  }
+
+  [data-ac-case-specs] dt {
+    margin: 0 0 8px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-case-specs] dd {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 500;
+    color: #0a1022;
+  }
+
+  [data-ac-cs-stack] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ac-cs-stack] li {
+    padding: 5px 10px;
+    border: 1px solid var(--ac-line);
+    border-radius: 999px;
+    font-weight: 400;
+    color: rgb(10 16 34 / 0.7);
+  }
+
+  /* A problem told in prose only, framed so it doesn't float in the band. */
+  [data-ac-case-panel] {
+    padding: clamp(24px, 3.4vw, 52px);
+    background: #ffffff;
+  }
+
+  [data-ac-case-panel] p {
+    max-width: 68ch;
+    margin: 0 0 1em;
+    font-size: clamp(16px, 1.2vw, 18px);
+    line-height: 1.65;
+    color: rgb(10 16 34 / 0.74);
+  }
+
+  [data-ac-case-panel] p:last-child {
+    margin-bottom: 0;
+  }
+
+  [data-ac-case-panel] p[data-lead] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(20px, 2vw, 28px);
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-case-lead] {
+    max-width: 62ch;
+    margin: 0 0 clamp(20px, 2.4vw, 32px);
+    font-size: clamp(16px, 1.2vw, 18px);
+    line-height: 1.65;
+    color: rgb(10 16 34 / 0.74);
+  }
+
+  [data-ac-case-group] + [data-ac-case-group] {
+    margin-top: clamp(28px, 3.4vw, 48px);
+  }
+
+  [data-ac-case-group-title] {
+    margin: 0 0 14px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-case-cards] {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0 -1px -1px 0;
+    padding: 0;
+    list-style: none;
+    background: #ffffff;
+  }
+
+  [data-ac-case-card] {
+    padding: clamp(20px, 2.2vw, 32px);
+    border-right: 1px solid var(--ac-line);
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  /* No lone card on the last row: the last card stretches over the cells a
+     short row would leave empty (3 columns here, 2 on tablets, below). */
+  @media (min-width: 1100px) {
+    [data-ac-case-card]:last-child:nth-child(3n + 1) {
+      grid-column: 1 / -1;
+    }
+
+    [data-ac-case-card]:last-child:nth-child(3n + 2) {
+      grid-column: span 2;
+    }
+  }
+
+  [data-ac-case-n] {
+    display: block;
+    margin-bottom: 14px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-case-card-title] {
+    margin: 0 0 10px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(18px, 1.5vw, 22px);
+    font-weight: 400;
+    line-height: 1.22;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-case-card-body] {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgb(10 16 34 / 0.68);
+  }
+
+  [data-ac-case-next-grid] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #ffffff;
+  }
+
+  [data-ac-case-next-grid] > li:first-child {
+    border-right: 1px solid var(--ac-line);
+  }
+
+  [data-ac-case-next-link] {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 2vw, 28px);
+    height: 100%;
+    padding: clamp(18px, 2.2vw, 32px);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  [data-ac-case-next-link]:hover {
+    background: color-mix(in srgb, var(--color-accent) 4%, #ffffff);
+  }
+
+  [data-ac-case-next-link]:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+
+  [data-ac-case-next-image] {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: clamp(96px, 11vw, 150px);
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: #eef1f7;
+  }
+
+  [data-ac-case-next-image] img {
+    display: block;
+    width: 82%;
+    height: 82%;
+    object-fit: contain;
+  }
+
+  [data-ac-case-next-text] {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  [data-ac-case-next-label] {
+    color: var(--color-accent);
+  }
+
+  [data-ac-case-next-name] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(22px, 2vw, 30px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #0a1022;
+  }
+
+  [data-ac-case-next-line] {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgb(10 16 34 / 0.62);
+  }
+
+  [data-ac-case-next-cta] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    color: #0a1022;
+  }
+
+  [data-ac-case-next-link]:hover [data-ac-case-next-cta] {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 1099px) {
+    [data-ac-case-cards] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    [data-ac-case-card]:last-child:nth-child(2n + 1) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 809px) {
+    [data-ac-case-overview-grid],
+    [data-ac-case-next-grid] {
+      grid-template-columns: 1fr;
+    }
+
+    [data-ac-case-prose] {
+      border-right: 0;
+      border-bottom: 1px solid var(--ac-line);
+    }
+
+    [data-ac-case-next-grid] > li:first-child {
+      border-right: 0;
+      border-bottom: 1px solid var(--ac-line);
+    }
+
+    [data-ac-case-cards] {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-case-next-link] {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document
+    .querySelectorAll<HTMLElement>("[data-ac-case-overview], [data-ac-case-problem], [data-ac-case-solution], [data-ac-case-next]")
+    .forEach(toggleInView);
+</script>

@@ -4,9 +4,10 @@ import GridRules from "@pg/page30/components/GridRules.astro";
 import SectionHead from "@pg/page30/components/SectionHead.astro";
 import Joints from "@pg/page30/components/process/Joints.astro";
 import { WHITE_PAPERS } from "@/lib/insights";
+import { withBase } from "@/lib/paths";
 
 /* Every white paper, one row each: the cover, then the topic, title, summary
-   and a link to the paper's download page on the company site. The topic
+   and a link to the paper's own page on this site. The topic
    buttons narrow the list in place. */
 
 interface Props {
@@ -48,7 +49,7 @@ for (const paper of WHITE_PAPERS) counts.set(paper.topic, (counts.get(paper.topi
       <ol data-ac-papers-list role="list">
         {WHITE_PAPERS.map((paper, i) => (
           <li data-ac-paper data-topic={slug(paper.topic)} style={`--i:${i}`}>
-            <a data-ac-paper-cover href={paper.url} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+            <a data-ac-paper-cover href={withBase(`/whitepaper/${paper.slug}/`)} tabindex="-1" aria-hidden="true">
               <Image
                 src={paper.cover}
                 alt=""
@@ -65,7 +66,7 @@ for (const paper of WHITE_PAPERS) counts.set(paper.topic, (counts.get(paper.topi
               </p>
               <h3 data-ac-paper-title>{paper.title}</h3>
               <p data-ac-paper-summary>{paper.summary}</p>
-              <a data-ac-paper-cta class="mono-label" href={paper.url} target="_blank" rel="noopener">
+              <a data-ac-paper-cta class="mono-label" href={withBase(`/whitepaper/${paper.slug}/`)}>
                 Get the white paper
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ARROW} />
               </a>

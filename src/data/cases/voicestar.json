@@ -1,0 +1,59 @@
+{
+  "slug": "voicestar",
+  "name": "Voice Enabled Bar Inventory",
+  "stores": {},
+  "intro": [
+    "VoiceStar.ai is a SaaS-based platform providing an AI-based mobile application to restaurant/bar professionals for managing their bar & food inventories with help of language voice. The app helps reduce multiple manual hours spent accounting for inventories compared to current systems.",
+    "VoiceStar.ai targets the legacy business process using advanced AI, and has the following objectives: 1. Reduce the time & cost involved in taking inventory, 2. Automate routine and task management, 3. Reduce management turnover with voice assistance over keyboards."
+  ],
+  "sections": [
+    {
+      "title": "The Problem",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "The client approached us with a very innovative vision of managing their bar inventories with the help of human voice. The target audience was bar and restaurant owners in the MVP phase."
+        },
+        {
+          "title": "",
+          "body": "The client was concerned with the technology, and was looking for a scalable robust solution to help them connect with their target audience."
+        },
+        {
+          "title": "",
+          "body": "The client wanted us to suggest the core voice transcription technology for the product."
+        },
+        {
+          "title": "",
+          "body": "The users needed access to reports instantly after completion of the inventory."
+        },
+        {
+          "title": "",
+          "body": "The client was looking for an edit function that would allow users to edit their transcribed data during the voice counting process."
+        },
+        {
+          "title": "",
+          "body": "The client wanted to implement voice-enabled inventory updates to reduce paperwork."
+        },
+        {
+          "title": "",
+          "body": "The client wanted to have some checks that needed to work in the backend for differentiating the product type while importing it into the system."
+        },
+        {
+          "title": "",
+          "body": "The client wanted a marketing website with the functionalities that allow users to buy a subscription plan or log in to their web portal. They have introduced some changes inside of this module like coupon codes and one-time setup for their users."
+        }
+      ]
+    },
+    {
+      "title": "The Solution",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "We analyzed the requirements of the client and provided the appropriate technology solution for launching their idea into the app market."
+        }
+      ]
+    }
+  ]
+}

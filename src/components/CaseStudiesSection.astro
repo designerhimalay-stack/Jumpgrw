@@ -19,7 +19,7 @@ import { withBase } from "@/lib/paths";
    open project mirrors that video's progress. See docs/components/case-studies.md.
 
    Summaries and stacks are the company's own (src/lib/projects.ts). Each
-   project links to its card on the Case Studies page. Each video's poster is
+   project links to its own case study page. Each video's poster is
    its own .jpg. */
 
 const CASES = [
@@ -111,7 +111,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
                 <div data-ac-case-details-inner>
                   <p data-ac-case-summary>{item.summary}</p>
                   <p data-ac-case-stack class="mono-label">{item.stack.join(" · ")}</p>
-                  <a data-ac-case-link class="mono-label" href={withBase(`/case-studies/#${item.slug}`)}>
+                  <a data-ac-case-link class="mono-label" href={withBase(`/case-studies/${item.slug}/`)}>
                     View case study
                     <Arrow direction="diagonal" />
                   </a>

@@ -1,0 +1,70 @@
+{
+  "slug": "dna-vibe",
+  "name": "Wearable Wellness Device",
+  "stores": {
+    "ios": "https://apps.apple.com/in/app/dna-vibe/id1495258896"
+  },
+  "intro": [
+    "DNA Vibe is a wearable wellness device, delivering a proprietary blend of signaling protocols in, low-level red light, near-infrared and magnetic. The safety and efficacy of these products have all been well-established through multiple double-blind clinical trials and FDA approvals.",
+    "DNA Vibe provides a mobile application for their device so users can turn it on and manage the device, set session parameters, run sessions, and provide feedback."
+  ],
+  "sections": [
+    {
+      "title": "The Problem",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "Client wanted the development team to understand their product and provide a solution for managing the wearable wellness device with the help of an app."
+        },
+        {
+          "title": "",
+          "body": "Client was concerned about the technology used to build this application."
+        },
+        {
+          "title": "",
+          "body": "Client required a unique ID to get bonded with each device so that the same device can’t be operated by two different accounts."
+        },
+        {
+          "title": "",
+          "body": "Client wanted to implement different signal levels that show within the app so the app could automatically be stopped if users tried to change the values mid-process."
+        },
+        {
+          "title": "",
+          "body": "Client wanted to have the functionality of tracking sessions run by users to help the team of the client review the provided feedbacks."
+        }
+      ]
+    },
+    {
+      "title": "The Solution",
+      "paras": [],
+      "items": [
+        {
+          "title": "",
+          "body": "We understood the functionalities of the wearable wellness device during the requirement gathering phase and provided the confidence to the client by documenting the complete process flow with an architecture diagram."
+        },
+        {
+          "title": "",
+          "body": "We used the Flutter technology to achieve both iOS & Android apps along with the Nodejs in the backend. The client was impressed with our usage of Google’s mobile UI framework that provided fast & expressive apps on both iOS & Android."
+        },
+        {
+          "title": "",
+          "body": "We mapped each device with the unique ID from the backend which helped the client avoid the same mapping of a single device with different accounts. For this, we asked the new user to provide the unique ID to link that device with their account."
+        },
+        {
+          "title": "",
+          "body": "We successfully implemented the signaling matrix for receiving the responses from the devices and to achieve this matrix functionality, we have used Bluetooth Low Energy (BLE) technology. For this, we have used the library from the Flutter framework so that the device can communicate with the mobile application."
+        },
+        {
+          "title": "",
+          "body": "We provided a timer functionality for tracking the time spent by users on the app and for helping track how long users have worn that device."
+        }
+      ]
+    },
+    {
+      "title": "The Result",
+      "paras": [],
+      "items": []
+    }
+  ]
+}

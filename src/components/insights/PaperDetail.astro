@@ -1,0 +1,343 @@
+---
+import { Image } from "astro:assets";
+import Arrow from "@pg/page30/components/icons/Arrow.astro";
+import GridRules from "@pg/page30/components/GridRules.astro";
+import SectionHead from "@pg/page30/components/SectionHead.astro";
+import Joints from "@pg/page30/components/process/Joints.astro";
+import { withBase } from "@/lib/paths";
+import type { WhitePaper } from "@/lib/insights";
+import type { PaperExtras } from "@/lib/papers";
+
+/* The body of one white paper, after its hero: what the paper covers (its
+   introduction, or its summary when that is all there is), the key
+   highlights as numbered cards when the paper lists them, and the other
+   papers to read next. The request form follows on the page. */
+
+interface Props {
+  paper: WhitePaper;
+  extras?: PaperExtras;
+  others: WhitePaper[];
+}
+
+const { paper, extras, others } = Astro.props;
+const intro = extras?.intro.length ? extras.intro : [paper.summary];
+const highlights = extras?.highlights ?? [];
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section data-ac-sec="light" data-ac-paper-about id="about">
+  <GridRules />
+  <div data-ac-sec-container>
+    <SectionHead eyebrow="About the paper" headline={["What it", "covers."]} accent={1} />
+    <div data-ac-sec-frame data-ac-sec-rise>
+      <Joints />
+      <div data-ac-paper-about-grid>
+        <div data-ac-paper-prose>
+          {intro.map((paragraph, i) => <p data-lead={i === 0 || undefined}>{paragraph}</p>)}
+        </div>
+        <dl data-ac-paper-specs>
+          <div>
+            <dt class="mono-label">Topic</dt>
+            <dd>{paper.topic}</dd>
+          </div>
+          <div>
+            <dt class="mono-label">Published by</dt>
+            <dd>JumpGrowth</dd>
+          </div>
+          <div>
+            <dt class="mono-label">Get it</dt>
+            <dd><a href="#request">Request the paper<Arrow direction="right" /></a></dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    {highlights.length > 0 && (
+      <div data-ac-paper-highlights data-ac-sec-rise>
+        <h3 class="mono-label" data-ac-paper-highlights-title>Key highlights</h3>
+        <div data-ac-sec-frame>
+          <Joints />
+          <ol data-ac-paper-cards role="list">
+            {highlights.map((item, i) => (
+              <li data-ac-paper-card>
+                <span class="mono-label" data-ac-paper-n>{pad(i + 1)}</span>
+                <h4 data-ac-paper-card-title>{item.title}</h4>
+                {item.body && <p data-ac-paper-card-body>{item.body}</p>}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    )}
+  </div>
+</section>
+
+{others.length > 0 && (
+  <section data-ac-sec="light" data-ac-hire-tint data-ac-paper-next>
+    <GridRules />
+    <div data-ac-sec-container>
+      <SectionHead eyebrow="Keep reading" headline={["More", "white papers."]} accent={1} />
+      <div data-ac-sec-frame data-ac-sec-rise>
+        <Joints />
+        <ul data-ac-paper-next-grid role="list">
+          {others.map((other) => (
+            <li>
+              <a href={withBase(`/whitepaper/${other.slug}/`)} data-ac-paper-next-link>
+                <span data-ac-paper-next-cover>
+                  <Image src={other.cover} alt="" widths={[320, 480]} sizes="180px" quality={80} loading="lazy" />
+                </span>
+                <span data-ac-paper-next-text>
+                  <span class="mono-label" data-ac-paper-next-topic>{other.topic}</span>
+                  <span data-ac-paper-next-name>{other.title}</span>
+                  <span class="mono-label" data-ac-paper-next-cta>
+                    Read more
+                    <Arrow direction="diagonal" />
+                  </span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  [data-ac-paper-about-grid] {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    background: #ffffff;
+  }
+
+  [data-ac-paper-prose] {
+    padding: clamp(22px, 3vw, 44px);
+    border-right: 1px solid var(--ac-line);
+  }
+
+  [data-ac-paper-prose] p {
+    max-width: 62ch;
+    margin: 0 0 1.1em;
+    font-size: clamp(16px, 1.2vw, 18px);
+    line-height: 1.65;
+    color: rgb(10 16 34 / 0.74);
+  }
+
+  [data-ac-paper-prose] p:last-child {
+    margin-bottom: 0;
+  }
+
+  [data-ac-paper-prose] p[data-lead] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(20px, 1.9vw, 27px);
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-paper-specs] {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+  }
+
+  [data-ac-paper-specs] > div {
+    padding: clamp(18px, 2vw, 28px) clamp(22px, 2.4vw, 36px);
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  [data-ac-paper-specs] > div:last-child {
+    border-bottom: 0;
+  }
+
+  [data-ac-paper-specs] dt {
+    margin: 0 0 8px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-paper-specs] dd {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 500;
+    color: #0a1022;
+  }
+
+  [data-ac-paper-specs] a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  [data-ac-paper-specs] a:hover {
+    color: var(--color-accent-dark);
+  }
+
+  [data-ac-paper-specs] a:focus-visible,
+  [data-ac-paper-next-link]:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  [data-ac-paper-highlights] {
+    margin-top: clamp(32px, 4vw, 56px);
+  }
+
+  [data-ac-paper-highlights-title] {
+    margin: 0 0 14px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-paper-cards] {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0 -1px -1px 0;
+    padding: 0;
+    list-style: none;
+    background: #ffffff;
+  }
+
+  [data-ac-paper-card] {
+    padding: clamp(20px, 2.2vw, 32px);
+    border-right: 1px solid var(--ac-line);
+    border-bottom: 1px solid var(--ac-line);
+  }
+
+  [data-ac-paper-n] {
+    display: block;
+    margin-bottom: 14px;
+    color: var(--color-accent);
+  }
+
+  [data-ac-paper-card-title] {
+    margin: 0 0 10px;
+    font-family: var(--font-display-stack);
+    font-size: clamp(18px, 1.5vw, 22px);
+    font-weight: 400;
+    line-height: 1.22;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-paper-card-body] {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgb(10 16 34 / 0.68);
+  }
+
+  [data-ac-paper-next-grid] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #ffffff;
+  }
+
+  [data-ac-paper-next-grid] > li + li {
+    border-left: 1px solid var(--ac-line);
+  }
+
+  [data-ac-paper-next-link] {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 2vw, 28px);
+    height: 100%;
+    padding: clamp(18px, 2.2vw, 32px);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  [data-ac-paper-next-link]:hover {
+    background: color-mix(in srgb, var(--color-accent) 4%, #ffffff);
+  }
+
+  [data-ac-paper-next-cover] {
+    flex: none;
+    width: clamp(110px, 12vw, 170px);
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: clip;
+    background: #eef1f7;
+  }
+
+  [data-ac-paper-next-cover] img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  [data-ac-paper-next-text] {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  [data-ac-paper-next-topic] {
+    color: var(--color-accent);
+  }
+
+  [data-ac-paper-next-name] {
+    font-family: var(--font-display-stack);
+    font-size: clamp(17px, 1.5vw, 22px);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: #0a1022;
+  }
+
+  [data-ac-paper-next-cta] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #0a1022;
+  }
+
+  [data-ac-paper-next-link]:hover [data-ac-paper-next-cta] {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 1099px) {
+    [data-ac-paper-cards] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 809px) {
+    [data-ac-paper-about-grid],
+    [data-ac-paper-next-grid] {
+      grid-template-columns: 1fr;
+    }
+
+    [data-ac-paper-prose] {
+      border-right: 0;
+      border-bottom: 1px solid var(--ac-line);
+    }
+
+    [data-ac-paper-next-grid] > li + li {
+      border-left: 0;
+      border-top: 1px solid var(--ac-line);
+    }
+
+    [data-ac-paper-cards] {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-paper-next-link] {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { toggleInView } from "@pg/page30/lib/in-view";
+
+  document.querySelectorAll<HTMLElement>("[data-ac-paper-about], [data-ac-paper-next]").forEach(toggleInView);
+</script>

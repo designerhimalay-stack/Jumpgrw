@@ -9,12 +9,10 @@ import BlogIndex from "@/components/insights/BlogIndex.astro";
 import PageHero from "@pg/page30/components/PageHero.astro";
 import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
 import type { PageHeroContent } from "@pg/page30/types/page";
-import heroPhoto from "@/assets/teams/specialist.jpg";
 import { BLOG_POSTS, BLOG_CATEGORIES } from "@/lib/insights";
 
-/* Blog: every article on the company blog (jumpgrowth.com/blog), newest
-   first, filterable by topic. Each card opens the full article on the
-   company site. */
+/* Blog: every article, newest first, filterable by topic. Each card opens
+   the article's own page (src/pages/blog/[slug].astro). */
 
 const latest = BLOG_POSTS[0];
 
@@ -33,8 +31,8 @@ const HERO: PageHeroContent = {
     { icon: "clock", label: "Costs, timelines and stacks" },
     { icon: "globe", label: "Onshore, nearshore and offshore" },
   ],
-  image: heroPhoto,
-  imageAlt: "A developer in headphones works across two monitors of code.",
+  image: latest.cover,
+  imageAlt: `Cover of the latest article: ${latest.title}`,
   card: {
     status: "Latest article",
     place: latest.category,

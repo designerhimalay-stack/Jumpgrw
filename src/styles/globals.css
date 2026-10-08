@@ -82,6 +82,17 @@
   }
 }
 
+@media (max-width: 767px) {
+  :root {
+    /* Phones: a column break still has to read as a new section (the rules run
+       unbroken), so the gap stays clearly larger than the ~40px internal
+       rhythm — but the desktop expanse is wasted scroll here. Tightened on the
+       2026 mobile pass to roughly 2× the internal step. */
+    --section-gap: clamp(60px, 10vh, 96px);
+    --band-pad: clamp(52px, 9vh, 84px);
+  }
+}
+
 @media (max-width: 479px) {
   :root {
     --paragraph-normal: 14px;
@@ -5446,6 +5457,20 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   [data-ac-footer-signoff] {
     white-space: normal;
     font-size: clamp(34px, 11vw, 64px);
+  }
+}
+
+/* Phones: the footer's own stacking (sign-off, link grid, baseline) uses
+   viewport-height margins that are generous on a short column. Pull them in so
+   the footer is not a screen and a half on its own. */
+@media (max-width: 599px) {
+  [data-ac-footer-grid] {
+    margin-top: 32px;
+    padding-top: 28px;
+  }
+
+  [data-ac-footer-base] {
+    margin-top: 32px;
   }
 }
 

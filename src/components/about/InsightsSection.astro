@@ -43,7 +43,7 @@ const ARROW = '<path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" />';
           <ol data-ac-insights-paper-list role="list">
             {WHITE_PAPERS.map((paper, i) => (
               <li>
-                <a href={paper.url} target="_blank" rel="noopener">
+                <a href={withBase(`/whitepaper/${paper.slug}/`)}>
                   <span data-ac-insights-paper-n>{pad(i + 1)}</span>
                   <span>{paper.title}</span>
                 </a>
@@ -58,7 +58,7 @@ const ARROW = '<path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" />';
 
         {posts.map((post, i) => (
           <article data-ac-insights-post style={`--i:${i}`}>
-            <a href={post.url} target="_blank" rel="noopener" data-ac-insights-post-link>
+            <a href={withBase(`/blog/${post.slug}/`)} data-ac-insights-post-link>
               <span data-ac-insights-cover>
                 <Image src={post.cover} alt="" widths={[400, 640, 800]} sizes="(max-width: 809px) 92vw, (max-width: 1199px) 46vw, 24vw" quality={80} />
               </span>
@@ -358,6 +358,49 @@ const ARROW = '<path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" />';
     [data-ac-insights-post] {
       border-right: 0;
       border-top: 1px solid var(--ac-line);
+    }
+  }
+
+  /* Phones: the three posts go two-up and shed the excerpt, so the block reads
+     as a compact index rather than three full-height stacked cards. The papers
+     panel keeps the top row to itself. */
+  @media (max-width: 560px) {
+    [data-ac-insights-grid] {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    [data-ac-insights-papers] {
+      grid-column: 1 / -1;
+    }
+
+    [data-ac-insights-post] {
+      border-top: 0;
+      border-bottom: 1px solid var(--ac-line);
+    }
+
+    [data-ac-insights-post]:nth-of-type(odd) {
+      border-right: 1px solid var(--ac-line);
+    }
+
+    [data-ac-insights-post]:last-child {
+      grid-column: 1 / -1;
+      border-right: 0;
+    }
+
+    [data-ac-insights-post-link] {
+      padding: 12px 12px 18px;
+    }
+
+    [data-ac-insights-cover] {
+      margin-bottom: 12px;
+    }
+
+    [data-ac-insights-post]:not(:last-child) [data-ac-insights-post-body] {
+      display: none;
+    }
+
+    [data-ac-insights-post]:not(:last-child) [data-ac-insights-post-title] {
+      font-size: 16px;
     }
   }
 
