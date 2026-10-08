@@ -3,6 +3,7 @@ import "@pg/page30/styles/globals.css";
 import "@/styles/globals.css";
 import Layout from "@/layouts/Layout.astro";
 import Navbar from "@/components/Navbar.astro";
+import { withBase } from "@/lib/paths";
 import Footer from "@/components/Footer.astro";
 import SimpleHero from "@/components/SimpleHero.astro";
 import ArticleBody from "@/components/insights/ArticleBody.astro";
@@ -24,7 +25,7 @@ const blocks = policy.blocks as ArticleBlock[];
   breadcrumbs={[{ name: "Privacy Policy", path: "/privacy-policy/" }]}
 >
   <SmoothScroll />
-  <Navbar />
+  <Navbar contactHref={withBase("/contact/")} />
   <main>
     <SimpleHero
       label={["Company", "Privacy Policy"]}

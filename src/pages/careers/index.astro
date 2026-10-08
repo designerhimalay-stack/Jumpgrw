@@ -3,6 +3,7 @@ import "@pg/page30/styles/globals.css";
 import "@/styles/globals.css";
 import Layout from "@/layouts/Layout.astro";
 import Navbar from "@/components/Navbar.astro";
+import { withBase } from "@/lib/paths";
 import Footer from "@/components/Footer.astro";
 import ContactForm from "@/components/ContactForm.astro";
 import PageHero from "@pg/page30/components/PageHero.astro";
@@ -62,7 +63,7 @@ const HERO: PageHeroContent = {
   navTone="field"
 >
   <SmoothScroll />
-  <Navbar />
+  <Navbar contactHref={withBase("/contact/")} />
   <main>
     <PageHero content={HERO} />
 

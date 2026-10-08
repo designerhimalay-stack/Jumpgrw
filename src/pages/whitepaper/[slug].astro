@@ -47,7 +47,7 @@ const reading = BLOG_POSTS.filter((post) => onTopic(post.title)).slice(0, 3);
   ]}
 >
   <SmoothScroll />
-  <Navbar />
+  <Navbar contactHref={withBase("/contact/")} />
   <main>
     <DetailHero
       trail={["Insights", "White Papers", paper.topic]}

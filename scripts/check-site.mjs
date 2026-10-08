@@ -11,8 +11,8 @@
  *      Pages sub-path).
  *   4. The banned word does not appear in any .html/.js/.css file.
  *   5. The AgentCraft Display font-face is declared (hero camera depends on it).
- *   6. Every page has a title, a description and one h1, and every internal link
- *      on it resolves to a built page or file.
+ *   6. Every page has a title, a description and one h1; every internal link
+ *      on it resolves to a built page or file; every in-page #link has its target.
  *   7. With SITE_URL set: every page has a canonical link, and sitemap.xml and
  *      robots.txt are written.
  *
@@ -171,7 +171,21 @@ const targetOf = (url) => {
 let basicsBad = 0;
 let linksChecked = 0;
 let linksBad = 0;
+let anchorsChecked = 0;
+let anchorsBad = 0;
 for (const p of pages) {
+  // In-page links (href="#id") need that id on the same page. "#top" always
+  // means the top of the document, so it needs no target.
+  const ids = new Set([...p.content.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
+  for (const m of p.content.matchAll(/<a\b[^>]*\bhref="#([^"]+)"/g)) {
+    if (m[1] === 'top') continue;
+    anchorsChecked++;
+    if (!ids.has(m[1])) {
+      fail(`${p.rel}: link to #${m[1]} has no target on the page`);
+      anchorsBad++;
+    }
+  }
+
   const h1s = (p.content.match(/<h1[\s>]/g) || []).length;
   if (!/<title>[^<]+<\/title>/.test(p.content)) { fail(`${p.rel}: no <title>`); basicsBad++; }
   if (!/<meta name="description" content="[^"]+"/.test(p.content)) { fail(`${p.rel}: no meta description`); basicsBad++; }
@@ -193,6 +207,7 @@ for (const p of pages) {
 }
 if (basicsBad === 0) ok(`${pages.length} pages: each has a title, a description and one h1`);
 if (linksBad === 0) ok(`${linksChecked} internal links resolve`);
+if (anchorsBad === 0) ok(`${anchorsChecked} in-page links have their target`);
 
 // ─── 7. Search-engine files (only when the site's origin is known) ───────────
 

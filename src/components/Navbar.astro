@@ -247,6 +247,14 @@ const NAV_LINKS: NavLink[] = [
    in-page ("#teams"); on any other page they jump to the home page and its
    anchor (withBase("#teams") → "/#teams"), so the same menu works everywhere.
    "#top" is left alone — it means "the top of this page". */
+interface Props {
+  /** Where "Build your team" goes. Most pages carry the team form at #contact,
+      so it stays on the page; a page without one (careers, a white paper, the
+      privacy policy, the 404) passes the Contact page instead. */
+  contactHref?: string;
+}
+
+const { contactHref = "#contact" } = Astro.props;
 const isHome = Astro.url.pathname.replace(/\/$/, "") === withBase("/").replace(/\/$/, "");
 /* Section links scroll in-page on the home page; on any other page they jump
    to the home page's anchor. "#top" is the document top everywhere, and
@@ -405,7 +413,7 @@ const MOBILE_MENU_LINK_CLASS =
         <div class="flex items-center">
           <div class="xsdown:hidden">
             <a
-              href={fixHref("#contact")}
+              href={fixHref(contactHref)}
               data-ac-nav-cta
               class="mono-label flex items-center gap-[9px] whitespace-nowrap bg-[var(--color-accent)] px-[20px] py-[11px] text-white no-underline hover:bg-[var(--color-accent-dark)] max-[1199px]:px-[14px]"
             >
@@ -542,7 +550,7 @@ const MOBILE_MENU_LINK_CLASS =
       ),
     )}
     <a
-      href={fixHref("#contact")}
+      href={fixHref(contactHref)}
       class="mono-label mt-[28px] inline-flex items-center gap-[9px] bg-[var(--color-accent)] px-[20px] py-[14px] text-white no-underline"
     >
       Build your team
