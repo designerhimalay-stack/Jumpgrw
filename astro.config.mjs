@@ -2,6 +2,7 @@
 import { defineConfig, fontProviders } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import seoFiles from "./integrations/seo-files.mjs";
+import { LEGACY_ROUTES } from "./integrations/legacy-routes.mjs";
 
 /* Two families, two jobs: Outfit carries the brand voice (logo, headlines,
    figures), Inter does the reading work (body, navigation, labels). Both SIL
@@ -16,6 +17,13 @@ export default defineConfig({
      withBase() in src/lib/paths.ts. */
   site: process.env.SITE_URL || undefined,
   base: process.env.BASE_PATH || "/",
+  /* The pages first built at /page1/ to /page34/ redirect to their named
+     addresses (integrations/legacy-routes.mjs). Astro places the redirect
+     pages under the base but leaves the destination as written, so the
+     destination carries the base itself. */
+  redirects: Object.fromEntries(
+    Object.entries(LEGACY_ROUTES).map(([from, to]) => [from, `${(process.env.BASE_PATH || "").replace(/\/+$/, "")}${to}/`]),
+  ),
   /* sitemap.xml and robots.txt, written from the pages the build produced. */
   integrations: [seoFiles()],
   vite: {
