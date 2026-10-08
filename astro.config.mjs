@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig, fontProviders } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
+import seoFiles from "./integrations/seo-files.mjs";
 
 /* Two families, two jobs: Outfit carries the brand voice (logo, headlines,
    figures), Inter does the reading work (body, navigation, labels). Both SIL
@@ -15,6 +16,8 @@ export default defineConfig({
      withBase() in src/lib/paths.ts. */
   site: process.env.SITE_URL || undefined,
   base: process.env.BASE_PATH || "/",
+  /* sitemap.xml and robots.txt, written from the pages the build produced. */
+  integrations: [seoFiles()],
   vite: {
     plugins: [tailwindcss()],
   },

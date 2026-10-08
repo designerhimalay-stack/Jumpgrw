@@ -3,52 +3,19 @@ import Arrow from "@/components/icons/Arrow.astro";
 import GridRules from "@/components/GridRules.astro";
 import SectionHead from "@/components/SectionHead.astro";
 import Joints from "@/components/process/Joints.astro";
+import { FAQS } from "@/lib/faqs";
 
 /* Frequently asked: the header holds its place on the left while the answers
    scroll past on the right. Native <details> sharing one name, so only one
    answer is open at a time and it all works without scripts. See
-   docs/components/faq.md.
-
-   Questions are the brief's. The answers are drafts written from what the
-   page already says (the stats, the team models, X-Shore); have them
-   checked before launch. */
+   docs/components/faq.md. The questions live in src/lib/faqs.ts, which the
+   /faq/ page's structured data also reads. */
 
 const COPY = {
   eyebrow: "Frequently asked",
   headline: ["Straight answers", "about building", "your team."],
   cta: "Ask a team specialist",
 };
-
-const FAQS = [
-  {
-    q: "Can JumpGrowth provide individual developers or a complete team?",
-    a: "Both. You can add individual developers through team extension, or bring in a complete team: an MVP team for a first release, or a production team for a product already in market.",
-  },
-  {
-    q: "What is included in an MVP team?",
-    a: "A compact, cross-functional team sized for a first release: product and technical leadership, design, and full-stack engineers who work with AI tools every day, with QA and DevOps brought in as the build needs them.",
-  },
-  {
-    q: "How quickly can a team start?",
-    a: "Teams typically make their first commit within two weeks of kickoff.",
-  },
-  {
-    q: "How does AI assistance change delivery?",
-    a: "AI tools speed up work across the delivery cycle, from first draft to review, while experienced engineers make the decisions and own the result. AI adds speed; people own the outcome.",
-  },
-  {
-    q: "What is the X-shore delivery model?",
-    a: "Choose one region or combine all three: onshore in the United States, nearshore in Mexico and Canada, and offshore in India. We design the team around collaboration, capability, continuity, and the work.",
-  },
-  {
-    q: "Can developers work within our existing process and tools?",
-    a: "Yes. Developers join your rituals, work in your tools and follow your roadmap, so the team extends the way you already work.",
-  },
-  {
-    q: "Is JumpGrowth based in the US?",
-    a: "Yes. JumpGrowth is headquartered in Dallas, with teammates across the United States, Mexico, Canada, and India.",
-  },
-];
 
 const pad = (n: number) => String(n).padStart(2, "0");
 ---

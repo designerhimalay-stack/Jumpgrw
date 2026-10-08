@@ -1,7 +1,7 @@
 ---
 import "@pg/page30/styles/globals.css";
 import "@/styles/globals.css";
-import Layout from "@pg/page30/layouts/Layout.astro";
+import Layout from "@/layouts/Layout.astro";
 import Navbar from "@/components/Navbar.astro";
 import Footer from "@/components/Footer.astro";
 import ContactForm from "@/components/ContactForm.astro";
@@ -26,7 +26,17 @@ const extras = getPaperExtras(paper.slug);
 const others = WHITE_PAPERS.filter((other) => other.slug !== paper.slug);
 ---
 
-<Layout title={`${paper.title} · JumpGrowth`} description={paper.summary.slice(0, 200)} navTone="field">
+<Layout
+  title={paper.title}
+  description={paper.summary.length > 160 ? `${paper.summary.slice(0, 157).replace(/\s+\S*$/, "")}…` : paper.summary}
+  navTone="field"
+  image={paper.cover}
+  imageAlt={`Cover of the white paper “${paper.title}”`}
+  breadcrumbs={[
+    { name: "White Papers", path: "/whitepaper/" },
+    { name: paper.title, path: `/whitepaper/${paper.slug}/` },
+  ]}
+>
   <SmoothScroll />
   <Navbar />
   <main>

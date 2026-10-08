@@ -1,7 +1,7 @@
 ---
 import "@pg/page30/styles/globals.css";
 import "@/styles/globals.css";
-import Layout from "@pg/page30/layouts/Layout.astro";
+import Layout from "@/layouts/Layout.astro";
 import Navbar from "@/components/Navbar.astro";
 import Footer from "@/components/Footer.astro";
 import ContactForm from "@/components/ContactForm.astro";
@@ -25,7 +25,32 @@ const { post } = Astro.props;
 const article = getArticle(post.slug);
 ---
 
-<Layout title={`${post.title} · JumpGrowth`} description={post.excerpt} navTone="field">
+<Layout
+  title={post.title}
+  description={post.excerpt}
+  navTone="field"
+  image={post.cover}
+  imageAlt={`Cover image for “${post.title}”`}
+  type="article"
+  article={{ published: article.published, modified: article.modified, author: article.author, section: post.category }}
+  breadcrumbs={[
+    { name: "Blog", path: "/blog/" },
+    { name: post.title, path: `/blog/${post.slug}/` },
+  ]}
+  schema={[
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: post.title,
+      description: post.excerpt,
+      datePublished: article.published,
+      dateModified: article.modified || article.published,
+      author: { "@type": "Person", name: article.author },
+      publisher: { "@type": "Organization", name: "JumpGrowth" },
+      articleSection: post.category,
+    },
+  ]}
+>
   <SmoothScroll />
   <Navbar />
   <main>

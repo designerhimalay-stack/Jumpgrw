@@ -1,7 +1,7 @@
 ---
 import "@pg/page30/styles/globals.css";
 import "@/styles/globals.css";
-import Layout from "@pg/page30/layouts/Layout.astro";
+import Layout from "@/layouts/Layout.astro";
 import Navbar from "@/components/Navbar.astro";
 import Footer from "@/components/Footer.astro";
 import ContactForm from "@/components/ContactForm.astro";
@@ -41,7 +41,15 @@ const actions = [
 ];
 ---
 
-<Layout title={`${project.name} case study · JumpGrowth`} description={`${project.name}: ${project.tagline}`} navTone="field">
+<Layout
+  title={`${project.name} case study`}
+  description={`${project.name}: ${project.tagline} A ${project.category.toLowerCase()} for ${project.platform}, built by JumpGrowth with ${project.stack.slice(0, 3).join(", ")}.`}
+  navTone="field"
+  breadcrumbs={[
+    { name: "Case Studies", path: "/case-studies/" },
+    { name: project.name, path: `/case-studies/${project.slug}/` },
+  ]}
+>
   <SmoothScroll />
   <Navbar />
   <main>

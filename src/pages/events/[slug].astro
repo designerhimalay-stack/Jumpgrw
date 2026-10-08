@@ -1,7 +1,7 @@
 ---
 import "@pg/page30/styles/globals.css";
 import "@/styles/globals.css";
-import Layout from "@pg/page30/layouts/Layout.astro";
+import Layout from "@/layouts/Layout.astro";
 import Navbar from "@/components/Navbar.astro";
 import Footer from "@/components/Footer.astro";
 import ContactForm from "@/components/ContactForm.astro";
@@ -24,7 +24,17 @@ export function getStaticPaths() {
 const { event, past } = Astro.props;
 ---
 
-<Layout title={`${event.title} · JumpGrowth`} description={`${event.title}: ${event.tagline}. ${event.dates}, ${event.place}.`} navTone="field">
+<Layout
+  title={event.title}
+  description={`${event.title}: ${event.tagline}. ${event.dates}, ${event.place}.`}
+  navTone="field"
+  image={event.image}
+  imageAlt={`${event.title}, ${event.tagline}`}
+  breadcrumbs={[
+    { name: "Events", path: "/events/" },
+    { name: event.title, path: `/events/${event.slug}/` },
+  ]}
+>
   <SmoothScroll />
   <Navbar />
   <main>
