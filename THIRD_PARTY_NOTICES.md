@@ -38,6 +38,10 @@ The OFL text: https://openfontlicense.org/open-font-license-official-text/
 | `src/assets/team-photo.webp`, `showcase/portrait.jpg`, `cases/*.webm`, `cases/*.jpg` | Supplied by the AgentCraft team | AgentCraft's own |
 | `src/assets/about/leader-*`, `about/loc-*`, `cases/projects/*`, `cases/portfolio-hero.jpg`, `insights/**` | Supplied by JumpGrowth, the site's owner (also published on jumpgrowth.com); see `docs/components/company-pages.md` | JumpGrowth's own |
 
+The product renders in `src/assets/cases/projects/` are JumpGrowth's own. Where a subject ran off
+an image's edge, that edge is faded to transparent so no render ends in a hard crop;
+`grief-unleashed.webp` is composed from three of the app's own screens.
+
 The brand icons and share card in `src/assets/brand/` are made from JumpGrowth's own logo
 (`icon-*.png` crop its "JU" corner), and the share card sets it over `why/people.jpg`
 (Unsplash, above).

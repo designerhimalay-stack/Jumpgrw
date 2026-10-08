@@ -32,6 +32,9 @@ export interface Project {
   tagline: string;
   brief: string;
   stack: string[];
+  /** A transparent device render. Any edge where the subject ran off the
+      image (a hand, a pedestal, a screen) is faded to transparent, so no
+      render ends in a hard crop line on any background. */
   mockup: ImageMetadata;
   url: string;
 }
