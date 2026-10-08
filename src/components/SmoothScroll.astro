@@ -93,6 +93,17 @@
 
   let goTo: (target: HTMLElement | 0, instant?: boolean) => void;
 
+  /* The portal only re-reads its progress when the page scrolls. After a
+     retire that never scrolled (arriving with #top, or the logo pressed during
+     the opening) it can keep drawing the word over the revealed panel. A scroll
+     event on the next frame, and once more after layout settles, makes it see
+     the section as fully run. Our own scroll listener ignores these: the hero
+     has already retired. */
+  const settlePortal = () => {
+    requestAnimationFrame(() => window.dispatchEvent(new Event("scroll")));
+    window.setTimeout(() => window.dispatchEvent(new Event("scroll")), 300);
+  };
+
   const arrival = window.location.hash ? destination(window.location.hash) : null;
 
   /* A load with a hash waits for the page to settle (the load event and the
@@ -128,6 +139,7 @@
     goTo = (target) => {
       retire(() => {});
       window.scrollTo(0, topOf(target));
+      settlePortal();
     };
 
     // No camera move of our own here, but the hero still retires once passed.
@@ -227,6 +239,7 @@
       lenis.scrollTo(window.scrollY, { immediate: true, force: true });
       lenis.start();
       lenis.scrollTo(topOf(target), { immediate: instant, force: true, duration: 1.2 });
+      settlePortal();
     };
 
     if (arrival !== null) whenSettled(() => goTo(arrival, true));

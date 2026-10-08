@@ -221,18 +221,18 @@ const NAV_LINKS: NavLink[] = [
           ],
         },
         {
-          title: "RESOURCES",
-          items: [
-            { label: "FAQ", href: withBase("/faq/") },
-            { label: "Engagement Models", href: withBase("/engagement-models/") },
-          ],
-        },
-        {
           title: "BY INDUSTRY",
           items: [
             { label: "Healthcare", href: withBase("/industries/healthcare/") },
             { label: "Financial Services", href: withBase("/industries/financial-services/") },
             { label: "Logistics", href: withBase("/industries/logistics/") },
+          ],
+        },
+        {
+          title: "RESOURCES",
+          items: [
+            { label: "FAQ", href: withBase("/faq/") },
+            { label: "Engagement Models", href: withBase("/engagement-models/") },
           ],
         },
       ],
@@ -371,7 +371,12 @@ const MOBILE_MENU_LINK_CLASS =
   >
     <div class="relative mx-auto w-full max-w-[1920px] px-[var(--gutter)]">
       <div class="flex items-center justify-between py-[16px] mdown:py-[12px]">
-        <a href="#top" class="-my-[11px] flex items-center py-[11px] no-underline" aria-label="JumpGrowth, back to top">
+        {/* The logo goes home and lands on the hero panel ("AI-assisted product
+            teams ready to build"), not the HIRE opening: SmoothScroll treats an
+            arrival with #top as "skip the opening frame". On the home page it
+            does the same in place. A refresh drops the hash, so the opening
+            plays again. */}
+        <a href={isHome ? "#top" : withBase("/#top")} class="-my-[11px] flex items-center py-[11px] no-underline" aria-label="JumpGrowth home">
           <Image
             src={jumpgrowthLogo}
             alt="JumpGrowth"
