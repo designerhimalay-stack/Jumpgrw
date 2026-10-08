@@ -120,8 +120,13 @@ in `astro.config.mjs`. All three break the base-path handling.
 
 | Path | What lives there |
 |---|---|
-| `src/pages/index.astro` | The page: the order of the sections |
-| `src/layouts/Layout.astro` | `<head>`, fonts, the pre-paint inline script |
+| `src/pages/index.astro` | The home page: the order of the sections |
+| `src/pages/**` | Every other page; `PAGES.md` lists them all with their menus |
+| `src/layouts/Layout.astro` | The one layout every page uses: `<head>` (title, canonical, share cards, icons, structured data), fonts, the pre-paint inline script |
+| `src/lib/site.ts` | The company's name, description, address and default share image for every page's head |
+| `src/data/**` | Article, case-study, white-paper, industry and privacy-policy text, as JSON; read by `src/lib/articles.ts`, `cases.ts`, `papers.ts`, `industries.ts` |
+| `integrations/` | `seo-files.mjs` writes `sitemap.xml` and `robots.txt`; `legacy-routes.mjs` maps the old `/pageN/` addresses to their new paths (redirects) |
+| `src/_pages/pageN/` | The team, technology and X-Shore page kits (`@pg/pageN`), each with its own sections and styles |
 | `src/components/*.astro` | One file per section, copy in constants at the top |
 | `src/components/ui/` | The vendored hero portal (rule 5) |
 | `src/styles/globals.css` | Tokens (`:root`), then one block per section, then the navbar menus |
@@ -174,8 +179,15 @@ every CSS rule and script that uses it.
   `toggleInView`), give it an `id`, add it to `index.astro`, add its marker to `SECTIONS`
   in `scripts/check-site.mjs` in page order, write `docs/components/<name>.md`, and add it
   to the page map in DESIGN_NOTES §2.
-- **A new page:** `src/pages/<name>.astro` using `Layout`; link to it with
-  `withBase("/<name>")`.
+- **A new page:** `src/pages/<name>/index.astro` using `@/layouts/Layout.astro`. Pass a
+  `title` (" · JumpGrowth" is added), a `description` of about 150 characters,
+  `breadcrumbs` for anything below the top level, and an `image` when the page has its own
+  picture for share cards. Link to it with `withBase("/<name>/")`; it joins the sitemap on
+  the next build. Never rename a live page's folder without adding the old path to
+  `integrations/legacy-routes.mjs`.
+- **A new article, case study, paper or industry:** add its entry (`src/lib/insights.ts`,
+  `src/lib/projects.ts`, `src/lib/industries.ts`) and its text in `src/data/`; the `[slug]`
+  route builds the page.
 - **Motion:** drive it from an attribute on an ancestor and a CSS transition, keep it
   reversible like the rest, and give it a `prefers-reduced-motion` rule.
 - **Touch targets** stay at 44px or more. Grow the hit area invisibly rather than
@@ -201,11 +213,14 @@ every CSS rule and script that uses it.
 
 These are known and waiting on decisions, not bugs to fix on your own:
 
-- `/contact/`, `/case-studies/`, `/faq/` and `/engagement-models/` now exist, along with the
-  article, case-study, white-paper and event detail pages. The home page's "Plan my team"
-  still scrolls to its own form.
-- Six testimonials, three case-study summaries and the stand-in photos are placeholders.
-- The headquarters address needs confirming.
+- The contact form has no form service yet (`FORM_ACTION` in `ContactForm.astro`). Until one
+  is set it opens the visitor's email app, so CV files and white-paper requests are handled
+  by hand.
+- The phone number (`CONTACT_PHONE`) is a placeholder; it is kept out of structured data.
+- There is no Terms of Use page: the company has none, and its wording needs counsel.
+- The open roles on `/careers/` (`src/lib/roles.ts`) are examples to confirm.
+- Six testimonials and the stand-in photos are placeholders.
+- The headquarters address needs confirming (footer and `src/lib/site.ts`).
 - White 11px text on the brand blue (and the small blue FAQ numbers on white) measure
   3.84:1 against the 4.5:1 accessibility guideline. `--color-accent-dark` would pass
   (4.95:1), but choosing it is a brand decision.

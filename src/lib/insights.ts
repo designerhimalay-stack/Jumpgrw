@@ -19,7 +19,6 @@ import healthcareSoftware from "@/assets/insights/blog/custom-healthcare-softwar
 import hiringPythonJava from "@/assets/insights/blog/hiring-python-java-developers-2026.jpg";
 
 import vibeCoding from "@/assets/insights/whitepapers/vibe-coding.jpg";
-import vibeCodingCover from "@/assets/insights/whitepapers/vibe-coding-cover.png";
 import mobileApp from "@/assets/insights/whitepapers/why-your-business-needs-a-mobile-app.png";
 import businessAi from "@/assets/insights/whitepapers/business-potential-of-ai.webp";
 
@@ -163,9 +162,6 @@ export const WHITE_PAPERS: WhitePaper[] = PAPERS.map((paper) => ({
   ...paper,
   slug: paper.url.split("/whitepaper/")[1].replace(/\/$/, ""),
 }));
-
-/** The featured paper's portrait cover, for the White Papers hero. */
-export const FEATURED_WHITE_PAPER_COVER = vibeCodingCover;
 
 export interface CompanyEvent {
   title: string;

@@ -3326,6 +3326,48 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   padding-bottom: var(--band-pad);
 }
 
+/* Technology pages, "Tech we use": the tile grids are "repeat(n, 1fr)" in
+   each page kit, and a 1fr track can't shrink below its longest unbroken
+   word ("Infrastructure", "BrowserStack"). On phones that held the page 2 to
+   79px wider than the screen. The tracks may shrink to nothing and the text
+   wraps instead. Written two attributes deep so it wins over each kit's
+   copy, whichever stylesheet loads last. */
+[data-ac-stack] [data-ac-stack-tiles] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 767px) {
+  [data-ac-stack] [data-ac-stack-tiles] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+[data-ac-stack] [data-ac-stack-tile] {
+  grid-template-columns: auto minmax(0, 1fr);
+  min-width: 0;
+}
+
+[data-ac-stack] [data-ac-stack-name],
+[data-ac-stack] [data-ac-stack-note],
+[data-ac-stack] [data-ac-stack-label] {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+/* Prototype to launch, "design against production": the kit's "3fr 1fr"
+   frame let the readouts' widest line inflate the fr unit, so between about
+   1000 and 1200px the stage grew three times as much and the frame ran
+   149px past the page. Same fix as the tiles: tracks that may shrink. */
+[data-ac-fidelity] [data-ac-fid-frame] {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+}
+
+@media (max-width: 991px) {
+  [data-ac-fidelity] [data-ac-fid-frame] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 [data-ac-sec="dark"] {
   --ac-rule: rgb(255 255 255 / 0.07);
   --ac-line: rgb(255 255 255 / 0.13);

@@ -499,7 +499,8 @@ const lower = name.toLowerCase();
       grid-column: 1 / -1;
     }
 
-    [data-ac-ind-work] {
+    /* as specific as the [data-count] rules above, so it wins on tablets */
+    [data-ac-ind-work][data-count] {
       --cols: 1;
     }
 

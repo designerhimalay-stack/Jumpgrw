@@ -7,8 +7,9 @@ import Footer from "@/components/Footer.astro";
 import ContactForm from "@/components/ContactForm.astro";
 import DetailHero from "@/components/DetailHero.astro";
 import EventDetail from "@/components/insights/EventDetail.astro";
+import RelatedPosts from "@/components/insights/RelatedPosts.astro";
 import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
-import { PAST_EVENTS, UPCOMING_EVENTS } from "@/lib/insights";
+import { BLOG_POSTS, PAST_EVENTS, UPCOMING_EVENTS } from "@/lib/insights";
 import { withBase } from "@/lib/paths";
 
 /* One event, in the site's own layout. The details come from the event's entry
@@ -55,6 +56,7 @@ const { event, past } = Astro.props;
       imageAlt={`${event.title}, ${event.tagline}`}
     />
     <EventDetail event={event} past={past} />
+    <RelatedPosts posts={BLOG_POSTS.slice(0, 3)} eyebrow="From the team" headline={["The latest", "from our blog."]} />
     <ContactForm />
   </main>
   <Footer />

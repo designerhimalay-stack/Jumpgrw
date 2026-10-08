@@ -4,8 +4,9 @@
 said it, and a strip of all seven clients whose bars time the rotation. A carousel rather
 than another list, so it doesn't repeat the case studies above it.
 
-- **Files:** `src/components/ClientStoriesSection.astro`, the Client stories block in
-  `globals.css`, `src/assets/clients/*.jpg`
+- **Files:** `src/components/ClientStoriesSection.astro` and the Client stories block in
+  `globals.css`. Each story's picture is its video's thumbnail; the earlier portrait
+  photos (`src/assets/clients/`) were removed once nothing used them.
 - **Interaction model:** time-driven rotation; prev/next and client tabs; viewport-gated.
 
 ## Layout

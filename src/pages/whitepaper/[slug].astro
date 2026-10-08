@@ -7,8 +7,9 @@ import Footer from "@/components/Footer.astro";
 import ContactForm from "@/components/ContactForm.astro";
 import DetailHero from "@/components/DetailHero.astro";
 import PaperDetail from "@/components/insights/PaperDetail.astro";
+import RelatedPosts from "@/components/insights/RelatedPosts.astro";
 import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
-import { WHITE_PAPERS } from "@/lib/insights";
+import { BLOG_POSTS, WHITE_PAPERS } from "@/lib/insights";
 import { getPaperExtras } from "@/lib/papers";
 import { withBase } from "@/lib/paths";
 
@@ -24,6 +25,14 @@ export function getStaticPaths() {
 const { paper } = Astro.props;
 const extras = getPaperExtras(paper.slug);
 const others = WHITE_PAPERS.filter((other) => other.slug !== paper.slug);
+
+/* Articles on the paper's subject: AI papers take the AI articles, the mobile
+   paper takes the app and MVP ones. */
+const onTopic =
+  paper.topic === "Artificial Intelligence"
+    ? (title: string) => /\bAI\b/.test(title)
+    : (title: string) => /\bapp\b|MVP/i.test(title);
+const reading = BLOG_POSTS.filter((post) => onTopic(post.title)).slice(0, 3);
 ---
 
 <Layout
@@ -58,6 +67,9 @@ const others = WHITE_PAPERS.filter((other) => other.slug !== paper.slug);
       fit="contain"
     />
     <PaperDetail paper={paper} extras={extras} others={others} />
+    {reading.length > 0 && (
+      <RelatedPosts posts={reading} tone="light" eyebrow="Related reading" headline={["Articles on", `${paper.topic.toLowerCase()}.`]} />
+    )}
     <ContactForm id="request" variant="paper" paper={paper.title} />
   </main>
   <Footer />

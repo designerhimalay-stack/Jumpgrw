@@ -6,24 +6,29 @@ import Joints from "@pg/page30/components/process/Joints.astro";
 import { withBase } from "@/lib/paths";
 import type { BlogPost } from "@/lib/insights";
 
-/* Three more articles under the one being read, in a ruled frame: cover,
-   topic, title and a link, the same card shape as the blog index. */
+/* Up to three articles in a ruled frame: cover, topic, title and a link, the
+   same card shape as the blog index. Under an article it offers more from the
+   team; on a white paper or event page it offers reading on the same topic.
+   "tint" (the default) or "light", so the page's bands keep alternating. */
 
 interface Props {
   posts: BlogPost[];
+  eyebrow?: string;
+  headline?: string[];
+  tone?: "tint" | "light";
 }
 
-const { posts } = Astro.props;
+const { posts, eyebrow = "Keep reading", headline = ["More from", "the team."], tone = "tint" } = Astro.props;
 const ARROW = '<path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" />';
 ---
 
-<section data-ac-sec="light" data-ac-hire-tint data-ac-related>
+<section data-ac-sec="light" data-ac-hire-tint={tone === "tint" || undefined} data-ac-related>
   <GridRules />
   <div data-ac-sec-container>
-    <SectionHead eyebrow="Keep reading" headline={["More from", "the team."]} accent={1} />
+    <SectionHead eyebrow={eyebrow} headline={headline} accent={headline.length - 1} />
     <div data-ac-sec-frame>
       <Joints />
-      <ul data-ac-related-grid role="list">
+      <ul data-ac-related-grid role="list" style={`--cols:${Math.min(Math.max(posts.length, 1), 3)}`}>
         {posts.map((post) => (
           <li data-ac-related-item>
             <a href={withBase(`/blog/${post.slug}/`)} data-ac-related-link>
@@ -47,7 +52,7 @@ const ARROW = '<path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" />';
 <style>
   [data-ac-related-grid] {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
     margin: 0;
     padding: 0;
     list-style: none;
