@@ -169,6 +169,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 <script>
   import { toggleInView } from "@/lib/in-view";
   import { holdOnKeyboardFocus } from "@/lib/rotation";
+  import { getConsent } from "@/lib/consent";
 
   const section = document.querySelector<HTMLElement>("[data-ac-stories]")!;
   const frame   = section.querySelector<HTMLElement>("[data-ac-stories-frame]")!;
@@ -235,6 +236,14 @@ const pad = (n: number) => String(n).padStart(2, "0");
       if (photo.hasAttribute("data-ac-playing")) return;
       const videoId = photo.dataset.videoId;
       if (!videoId) return;
+
+      /* Videos play inside the page only when the visitor has accepted
+         optional cookies; otherwise the video opens on YouTube itself, so
+         YouTube's player never runs on this site (src/lib/consent.ts). */
+      if (getConsent() !== "all") {
+        window.open(`https://www.youtube.com/watch?v=${videoId}`, "_blank", "noopener");
+        return;
+      }
 
       stopCurrentVideo(); // silence any other video first
 

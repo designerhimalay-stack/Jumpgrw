@@ -6,7 +6,10 @@
    any old link, bookmark or search result still lands on the right page (a
    redirect page with a canonical link to the new address, kept out of the
    sitemap). The page kits themselves keep their internal names
-   (src/_pages/pageN, imported as @pg/pageN). */
+   (src/_pages/pageN, imported as @pg/pageN).
+
+   Retired pages are listed here too, sent to the closest page still live:
+   Careers was taken down at the owner's request and goes to About. */
 
 /** @type {Record<string, string>} old path → new path */
 export const LEGACY_ROUTES = {
@@ -44,4 +47,5 @@ export const LEGACY_ROUTES = {
   "/page32": "/nearshore-developers-canada",
   "/page33": "/offshore-developers-india",
   "/page34": "/global-capability-center-india",
+  "/careers": "/about",
 };

@@ -261,9 +261,11 @@ const initials = (name: string) => name.split(/\s+/).map((part) => part[0]).join
       font-size: 19px;
     }
 
+    /* 40px: as large as the caption allows with two cards a row on a
+       small phone (it was 36px, too small to tap reliably). */
     [data-ac-leader-link] {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
     }
   }
 

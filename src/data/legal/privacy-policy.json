@@ -2,18 +2,38 @@
   "title": "Privacy Policy",
   "blocks": [
     {
+      "t": "p",
+      "text": "This privacy policy outlines what data OTS Solutions Inc. (herein referred to as “OTS Solutions”, “JumpGrowth”, “We”, “Our”, or “Us”) collects, stores, and processes about you. It also explains your rights to your data and how you can contact us if you have any questions."
+    },
+    {
       "t": "h2",
       "text": "Who We Are"
+    },
+    {
+      "t": "p",
+      "text": "OTS Solutions is a global Digital Technology consulting company headquartered in Dallas, TX, with offices around the world. We at OTS believe strongly in innovation and lead by providing technology solutions to real-life business problems to increase quality and efficiency in processes."
+    },
+    {
+      "t": "p",
+      "text": "We are strongly committed to delivering you a great experience while you are surfing our website, to sharing the materials you might be interested in, to promptly clarifying any questions that might pop up, and to ensuring uninterrupted functioning of the website so that you don’t feel annoyed. This won’t be possible without your kind assistance, which you render by sharing your personal data with us."
+    },
+    {
+      "t": "p",
+      "text": "At the same time, we understand that personal data is an extremely sensitive matter and we take your privacy very seriously. To avoid making you feel uneasy in this regard, we’ve developed this privacy policy, which dwells on every little detail that refers to our work with your personal data."
     },
     {
       "t": "h2",
       "text": "How We Collect Data"
     },
     {
+      "t": "p",
+      "text": "Depending on the services you use, we collect data from one or more of these sources:"
+    },
+    {
       "t": "ul",
       "items": [
-        "Cookies stored in background",
-        "Forms filled by you",
+        "Cookies stored in the background",
+        "Forms filled in by you",
         "Data collected by our partner sources"
       ]
     },
@@ -22,13 +42,17 @@
       "text": "What Data We Collect"
     },
     {
+      "t": "p",
+      "text": "When you request any of our services, we may ask for, store, and process any or all of these data categories:"
+    },
+    {
       "t": "ul",
       "items": [
-        "Your Name",
-        "Your Country",
-        "Your Email Address",
-        "Your Phone Number",
-        "Any other information that you choose to share."
+        "Your name",
+        "Your country",
+        "Your email address",
+        "Your phone number",
+        "Any other information that you choose to share"
       ]
     },
     {
@@ -36,22 +60,46 @@
       "text": "Why We Collect These Data"
     },
     {
+      "t": "p",
+      "text": "The data we collect from these cookies can be personally identifiable or anonymous. We collect this data to:"
+    },
+    {
       "t": "ul",
       "items": [
         "Offer personalized service",
         "Create a secure platform",
         "Improve performance",
-        "Statistical analysis",
-        "Contacting you if you agreed to any of our forms"
+        "Carry out statistical analysis",
+        "Contact you if you agreed to any of our forms"
       ]
+    },
+    {
+      "t": "h2",
+      "text": "Cookies and Similar Technologies"
+    },
+    {
+      "t": "p",
+      "text": "This website sets no cookies of its own and runs no analytics or advertising trackers. It stores one small preference on your device, your cookie choice, so it doesn’t ask you again."
+    },
+    {
+      "t": "p",
+      "text": "Client-story videos are hosted by YouTube, which may set its own cookies when a video plays. Each video’s preview picture is shown from YouTube’s image server. If you choose “Accept all”, videos play inside the page in YouTube’s privacy-enhanced mode. If you choose “Essential only”, or haven’t chosen yet, YouTube’s player never loads on this site and a video opens on YouTube in a new tab instead. You can change your choice at any time from “Cookie settings” at the foot of every page."
     },
     {
       "t": "h2",
       "text": "How We Secure Your Data"
     },
     {
+      "t": "p",
+      "text": "The security of your personal data is important to us and we take all appropriate measures to protect it. There are requisite technical, administrative, and physical barriers in place to ensure your data is accessible only to authorized persons or systems. In case we discover a data breach, we immediately (within 72 hours) inform the local authorities and affected users."
+    },
+    {
       "t": "h2",
       "text": "How We Use Your Personal Data"
+    },
+    {
+      "t": "p",
+      "text": "We store and process the data we collect for our legitimate interests and service delivery, fully under the ambit of law. We use your data:"
     },
     {
       "t": "ul",
@@ -69,29 +117,40 @@
       "text": "When We Share Your Personal Data"
     },
     {
-      "t": "h2",
-      "text": "How Do We Protect Your Information?"
+      "t": "p",
+      "text": "We do not share your personal data with any third party whatsoever, except when:"
     },
     {
       "t": "ul",
       "items": [
         "Your explicit consent is obtained.",
-        "Mandated by law.",
-        "Third-party is a collaborator or a part (subsidiary, parent/sister company) of OTS.",
-        "To provide any third-party requisite data that helps enable our services."
+        "It is mandated by law.",
+        "The third party is a collaborator or a part (subsidiary, parent or sister company) of OTS.",
+        "It provides any third-party requisite data that helps enable our services."
       ]
+    },
+    {
+      "t": "h2",
+      "text": "How Do We Protect Your Information?"
+    },
+    {
+      "t": "p",
+      "text": "We have strict security procedures covering the storage of your information in order to prevent unauthorized access. This means that sometimes we may ask you for proof of identity or for other personal information before we can process your call or enquiry further."
     },
     {
       "t": "h2",
       "text": "What You Can Do"
     },
     {
+      "t": "p",
+      "text": "You have full control over what information we store and its subsequent usage. You can choose to:"
+    },
+    {
       "t": "ul",
       "items": [
         "Unsubscribe from the mailing list and notification preferences to stop receiving any or all communication from us.",
-        "You can choose to not share your information by not filling up the forms or not using the chat support.",
-        "You can at any time change your consent earlier provided for any specific use of your data.",
-        "If you have any question regarding our privacy policy or data handling practices, we would be glad to hear from you at info@jumpgrowth.com"
+        "Not share your information, by not filling in the forms or not using the chat support.",
+        "Change, at any time, the consent you provided earlier for any specific use of your data."
       ]
     }
   ]

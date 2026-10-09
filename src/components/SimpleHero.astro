@@ -47,6 +47,12 @@ const { label, headline, lede } = Astro.props;
       linear-gradient(180deg, #000715 0%, #071127 34%, #0d1c41 74%, #132658 100%);
   }
 
+  @media (max-width: 767px) {
+    [data-ac-shero][data-ac-sec] {
+      padding-top: var(--ac-hero-top, 92px);
+    }
+  }
+
   [data-ac-shero-label] {
     display: flex;
     align-items: center;

@@ -33,29 +33,9 @@ const SHORES = [
   "Not Sure",
 ];
 
-/* The Careers page's variant asks an applicant for their area and location
-   instead of a team brief. */
-const CAREER_AREAS = [
-  "Engineering",
-  "QA & Testing",
-  "DevOps & Cloud",
-  "Product & Design",
-  "Sales & Business Development",
-  "Other",
-];
-const CAREER_LOCATIONS = [
-  "Dallas, USA",
-  "Toronto, Canada",
-  "Mexico City, Mexico",
-  "Delhi NCR, India",
-  "Pune, India",
-  "Sydney, Australia",
-  "Other",
-];
-
 interface Props {
   id?: string;
-  variant?: "team" | "careers" | "paper";
+  variant?: "team" | "paper";
   /** The white paper being requested (the "paper" variant). */
   paper?: string;
   eyebrow?: string;
@@ -69,16 +49,13 @@ interface Props {
   promises?: string[];
 }
 const { id = "contact", variant = "team", paper = "", hero = false, trail = [], promises = [] } = Astro.props;
-const careers = variant === "careers";
 const request = variant === "paper";
 const {
-  eyebrow = careers ? "Join the team" : request ? "Get the paper" : "Build your team",
-  headline = careers ? ["Send us", "your details."] : request ? ["Request the", "white paper."] : ["Tell us what", "you’re building."],
-  body = careers
-    ? "Share the work you do and where you’d like to do it, with a link to your CV or profile. We’ll get in touch when a role fits."
-    : request
-      ? "Tell us where to send it. We’ll email you the full paper and, if it helps, set up a call with the team that wrote it."
-      : "Share where the roadmap is blocked and the capabilities you need. We’ll map a practical team and delivery model.",
+  eyebrow = request ? "Get the paper" : "Build your team",
+  headline = request ? ["Request the", "white paper."] : ["Tell us what", "you’re building."],
+  body = request
+    ? "Tell us where to send it. We’ll email you the full paper and, if it helps, set up a call with the team that wrote it."
+    : "Share where the roadmap is blocked and the capabilities you need. We’ll map a practical team and delivery model.",
 } = Astro.props;
 
 const source = Astro.url.pathname;
@@ -160,54 +137,12 @@ const f = (name: string) => `${id}-${name}`;
       data-ac-sec-rise
       action={action}
       method="post"
-      enctype={FORM_ACTION ? (careers ? "multipart/form-data" : undefined) : "text/plain"}
-      data-subject={careers ? "Careers" : request ? "White paper" : "Team brief"}
+      enctype={FORM_ACTION ? undefined : "text/plain"}
+      data-subject={request ? "White paper" : "Team brief"}
     >
       <input type="hidden" name="source" value={source} />
 
-      {careers ? (
-        <div data-ac-contact-fields>
-          <div data-ac-field>
-            <label for={f("name")}>Your name</label>
-            <input id={f("name")} name="name" type="text" autocomplete="name" placeholder="Full name" required />
-          </div>
-          <div data-ac-field>
-            <label for={f("email")}>Email</label>
-            <input id={f("email")} name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
-          </div>
-          <div data-ac-field>
-            <label for={f("need")}>Area of work</label>
-            <select id={f("need")} name="need" required>
-              <option value="">Select one</option>
-              {CAREER_AREAS.map((a) => <option>{a}</option>)}
-            </select>
-          </div>
-          <div data-ac-field>
-            <label for={f("location")}>Preferred location</label>
-            <select id={f("location")} name="location">
-              <option value="">Select one</option>
-              {CAREER_LOCATIONS.map((l) => <option>{l}</option>)}
-            </select>
-          </div>
-          <div data-ac-field data-wide>
-            <label for={f("cv")}>Attach your CV <span>(PDF or Word, up to 5 MB)</span></label>
-            <input id={f("cv")} name="cv" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" data-ac-cv />
-            <p data-ac-field-hint>
-              {FORM_ACTION
-                ? "Your CV is sent with the form."
-                : "Your email app opens with your details filled in. Attach this file to that email before you send it."}
-            </p>
-          </div>
-          <div data-ac-field data-wide>
-            <label for={f("profile")}>LinkedIn or portfolio link <span>(optional)</span></label>
-            <input id={f("profile")} name="profile" type="url" placeholder="https://" />
-          </div>
-          <div data-ac-field data-wide>
-            <label for={f("message")}>About you <span>(optional)</span></label>
-            <textarea id={f("message")} name="message" rows="3" placeholder="Your experience, skills and the role you’re looking for"></textarea>
-          </div>
-        </div>
-      ) : request ? (
+      {request ? (
         <div data-ac-contact-fields>
           <div data-ac-field data-wide>
             <label for={f("need")}>White paper</label>
@@ -270,11 +205,12 @@ const f = (name: string) => `${id}-${name}`;
       )}
 
       <button type="submit" data-ac-contact-submit class="mono-label">
-        {careers ? "Send my details" : request ? "Send me the paper" : hero ? "Book my discovery call" : "Plan my team"}
+        {request ? "Send me the paper" : hero ? "Book my discovery call" : "Plan my team"}
         <Arrow direction="right" />
       </button>
+      <p data-ac-form-status role="status" aria-live="polite" hidden></p>
       <p data-ac-contact-consent>
-        By sending this form you agree to our <a href={withBase("/privacy-policy/")}>Privacy Policy</a>.
+        By sending this form you agree to our <a href={withBase("/privacy-policy/")}>Privacy Policy</a> and <a href={withBase("/terms-of-use/")}>Terms of Use</a>.
       </p>
     </form>
   </div>
@@ -303,7 +239,7 @@ const f = (name: string) => `${id}-${name}`;
   [data-ac-contact-ways] ul {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -317,6 +253,9 @@ const f = (name: string) => `${id}-${name}`;
   }
 
   [data-ac-contact-ways] a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     color: #fff;
     text-decoration: none;
     font-weight: 500;
@@ -381,31 +320,6 @@ const f = (name: string) => `${id}-${name}`;
     min-height: 74px;
   }
 
-  [data-ac-field] input[type="file"] {
-    padding: 8px;
-    cursor: pointer;
-  }
-
-  [data-ac-field] input[type="file"]::file-selector-button {
-    margin-right: 12px;
-    padding: 8px 14px;
-    border: 0;
-    border-radius: 6px;
-    background: color-mix(in srgb, var(--color-accent) 10%, #fff);
-    color: var(--color-accent);
-    font: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-  }
-
-  [data-ac-field-hint] {
-    margin: 0;
-    font-size: 13px;
-    line-height: 1.45;
-    color: rgb(10 16 34 / 0.55);
-  }
-
   [data-ac-field] input::placeholder,
   [data-ac-field] textarea::placeholder {
     color: rgb(10 16 34 / 0.38);
@@ -438,6 +352,39 @@ const f = (name: string) => `${id}-${name}`;
     background: var(--color-accent-dark);
   }
 
+  /* Messages: under a field when it needs fixing, and under the button once
+     the form is sent (or can't be). Errors red, success green; both also
+     announced to screen readers. The field messages are made by the script,
+     so they carry no scoped-style attribute: :global reaches them. */
+  [data-ac-field] :global([data-ac-field-error]) {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #c4262e;
+  }
+
+  [data-ac-field] [aria-invalid="true"] {
+    border-color: #c4262e;
+  }
+
+  [data-ac-form-status] {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  [data-ac-form-status][data-kind="success"] {
+    background: #eaf7ef;
+    color: #14663a;
+  }
+
+  [data-ac-form-status][data-kind="error"] {
+    background: #fdecec;
+    color: #a1222a;
+  }
+
   [data-ac-contact-consent] {
     margin: 12px 0 0;
     font-size: 13px;
@@ -464,6 +411,12 @@ const f = (name: string) => `${id}-${name}`;
 
   [data-ac-contact-hero] [data-ac-contact-grid] {
     align-items: center;
+  }
+
+  @media (max-width: 767px) {
+    [data-ac-contact-hero][data-ac-sec] {
+      padding-top: var(--ac-hero-top, 92px);
+    }
   }
 
   [data-ac-contact-trail] {
@@ -563,31 +516,109 @@ const f = (name: string) => `${id}-${name}`;
        tone follows it. */
     if (section.hasAttribute("data-ac-contact-hero")) followHero(section);
 
-    /* A CV must be a PDF or Word file of 5 MB or less. */
-    const cv = section.querySelector<HTMLInputElement>("input[data-ac-cv]");
-    cv?.addEventListener("change", () => {
-      const file = cv.files?.[0];
-      const okType = !file || /\.(pdf|docx?)$/i.test(file.name);
-      const okSize = !file || file.size <= 5 * 1024 * 1024;
-      cv.setCustomValidity(okType ? (okSize ? "" : "That file is over 5 MB. Please attach a smaller CV.") : "Please attach a PDF or Word file.");
-      if (!okType || !okSize) cv.reportValidity();
-    });
-
-    /* With a form service set the browser posts normally. */
-    if (section.hasAttribute("data-has-action")) return;
-
     const form = section.querySelector<HTMLFormElement>("[data-ac-contact-form]")!;
     const email = section.dataset.email ?? "";
+    const status = form.querySelector<HTMLElement>("[data-ac-form-status]");
+    type Field = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+    const fields = [...form.querySelectorAll<Field>("input:not([type=hidden]), select, textarea")];
+
+    /* With scripts on, the form checks itself and explains each problem under
+       its field (without scripts the browser's own checks still apply). */
+    form.noValidate = true;
+
+    const messageFor = (field: Field): string => {
+      const v = field.validity;
+      if (v.valid) return "";
+      if (v.valueMissing) {
+        if (field.name === "name") return "Please enter your name.";
+        if (field.name === "email") return "Please enter your email address.";
+        if (field instanceof HTMLSelectElement) return "Please choose an option.";
+        return "Please fill in this field.";
+      }
+      if (v.typeMismatch && field.type === "email") return "Please enter a valid email address, like name@company.com.";
+      return "Please check this field.";
+    };
+
+    const showError = (field: Field, message: string) => {
+      const wrap = field.closest("[data-ac-field]");
+      let note = wrap?.querySelector<HTMLElement>("[data-ac-field-error]");
+      if (!message) {
+        field.removeAttribute("aria-invalid");
+        note?.remove();
+        return;
+      }
+      if (!note && wrap) {
+        note = document.createElement("p");
+        note.setAttribute("data-ac-field-error", "");
+        note.id = `${field.id}-error`;
+        wrap.append(note);
+      }
+      if (note) note.textContent = message;
+      field.setAttribute("aria-invalid", "true");
+      field.setAttribute("aria-describedby", `${field.id}-error`);
+    };
+
+    const setStatus = (kind: "success" | "error" | "", message: string) => {
+      if (!status) return;
+      status.hidden = !message;
+      status.dataset.kind = kind;
+      status.textContent = message;
+    };
+
+    // A field that was flagged clears as soon as it's fixed.
+    for (const field of fields) {
+      const recheck = () => {
+        if (field.hasAttribute("aria-invalid")) showError(field, messageFor(field));
+      };
+      field.addEventListener("input", recheck);
+      field.addEventListener("change", recheck);
+    }
+
+    /* Returns true when every field is valid; otherwise marks each problem and
+       moves focus to the first. */
+    const validate = () => {
+      let first: Field | null = null;
+      for (const field of fields) {
+        const message = messageFor(field);
+        showError(field, message);
+        if (message && !first) first = field;
+      }
+      if (first) {
+        setStatus("error", "Please fix the highlighted fields and send again.");
+        first.focus();
+        return false;
+      }
+      return true;
+    };
+
+    /* With a form service set, the form posts in the background and says
+       whether it arrived. */
+    if (section.hasAttribute("data-has-action")) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!validate()) return;
+        const button = form.querySelector<HTMLButtonElement>("[data-ac-contact-submit]");
+        if (button) button.disabled = true;
+        setStatus("", "");
+        try {
+          const response = await fetch(form.action, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } });
+          if (!response.ok) throw new Error(String(response.status));
+          form.reset();
+          setStatus("success", "Thank you. Your details have reached our team, and a specialist will be in touch.");
+        } catch {
+          setStatus("error", `Sorry, the form didn't send. Please try again, or email us at ${email}.`);
+        } finally {
+          if (button) button.disabled = false;
+        }
+      });
+      return;
+    }
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
+      if (!validate()) return;
       const lines: string[] = [];
       form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input, select, textarea").forEach((field) => {
-        if (field instanceof HTMLInputElement && field.type === "file") {
-          const file = field.files?.[0];
-          if (file) lines.push(`CV file: ${file.name} (please attach it to this email)`);
-          return;
-        }
         if (field.type === "hidden") {
           if (field.value.trim()) lines.push(`Page: ${field.value.trim()}`);
           return;
@@ -599,6 +630,10 @@ const f = (name: string) => `${id}-${name}`;
       const prefix = form.dataset.subject ?? "Team brief";
       const subject = encodeURIComponent(need ? `${prefix}: ${need}` : prefix);
       window.location.href = `mailto:${email}?subject=${subject}&body=${encodeURIComponent(lines.join("\n"))}`;
+      setStatus(
+        "success",
+        `Thank you. Your email app is opening with your details filled in. Send that email to reach our team, or write to ${email}.`,
+      );
     });
   });
 </script>

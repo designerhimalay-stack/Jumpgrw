@@ -214,11 +214,11 @@ every CSS rule and script that uses it.
 These are known and waiting on decisions, not bugs to fix on your own:
 
 - The contact form has no form service yet (`FORM_ACTION` in `ContactForm.astro`). Until one
-  is set it opens the visitor's email app, so CV files and white-paper requests are handled
-  by hand.
+  is set it opens the visitor's email app, so white-paper requests are handled by hand.
 - The phone number (`CONTACT_PHONE`) is a placeholder; it is kept out of structured data.
-- There is no Terms of Use page: the company has none, and its wording needs counsel.
-- The open roles on `/careers/` (`src/lib/roles.ts`) are examples to confirm.
+- The Terms of Use (`src/data/legal/terms-of-use.json`) are a standard draft written for the
+  site at the owner's request; have counsel review them before relying on them.
+- The Careers page was taken down at the owner's request; `/careers/` redirects to About.
 - Six testimonials and the stand-in photos are placeholders.
 - The headquarters address needs confirming (footer and `src/lib/site.ts`).
 - White 11px text on the brand blue (and the small blue FAQ numbers on white) measure

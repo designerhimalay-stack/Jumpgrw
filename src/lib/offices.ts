@@ -1,7 +1,7 @@
 import type { ImageMetadata } from "astro";
 
 /* JumpGrowth's offices, from the company's Our Global Presence list
-   (jumpgrowth.com/about). Shared by the About and Careers pages. Dallas is the
+   (jumpgrowth.com/about). Used by the About page. Dallas is the
    headquarters. Cards show the area only; the full Dallas address is in the
    footer. */
 

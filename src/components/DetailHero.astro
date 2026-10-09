@@ -318,6 +318,13 @@ const { trail, title, size = "title", chips = [], lede, facts = [], actions = []
     filter: drop-shadow(0 24px 32px rgb(0 0 0 / 0.4));
   }
 
+  /* Phones: open the same distance below the navbar as every other page. */
+  @media (max-width: 767px) {
+    [data-ac-dhero][data-ac-sec] {
+      padding-top: var(--ac-hero-top, 92px);
+    }
+  }
+
   @media (max-width: 991px) {
     [data-ac-dhero-grid] {
       grid-template-columns: 1fr;

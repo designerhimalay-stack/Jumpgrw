@@ -10,7 +10,7 @@ structured data). The navbar, footer and contact form are shared from `src/compo
   in `src/_pages/pageN/` (imported as `@pg/pageN`). They were first served at `/pageN/`;
   those addresses now redirect to the paths below (`integrations/legacy-routes.mjs`).
 - **Path:** where the page is served, under the site's base (`/agentcraft/` on GitHub Pages).
-- **Text as data:** articles, case studies, papers, industries and the privacy policy keep
+- **Text as data:** articles, case studies, papers, industries and the legal pages keep
   their text in `src/data/` and are rendered by the `[slug]` routes.
 
 To run the site locally: `npm ci && npm run dev`, then open http://localhost:4321/.
@@ -21,7 +21,6 @@ To run the site locally: `npm ci && npm run dev`, then open http://localhost:432
 |---|---|---|---|
 | Home | `src/pages/index.astro` | `/` | |
 | About | `src/pages/about/` | `/about/` | Company › Company |
-| Careers | `src/pages/careers/` | `/careers/` | Company › Company |
 | Case studies | `src/pages/case-studies/index.astro` | `/case-studies/` | Case Studies; Company › Proof |
 | Case study (13) | `src/pages/case-studies/[slug].astro` | `/case-studies/<slug>/` | from Case Studies |
 | Industries | `src/pages/industries/index.astro` | `/industries/` | Company › Proof |
@@ -29,7 +28,8 @@ To run the site locally: `npm ci && npm run dev`, then open http://localhost:432
 | How we build teams | `src/pages/how-we-build-teams/` | `/how-we-build-teams/` | Company › Proof |
 | Contact | `src/pages/contact/` | `/contact/` | Company › Connect |
 | Engagement models | `src/pages/engagement-models/` | `/engagement-models/` | Teams (overview) |
-| Privacy policy | `src/pages/privacy-policy/` | `/privacy-policy/` | footer, every form |
+| Privacy policy | `src/pages/privacy-policy/` | `/privacy-policy/` | footer, every form, cookie notice |
+| Terms of use | `src/pages/terms-of-use/` | `/terms-of-use/` | footer, every form |
 | Not found | `src/pages/404.astro` | any missing address | |
 
 ## Insights

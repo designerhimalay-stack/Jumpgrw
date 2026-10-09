@@ -1,0 +1,46 @@
+---
+import "@pg/page30/styles/globals.css";
+import "@/styles/globals.css";
+import Layout from "@/layouts/Layout.astro";
+import Navbar from "@/components/Navbar.astro";
+import { withBase } from "@/lib/paths";
+import Footer from "@/components/Footer.astro";
+import SimpleHero from "@/components/SimpleHero.astro";
+import ArticleBody from "@/components/insights/ArticleBody.astro";
+import LegalContact from "@/components/LegalContact.astro";
+import SmoothScroll from "@pg/page30/components/SmoothScroll.astro";
+import terms from "@/data/legal/terms-of-use.json";
+import type { ArticleBlock } from "@/lib/articles";
+
+/* Terms of Use: a standard draft for the site (src/data/legal), written at the
+   owner's request and to be reviewed by counsel (see the open items in
+   docs/AI_GUIDE.md). Set like the Privacy Policy, and linked from the footer
+   and beside every form's submit button. */
+
+const blocks = terms.blocks as ArticleBlock[];
+---
+
+<Layout
+  title="Terms of Use"
+  description="The terms for using the JumpGrowth website: acceptable use, our content, links to other sites, disclaimers and the law that applies."
+  navTone="field"
+  breadcrumbs={[{ name: "Terms of Use", path: "/terms-of-use/" }]}
+>
+  <SmoothScroll />
+  <Navbar contactHref={withBase("/contact/")} />
+  <main>
+    <SimpleHero
+      label={["Company", "Terms of Use"]}
+      headline={["Clear terms,", "plainly put."]}
+      lede="What you can expect from this website, and what we ask of you when you use it."
+    />
+    <ArticleBody article={{ blocks }} numbered>
+      <LegalContact
+        title="Questions about these terms?"
+        body="Write to us and we’ll be glad to help."
+        email="info@jumpgrowth.com"
+      />
+    </ArticleBody>
+  </main>
+  <Footer />
+</Layout>

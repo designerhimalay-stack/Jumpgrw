@@ -1,0 +1,164 @@
+---
+import { withBase } from "@/lib/paths";
+
+/* The cookie notice. A small card fixed to the bottom of the screen, shown
+   until the visitor chooses; fixed, so it never moves the page (no layout
+   shift). "Accept all" lets client videos play inside the page; "Essential
+   only" keeps every third party off the site. The choice is stored on the
+   device (src/lib/consent.ts) and can be changed from the footer's "Cookie
+   settings". It renders hidden and the script reveals it, so it never flashes
+   for a visitor who has already chosen, and without scripts it never shows
+   (with no scripts, nothing optional runs anyway). */
+---
+
+<aside data-ac-cookie hidden aria-label="Cookie preferences" aria-live="polite">
+  <p data-ac-cookie-text>
+    We use only what the site needs to work. Client videos come from YouTube, which may set its own cookies;
+    they play here only if you allow it. <a href={withBase("/privacy-policy/#cookies-and-similar-technologies")}>Cookie details</a>
+  </p>
+  <div data-ac-cookie-actions>
+    <button type="button" data-ac-cookie-choice="essential" class="mono-label">Essential only</button>
+    <button type="button" data-ac-cookie-choice="all" class="mono-label">Accept all</button>
+  </div>
+</aside>
+
+<style>
+  [data-ac-cookie] {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    gap: 16px 24px;
+    max-width: 720px;
+    margin-inline: auto;
+    padding: 16px 18px;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: 12px;
+    background: #0a1022;
+    color: rgb(255 255 255 / 0.86);
+    box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.55);
+    animation: ac-cookie-in 0.4s cubic-bezier(0.22, 0.68, 0.24, 1);
+  }
+
+  [data-ac-cookie][hidden] {
+    display: none;
+  }
+
+  [data-ac-cookie-text] {
+    flex: 1;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  [data-ac-cookie-text] a {
+    color: #ffffff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  [data-ac-cookie-actions] {
+    display: flex;
+    flex: none;
+    gap: 10px;
+  }
+
+  [data-ac-cookie-choice] {
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid rgb(255 255 255 / 0.28);
+    background: transparent;
+    color: #ffffff;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  [data-ac-cookie-choice]:hover {
+    border-color: #ffffff;
+    background: rgb(255 255 255 / 0.06);
+  }
+
+  [data-ac-cookie-choice="all"] {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+  }
+
+  [data-ac-cookie-choice="all"]:hover {
+    border-color: var(--color-accent-dark);
+    background: var(--color-accent-dark);
+  }
+
+  [data-ac-cookie-choice]:focus-visible,
+  [data-ac-cookie-text] a:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 599px) {
+    [data-ac-cookie] {
+      flex-direction: column;
+      align-items: stretch;
+      left: 12px;
+      right: 12px;
+      padding: 14px;
+    }
+
+    [data-ac-cookie-text] {
+      font-size: 13px;
+    }
+
+    [data-ac-cookie-choice] {
+      flex: 1;
+      padding: 0 8px;
+      white-space: nowrap;
+    }
+  }
+
+  @keyframes ac-cookie-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-ac-cookie] {
+      animation: none;
+    }
+
+    [data-ac-cookie-choice] {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { getConsent, setConsent, type Consent } from "@/lib/consent";
+
+  const notice = document.querySelector<HTMLElement>("[data-ac-cookie]");
+  if (notice) {
+    const open = () => {
+      notice.hidden = false;
+    };
+    if (getConsent() === null) {
+      /* Shown once the page has had its first paint, so it never competes
+         with the hero for the opening frame. */
+      window.setTimeout(open, 1200);
+    }
+    notice.querySelectorAll<HTMLButtonElement>("[data-ac-cookie-choice]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setConsent(button.dataset.acCookieChoice as Consent);
+        notice.hidden = true;
+      });
+    });
+    window.addEventListener("jg:consent-open", () => {
+      open();
+      notice.querySelector<HTMLButtonElement>("[data-ac-cookie-choice]")?.focus();
+    });
+  }
+</script>

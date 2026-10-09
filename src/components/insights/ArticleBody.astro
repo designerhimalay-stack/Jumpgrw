@@ -12,14 +12,22 @@ interface Props {
   /** Only the blocks are read, so any page with text in this shape (an
       article, the privacy policy) can use it. */
   article: Pick<Article, "blocks">;
+  /** A legal document's set: numbered sections (in the headings and the
+      "On this page" list), each opened by a hairline, and the text before
+      the first section set as a larger lead. Anything passed as children
+      closes the column (the legal pages' contact card). */
+  numbered?: boolean;
 }
 
-const { article } = Astro.props;
+const { article, numbered = false } = Astro.props;
 const toc = outline(article);
+const pad = (n: number) => String(n).padStart(2, "0");
 
 /* Each h2 takes the next anchor outline() computed, in the same order. */
 let h2 = 0;
 const nextId = (text: string) => toc[h2++]?.id ?? slugify(text);
+const isLead = (index: number) =>
+  numbered && article.blocks.slice(0, index + 1).every((block) => block.t !== "h2");
 ---
 
 <section data-ac-sec="light" data-ac-article>
@@ -29,19 +37,34 @@ const nextId = (text: string) => toc[h2++]?.id ?? slugify(text);
       <nav data-ac-article-toc aria-label="On this page">
         <p class="mono-label">On this page</p>
         <ol>
-          {toc.map((item) => (
-            <li><a href={`#${item.id}`}>{item.text}</a></li>
+          {toc.map((item, i) => (
+            <li>
+              <a href={`#${item.id}`}>
+                {numbered && <span data-ac-toc-num>{pad(i + 1)}</span>}
+                {item.text}
+              </a>
+            </li>
           ))}
         </ol>
       </nav>
     )}
 
-    <div data-ac-article-body data-has-toc={toc.length > 2 || undefined}>
-      {article.blocks.map((block) => {
-        if (block.t === "h2") return <h2 id={nextId(block.text)} set:html={resolveLinks(block.text)} />;
+    <div data-ac-article-body data-has-toc={toc.length > 2 || undefined} data-numbered={numbered || undefined}>
+      {article.blocks.map((block, index) => {
+        if (block.t === "h2") {
+          const id = nextId(block.text);
+          return numbered ? (
+            <h2 id={id}>
+              <span data-ac-article-num class="mono-label">{pad(h2)}</span>
+              <Fragment set:html={resolveLinks(block.text)} />
+            </h2>
+          ) : (
+            <h2 id={id} set:html={resolveLinks(block.text)} />
+          );
+        }
         if (block.t === "h3") return <h3 set:html={resolveLinks(block.text)} />;
         if (block.t === "h4") return <h4 set:html={resolveLinks(block.text)} />;
-        if (block.t === "p") return <p set:html={resolveLinks(block.text)} />;
+        if (block.t === "p") return <p data-lead={isLead(index) || undefined} set:html={resolveLinks(block.text)} />;
         if (block.t === "ul") return <ul>{block.items.map((item) => <li set:html={resolveLinks(item)} />)}</ul>;
         if (block.t === "ol") return <ol>{block.items.map((item) => <li set:html={resolveLinks(item)} />)}</ol>;
         const [head, ...rows] = block.rows;
@@ -60,6 +83,7 @@ const nextId = (text: string) => toc[h2++]?.id ?? slugify(text);
           </div>
         );
       })}
+      <slot />
     </div>
   </div>
 </section>
@@ -282,6 +306,38 @@ const nextId = (text: string) => toc[h2++]?.id ?? slugify(text);
 
   [data-ac-article-table] tbody tr:last-child td {
     border-bottom: 0;
+  }
+
+  /* -- numbered (legal documents) ------------------------------------------ */
+
+  [data-ac-toc-num] {
+    display: inline-block;
+    min-width: 26px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    color: var(--color-accent);
+  }
+
+  [data-ac-article-body] p[data-lead] {
+    margin-bottom: 1.4em;
+    font-size: clamp(18px, 1.5vw, 21px);
+    line-height: 1.6;
+    color: #0a1022;
+  }
+
+  [data-ac-article-body][data-numbered] h2 {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: clamp(40px, 4.5vw, 60px);
+    padding-top: clamp(28px, 3vw, 40px);
+    border-top: 1px solid var(--ac-line);
+  }
+
+  [data-ac-article-num] {
+    color: var(--color-accent);
   }
 
   @media (prefers-reduced-motion: reduce) {

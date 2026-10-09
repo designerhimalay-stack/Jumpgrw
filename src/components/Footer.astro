@@ -64,6 +64,8 @@ const fixHref = (href: string): string =>
             alt="JumpGrowth"
             class="h-[30px] w-auto object-contain"
             loading="lazy"
+            widths={[126, 252, 378]}
+            sizes="126px"
           />
         </a>
         <p>AI adds speed. People own the outcome.</p>
@@ -102,7 +104,11 @@ const fixHref = (href: string): string =>
     <div data-ac-footer-base class="mono-label">
       <span>
         © <span data-ac-year>{year}</span> JumpGrowth. All rights reserved.
-        <a href={withBase("/privacy-policy/")} data-ac-footer-legal>Privacy Policy</a>
+        <span data-ac-footer-legals>
+          <a href={withBase("/privacy-policy/")} data-ac-footer-legal>Privacy Policy</a>
+          <a href={withBase("/terms-of-use/")} data-ac-footer-legal>Terms of Use</a>
+          <button type="button" data-ac-footer-legal data-ac-cookie-settings>Cookie settings</button>
+        </span>
       </span>
       <a href="#top" data-ac-footer-top>
         Back to top
@@ -116,9 +122,13 @@ const fixHref = (href: string): string =>
 
 <script>
   import { toggleInView } from "@/lib/in-view";
+  import { reopenConsent } from "@/lib/consent";
 
   /* "#top" and the section links are handled by SmoothScroll. */
   toggleInView(document.querySelector<HTMLElement>("[data-ac-footer]")!);
+
+  // "Cookie settings" brings the cookie notice back to change the choice.
+  document.querySelector("[data-ac-cookie-settings]")?.addEventListener("click", reopenConsent);
 
   /* The year is written at build time; this keeps it current on a site that
      has not been rebuilt since the new year. */

@@ -1,7 +1,7 @@
 # Detail pages, hubs and the shared head
 
 The pieces behind the article, case-study, white-paper, event, industry, contact, FAQ,
-engagement-models, careers and legal pages. All of them sit on the subpage grammar
+engagement-models and legal pages. All of them sit on the subpage grammar
 (`data-ac-sec` tones, `SectionHead`, `GridRules`, `Joints`, `toggleInView`) and change no
 existing section.
 
@@ -15,6 +15,17 @@ the home page, BreadcrumbList when a page passes `breadcrumbs`, and anything in 
 (BlogPosting on articles, FAQPage on `/faq/` and industry pages). `noindex` keeps a page out
 of search (the 404). Company facts live in `src/lib/site.ts`.
 
+`pageTitle()` also shortens a long title (an article headline) to the part before its
+colon, and `metaDescription()` cuts a description to 160 characters at a sentence or word,
+so search results don't truncate them mid-word.
+
+The layout also renders `CookieNotice.astro`: a fixed card at the foot of the screen (so it
+moves nothing), shown on a first visit after the opening paint. "Accept all" lets client
+videos play in the page; "Essential only" (and no choice yet) opens them on YouTube instead.
+The choice lives in `localStorage` (`src/lib/consent.ts`); the footer's "Cookie settings"
+reopens the card. The site sets no cookies of its own; if analytics or another third party
+is ever added, gate it on `getConsent() === "all"` and list it in the privacy policy.
+
 `integrations/seo-files.mjs` writes `sitemap.xml` and `robots.txt` after the build from the
 pages Astro produced, leaving out the 404 page and the redirect stubs.
 `integrations/legacy-routes.mjs` is the map of old `/pageN/` addresses to their named paths;
@@ -26,7 +37,7 @@ pages Astro produced, leaving out the 404 page and the redirect stubs.
 |---|---|---|
 | `PageHero` (kit, `@pg/page30`) | Hubs and topic pages | Photo, specs strip, optional card |
 | `DetailHero.astro` | Article, case study, paper, event | Long title or product name; `fit="contain"` sets a device render or cover on the plain navy field with one glow; the picture keeps a fixed shape so nothing moves on load |
-| `SimpleHero.astro` | Privacy policy, 404 | No picture; label, two-tone headline, lede, optional children |
+| `SimpleHero.astro` | Privacy policy, terms of use, 404 | No picture; label, two-tone headline, lede, optional children |
 | `ContactForm hero` | `/contact/` | The form itself opens the page on the navy field |
 
 All of them hand the navbar's tone to the page through `src/lib/nav-tone.ts`
@@ -36,7 +47,8 @@ All of them hand the navbar's tone to the page through `src/lib/nav-tone.ts`
 
 - **`insights/ArticleBody.astro`**: reading column (about 70 characters) with a sticky "On
   this page" list from the h2s at 1100px and up; tables scroll inside their own frame on
-  phones. Reads any `{ blocks }` in the `ArticleBlock` shape (articles, privacy policy).
+  phones. Reads any `{ blocks }` in the `ArticleBlock` shape (articles, privacy policy,
+  terms of use).
 - **`cases/CaseDetail.astro`**: overview, then `CaseInsights` (number cards; a features bar
   chart when there are two or more feature groups; a stack donut when the stack spans two or
   more layers), problem cards, solution groups, `CaseArchitecture` (stack by layer, shown
@@ -48,8 +60,6 @@ All of them hand the navbar's tone to the page through `src/lib/nav-tone.ts`
   two-column list), process (numbered timeline), why us (navy band), client results (with
   location), related case studies. `FaqSection` follows with the industry's own questions.
 - **`industries/IndustriesGrid.astro`**, **`EngagementModels.astro`**: the two hubs.
-- **`careers/OpenRoles.astro`**: role rows as native `<details>`, filter chips, and "Apply"
-  pre-selecting the area in the careers form.
 
 ## Spacing
 

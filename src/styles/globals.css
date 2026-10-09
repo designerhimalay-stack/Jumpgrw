@@ -84,18 +84,25 @@
 
 @media (max-width: 767px) {
   :root {
-    /* Phones: a column break still has to read as a new section (the rules run
-       unbroken), so the gap stays clearly larger than the ~40px internal
-       rhythm — but the desktop expanse is wasted scroll here. Tightened on the
-       2026 mobile pass to roughly 2× the internal step. */
-    --section-gap: clamp(60px, 10vh, 96px);
-    --band-pad: clamp(52px, 9vh, 84px);
+    /* Phones: one fixed rhythm on every page. A column break still reads as a
+       new section (clearly more than the ~32px internal step), but in pixels
+       rather than vh, so a tall phone doesn't get bigger gaps than a short
+       one and the same page feels the same on every device. This file loads
+       after each page kit's stylesheet, so these values are the ones phones
+       get everywhere. */
+    --section-gap: 64px;
+    --band-pad: 60px;
+    --ac-head-gap: 32px;
+    --ac-hero-top: 92px; /* the 64px phone navbar plus air */
   }
 }
 
 @media (max-width: 479px) {
   :root {
     --paragraph-normal: 14px;
+    --section-gap: 56px;
+    --band-pad: 52px;
+    --ac-head-gap: 28px;
   }
 }
 
@@ -3425,7 +3432,7 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
 [data-ac-sec-head] {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  margin-bottom: clamp(40px, 6vh, 64px);
+  margin-bottom: var(--ac-head-gap, clamp(40px, 6vh, 64px));
 }
 
 [data-ac-sec-eyebrow] {
@@ -5519,6 +5526,21 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
   text-decoration: underline;
 }
 
+/* "Cookie settings" is a button (it opens the cookie notice, it goes
+   nowhere) set exactly like the links beside it. */
+:where(button)[data-ac-footer-legal] {
+  padding-block: 0;
+  padding-right: 0;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
 @media (max-width: 991px) {
   [data-ac-footer-grid] {
     grid-template-columns: repeat(2, 1fr);
@@ -6072,5 +6094,94 @@ html[data-ac-intro="start"] .ac-portal [data-gp-art] {
 
   [data-ac-nav-group] {
     transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Phones: legibility, touch and iOS Safari. Desktop is untouched; everything
+   below applies only on phone widths, except the text-size-adjust line, which
+   only stops iOS from enlarging text by itself when a phone is turned.
+   --------------------------------------------------------------------------- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 767px) {
+  /* The mono labels (eyebrows, chips, button text) read at 11px on a laptop;
+     a step up on a phone screen held at arm's length. */
+  .mono-label {
+    font-size: 12px;
+  }
+
+  /* iOS Safari zooms the whole page when a form field under 16px takes focus,
+     and doesn't zoom back. Every field is 16px on phones so that never
+     happens. !important because each page kit styles its own fields. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Every page opens the same distance below the phone navbar. (The home
+     page's opening frame is excluded: it sizes itself.) */
+  main > section:first-child:not(.ac-portal) {
+    padding-top: var(--ac-hero-top);
+  }
+
+  /* Footer: the logo and the legal link keep their look but get a 44px
+     touch area. */
+  [data-ac-footer-logo] {
+    padding-block: 7px;
+  }
+
+  [data-ac-footer-legal] {
+    display: inline-block;
+    padding-block: 14px;
+    margin-block: -14px;
+  }
+
+  /* The legal links take their own line under the copyright, spaced rather
+     than ruled, so they wrap cleanly on the narrowest phones. The row gap
+     keeps the 44px touch areas of wrapped rows from overlapping. */
+  [data-ac-footer-legals] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px 22px;
+    margin-top: 18px;
+  }
+
+  [data-ac-footer-legals] [data-ac-footer-legal] {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  [data-ac-footer-base] {
+    row-gap: 28px;
+  }
+}
+@media (max-width: 767px) {
+  /* The kits' smallest labels drop to 9-10px on phones; 11px is the floor
+     that stays legible. "main" in front makes these win over each kit's own
+     phone rules, whichever stylesheet loads last. */
+  main .mono-label-sm,
+  main [data-ac-stack-note],
+  main [data-ac-help-covers],
+  main [data-ac-why-figure] dt,
+  main [data-ac-xshore-sum] dt,
+  main [data-ac-work-label],
+  main [data-ac-ways-kicker],
+  main [data-ac-flex-label] {
+    font-size: 11px;
+  }
+}
+@media (max-width: 379px) {
+  /* With the labels at a legible size, the pod card's three facts
+     ("Rituals / Ownership / Start") need tighter cells to share a 320px row. */
+  main [data-ac-pod-facts] > div,
+  main [data-ac-hire-roster-terms] > div {
+    padding-inline: 10px;
   }
 }
